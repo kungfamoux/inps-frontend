@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MoreHorizontal, Eye, Pencil, Users } from "lucide-react";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { adminApi } from '@/lib/api/admin';
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MoreHorizontal, Eye, Pencil, Users } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -12,17 +12,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "react-router-dom";
-import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
+import AdvancedSearch, {
+  FilterConfig,
+  SearchFilters,
+} from '@/components/admin/AdvancedSearch';
 
 export default function ParentsList() {
   const navigate = useNavigate();
@@ -40,12 +43,12 @@ export default function ParentsList() {
       options: [
         { value: 'ACTIVE', label: 'Active' },
         { value: 'INACTIVE', label: 'Inactive' },
-      ]
+      ],
     },
   ];
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["parents", page, searchFilters, isSearching],
+    queryKey: ['parents', page, searchFilters, isSearching],
     queryFn: () => {
       // Use search endpoint if there's a search query
       if (searchFilters.q && searchFilters.q.trim()) {
@@ -54,7 +57,7 @@ export default function ParentsList() {
           q: searchFilters.q,
           page,
           limit,
-          status: searchFilters.status
+          status: searchFilters.status,
         });
       }
 
@@ -91,12 +94,10 @@ export default function ParentsList() {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Parents</h1>
-            <p className="text-sm text-muted-foreground">Manage parent accounts and student associations</p>
+            <p className="text-sm text-muted-foreground">
+              Manage parent accounts and student associations
+            </p>
           </div>
-          <Button onClick={() => navigate("/admin/parents/add")}>
-            <Users className="mr-2 size-4" />
-            Add Parent
-          </Button>
         </div>
 
         <Card>
@@ -145,7 +146,8 @@ export default function ParentsList() {
                       {parents.map((parent) => (
                         <TableRow key={parent.id}>
                           <TableCell className="font-medium">
-                            {parent.primaryGuardian?.firstName} {parent.primaryGuardian?.lastName}
+                            {parent.primaryGuardian?.firstName}{' '}
+                            {parent.primaryGuardian?.lastName}
                           </TableCell>
                           <TableCell>{parent.accountEmail}</TableCell>
                           <TableCell>{parent.accountPhone}</TableCell>
@@ -156,7 +158,13 @@ export default function ParentsList() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={parent.status === "ACTIVE" ? "default" : "secondary"}>
+                            <Badge
+                              variant={
+                                parent.status === 'ACTIVE'
+                                  ? 'default'
+                                  : 'secondary'
+                              }
+                            >
                               {parent.status}
                             </Badge>
                           </TableCell>
@@ -168,10 +176,14 @@ export default function ParentsList() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleView(parent.id)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleView(parent.id)}
+                                >
                                   <Eye className="mr-2 size-4" /> View
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEdit(parent.id)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(parent.id)}
+                                >
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
@@ -186,7 +198,9 @@ export default function ParentsList() {
                 {pagination && pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
                     <p className="text-sm text-muted-foreground">
-                      Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, pagination.total)} of {pagination.total} parents
+                      Showing {(page - 1) * limit + 1} to{' '}
+                      {Math.min(page * limit, pagination.total)} of{' '}
+                      {pagination.total} parents
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -200,7 +214,9 @@ export default function ParentsList() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                        onClick={() =>
+                          setPage((p) => Math.min(pagination.totalPages, p + 1))
+                        }
                         disabled={page === pagination.totalPages}
                       >
                         Next

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, X, ChevronDown, ChevronUp } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect, useCallback } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { debounce } from '@/lib/utils';
 
 export interface FilterConfig {
   field: string;
@@ -40,18 +41,18 @@ export default function AdvancedSearch({
   initialFilters = {},
   showHistory = false,
   exportable = false,
-  onExport
+  onExport,
 }: AdvancedSearchProps) {
   const handleExport = () => {
     if (onExport) {
       onExport();
     } else {
       // Default CSV export
-      const csvContent = "data:text/csv;charset=utf-8," + "ID,Name,Status\n";
+      const csvContent = 'data:text/csv;charset=utf-8,' + 'ID,Name,Status\n';
       const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "search_results.csv");
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', 'search_results.csv');
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -71,23 +72,34 @@ export default function AdvancedSearch({
     }
   }, [showHistory]);
 
-  const handleFilterChange = (field: string, value: string | number | undefined) => {
-    setFilters(prev => ({
+  const handleFilterChange = (
+    field: string,
+    value: string | number | undefined,
+  ) => {
+    setFilters((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     onSearch(filters);
-    
+
     // Save to history if text search exists
     if (filters.q && showHistory) {
-      const newHistory = [filters.q, ...searchHistory.filter(h => h !== filters.q)].slice(0, 10);
+      const newHistory = [
+        filters.q,
+        ...searchHistory.filter((h) => h !== filters.q),
+      ].slice(0, 10);
       setSearchHistory(newHistory);
       localStorage.setItem('searchHistory', JSON.stringify(newHistory));
     }
-  };
+  }, [filters, onSearch, showHistory, searchHistory]);
+
+  // Debounced version of handleSearch for text input
+  const debouncedSearch = useCallback(debounce(handleSearch, 500), [
+    handleSearch,
+  ]);
 
   const handleClear = () => {
     setFilters({});
@@ -95,11 +107,13 @@ export default function AdvancedSearch({
   };
 
   const handleHistoryClick = (query: string) => {
-    setFilters(prev => ({ ...prev, q: query }));
+    setFilters((prev) => ({ ...prev, q: query }));
     onSearch({ ...filters, q: query });
   };
 
-  const activeFilterCount = Object.values(filters).filter(v => v !== undefined && v !== '' && v !== 0).length;
+  const activeFilterCount = Object.values(filters).filter(
+    (v) => v !== undefined && v !== '' && v !== 0,
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -110,12 +124,15 @@ export default function AdvancedSearch({
           <Input
             placeholder="Search..."
             value={filters.q || ''}
-            onChange={(e) => handleFilterChange('q', e.target.value)}
+            onChange={(e) => {
+              handleFilterChange('q', e.target.value);
+              debouncedSearch();
+            }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-9"
           />
         </div>
-        
+
         {filterConfig.length > 0 && (
           <Button
             variant="outline"
@@ -128,22 +145,26 @@ export default function AdvancedSearch({
                 {activeFilterCount}
               </Badge>
             )}
-            {showFilters ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+            {showFilters ? (
+              <ChevronUp className="size-4" />
+            ) : (
+              <ChevronDown className="size-4" />
+            )}
           </Button>
         )}
-        
+
         <Button onClick={handleSearch} className="gap-2">
           <Search className="size-4" />
           Search
         </Button>
-        
+
         {activeFilterCount > 0 && (
           <Button variant="ghost" onClick={handleClear} className="gap-2">
             <X className="size-4" />
             Clear
           </Button>
         )}
-        
+
         {exportable && (
           <Button variant="outline" onClick={handleExport} className="gap-2">
             Export
@@ -158,19 +179,26 @@ export default function AdvancedSearch({
             {filterConfig.map((config) => (
               <div key={config.field} className="space-y-2">
                 <label className="text-sm font-medium">{config.label}</label>
-                
+
                 {config.type === 'text' && (
                   <Input
-                    placeholder={config.placeholder || `Search ${config.label.toLowerCase()}`}
+                    placeholder={
+                      config.placeholder ||
+                      `Search ${config.label.toLowerCase()}`
+                    }
                     value={filters[config.field] || ''}
-                    onChange={(e) => handleFilterChange(config.field, e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange(config.field, e.target.value)
+                    }
                   />
                 )}
-                
+
                 {config.type === 'select' && config.options && (
                   <select
                     value={filters[config.field] || ''}
-                    onChange={(e) => handleFilterChange(config.field, e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange(config.field, e.target.value)
+                    }
                     className="w-full border rounded-md px-3 py-2"
                   >
                     <option value="">All {config.label}</option>
@@ -181,18 +209,26 @@ export default function AdvancedSearch({
                     ))}
                   </select>
                 )}
-                
+
                 {config.type === 'chip' && config.options && (
                   <div className="flex flex-wrap gap-2">
                     {config.options.map((option) => (
                       <Badge
                         key={option.value}
-                        variant={filters[config.field] === option.value ? 'default' : 'outline'}
+                        variant={
+                          filters[config.field] === option.value
+                            ? 'default'
+                            : 'outline'
+                        }
                         className="cursor-pointer"
-                        onClick={() => handleFilterChange(
-                          config.field,
-                          filters[config.field] === option.value ? '' : option.value
-                        )}
+                        onClick={() =>
+                          handleFilterChange(
+                            config.field,
+                            filters[config.field] === option.value
+                              ? ''
+                              : option.value,
+                          )
+                        }
                       >
                         {option.label}
                       </Badge>

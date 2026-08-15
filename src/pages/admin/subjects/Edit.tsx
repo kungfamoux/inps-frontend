@@ -1,27 +1,42 @@
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "sonner";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import { SchoolLevel, UpdateSubjectRequest, SubjectStatus } from "@/lib/types/common";
+import { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { adminApi } from '@/lib/api/admin';
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { toast } from 'sonner';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+import {
+  SchoolLevel,
+  UpdateSubjectRequest,
+  SubjectStatus,
+} from '@/lib/types/common';
 
 const subjectSchema = z.object({
-  subjectName: z.string().min(1, "Subject name is required"),
-  subjectCode: z.string().min(1, "Subject code is required").max(20, "Subject code must be 20 characters or less"),
+  subjectName: z.string().min(1, 'Subject name is required'),
+  subjectCode: z
+    .string()
+    .min(1, 'Subject code is required')
+    .max(20, 'Subject code must be 20 characters or less'),
   description: z.string().optional(),
-  levels: z.array(z.nativeEnum(SchoolLevel)).min(1, "At least one level must be selected"),
+  levels: z
+    .array(z.nativeEnum(SchoolLevel))
+    .min(1, 'At least one level must be selected'),
   status: z.nativeEnum(SubjectStatus).optional(),
   isActive: z.boolean().optional(),
 });
@@ -43,17 +58,17 @@ const ALL_LEVELS = [
 ];
 
 const LEVEL_LABELS: Record<SchoolLevel, string> = {
-  [SchoolLevel.DAYCARE]: "Daycare",
-  [SchoolLevel.PRENURSERY]: "Pre-Nursery",
-  [SchoolLevel.NURSERY_1]: "Nursery 1",
-  [SchoolLevel.NURSERY_2]: "Nursery 2",
-  [SchoolLevel.NURSERY_3]: "Nursery 3",
-  [SchoolLevel.PRIMARY_1]: "Primary 1",
-  [SchoolLevel.PRIMARY_2]: "Primary 2",
-  [SchoolLevel.PRIMARY_3]: "Primary 3",
-  [SchoolLevel.PRIMARY_4]: "Primary 4",
-  [SchoolLevel.PRIMARY_5]: "Primary 5",
-  [SchoolLevel.PRIMARY_6]: "Primary 6",
+  [SchoolLevel.DAYCARE]: 'Daycare',
+  [SchoolLevel.PRENURSERY]: 'Pre-Nursery',
+  [SchoolLevel.NURSERY_1]: 'Nursery 1',
+  [SchoolLevel.NURSERY_2]: 'Nursery 2',
+  [SchoolLevel.NURSERY_3]: 'Nursery 3',
+  [SchoolLevel.PRIMARY_1]: 'Primary 1',
+  [SchoolLevel.PRIMARY_2]: 'Primary 2',
+  [SchoolLevel.PRIMARY_3]: 'Primary 3',
+  [SchoolLevel.PRIMARY_4]: 'Primary 4',
+  [SchoolLevel.PRIMARY_5]: 'Primary 5',
+  [SchoolLevel.PRIMARY_6]: 'Primary 6',
 };
 
 export default function EditSubject() {
@@ -61,7 +76,7 @@ export default function EditSubject() {
   const { subjectId } = useParams<{ subjectId: string }>();
 
   const { data: subjectData, isLoading } = useQuery({
-    queryKey: ["subject", subjectId],
+    queryKey: ['subject', subjectId],
     queryFn: () => adminApi.getSubjectById(subjectId!),
     enabled: !!subjectId,
   });
@@ -82,50 +97,57 @@ export default function EditSubject() {
     },
   });
 
-  const selectedLevels = watch("levels");
+  const selectedLevels = watch('levels');
 
   // Reset form when subject data is loaded
-  if (subjectData?.data && !isLoading) {
-    const subject = subjectData.data;
-    const existingLevels = subject.levels?.map((l: any) => 
-      typeof l === 'string' ? l : l.level
-    ) || [];
-    
-    reset({
-      subjectName: subject.subjectName,
-      subjectCode: subject.subjectCode,
-      description: subject.description || "",
-      levels: existingLevels,
-      status: subject.status || SubjectStatus.ACTIVE,
-      isActive: subject.isActive !== undefined ? subject.isActive : true,
-    });
-  }
+  useEffect(() => {
+    if (subjectData?.data && !isLoading) {
+      const subject = subjectData.data;
+      const existingLevels =
+        subject.levels?.map((l: any) =>
+          typeof l === 'string' ? l : l.level,
+        ) || [];
+
+      reset({
+        subjectName: subject.subjectName,
+        subjectCode: subject.subjectCode,
+        description: subject.description || '',
+        levels: existingLevels,
+        status: subject.status || SubjectStatus.ACTIVE,
+        isActive: subject.isActive !== undefined ? subject.isActive : true,
+      });
+    }
+  }, [subjectData?.data, isLoading, reset]);
 
   const toggleLevel = (level: SchoolLevel) => {
     const currentLevels = selectedLevels || [];
     if (currentLevels.includes(level)) {
-      setValue("levels", currentLevels.filter((l) => l !== level));
+      setValue(
+        'levels',
+        currentLevels.filter((l) => l !== level),
+      );
     } else {
-      setValue("levels", [...currentLevels, level]);
+      setValue('levels', [...currentLevels, level]);
     }
   };
 
   const selectAllLevels = () => {
-    setValue("levels", ALL_LEVELS);
+    setValue('levels', ALL_LEVELS);
   };
 
   const clearAllLevels = () => {
-    setValue("levels", []);
+    setValue('levels', []);
   };
 
   const updateSubjectMutation = useMutation({
-    mutationFn: (data: UpdateSubjectRequest) => adminApi.updateSubject(subjectId!, data),
+    mutationFn: (data: UpdateSubjectRequest) =>
+      adminApi.updateSubject(subjectId!, data),
     onSuccess: () => {
-      toast.success("Subject updated successfully");
-      navigate("/admin/subjects");
+      toast.success('Subject updated successfully');
+      navigate('/admin/subjects');
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to update subject");
+      toast.error(error.message || 'Failed to update subject');
     },
   });
 
@@ -146,12 +168,20 @@ export default function EditSubject() {
       <AdminLayout>
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/admin/subjects")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/admin/subjects')}
+            >
               <ArrowLeft className="size-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Edit Subject</h1>
-              <p className="text-sm text-muted-foreground">Loading subject information...</p>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Edit Subject
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Loading subject information...
+              </p>
             </div>
           </div>
           <Card>
@@ -169,17 +199,25 @@ export default function EditSubject() {
       <AdminLayout>
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/admin/subjects")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate('/admin/subjects')}
+            >
               <ArrowLeft className="size-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Edit Subject</h1>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Edit Subject
+              </h1>
               <p className="text-sm text-muted-foreground">Subject not found</p>
             </div>
           </div>
           <Card>
             <CardContent className="p-6">
-              <p className="text-center text-muted-foreground">Subject not found</p>
+              <p className="text-center text-muted-foreground">
+                Subject not found
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -191,12 +229,18 @@ export default function EditSubject() {
     <AdminLayout>
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/subjects")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/admin/subjects')}
+          >
             <ArrowLeft className="size-4" />
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Edit Subject</h1>
-            <p className="text-sm text-muted-foreground">Update subject information</p>
+            <p className="text-sm text-muted-foreground">
+              Update subject information
+            </p>
           </div>
         </div>
 
@@ -211,11 +255,13 @@ export default function EditSubject() {
                   <Label htmlFor="subjectName">Subject Name *</Label>
                   <Input
                     id="subjectName"
-                    {...register("subjectName")}
+                    {...register('subjectName')}
                     placeholder="e.g., Mathematics"
                   />
                   {errors.subjectName && (
-                    <p className="text-sm text-destructive">{errors.subjectName.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.subjectName.message}
+                    </p>
                   )}
                 </div>
 
@@ -223,12 +269,14 @@ export default function EditSubject() {
                   <Label htmlFor="subjectCode">Subject Code *</Label>
                   <Input
                     id="subjectCode"
-                    {...register("subjectCode")}
+                    {...register('subjectCode')}
                     placeholder="e.g., MATH"
                     className="uppercase"
                   />
                   {errors.subjectCode && (
-                    <p className="text-sm text-destructive">{errors.subjectCode.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.subjectCode.message}
+                    </p>
                   )}
                   <p className="text-xs text-muted-foreground">
                     A short code for the subject (e.g., MATH, ENG, SCI)
@@ -239,12 +287,14 @@ export default function EditSubject() {
                   <Label htmlFor="description">Description</Label>
                   <Textarea
                     id="description"
-                    {...register("description")}
+                    {...register('description')}
                     placeholder="Brief description of the subject"
                     rows={3}
                   />
                   {errors.description && (
-                    <p className="text-sm text-destructive">{errors.description.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.description.message}
+                    </p>
                   )}
                 </div>
 
@@ -288,7 +338,9 @@ export default function EditSubject() {
                     ))}
                   </div>
                   {errors.levels && (
-                    <p className="text-sm text-destructive">{errors.levels.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.levels.message}
+                    </p>
                   )}
                 </div>
 
@@ -298,27 +350,33 @@ export default function EditSubject() {
                     name="status"
                     control={control}
                     render={({ field }) => (
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value={SubjectStatus.ACTIVE}>Active</SelectItem>
-                          <SelectItem value={SubjectStatus.INACTIVE}>Inactive</SelectItem>
+                          <SelectItem value={SubjectStatus.ACTIVE}>
+                            Active
+                          </SelectItem>
+                          <SelectItem value={SubjectStatus.INACTIVE}>
+                            Inactive
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     )}
                   />
                   {errors.status && (
-                    <p className="text-sm text-destructive">{errors.status.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.status.message}
+                    </p>
                   )}
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="isActive"
-                    {...register("isActive")}
-                  />
+                  <Checkbox id="isActive" {...register('isActive')} />
                   <Label htmlFor="isActive" className="cursor-pointer">
                     Subject is active (can be assigned to classes)
                   </Label>
@@ -329,7 +387,7 @@ export default function EditSubject() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate("/admin/subjects")}
+                  onClick={() => navigate('/admin/subjects')}
                 >
                   Cancel
                 </Button>
@@ -340,7 +398,7 @@ export default function EditSubject() {
                       Updating...
                     </>
                   ) : (
-                    "Update Subject"
+                    'Update Subject'
                   )}
                 </Button>
               </div>

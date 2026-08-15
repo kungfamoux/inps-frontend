@@ -32,6 +32,17 @@ const guardianSchema = z.object({
   address: z.string().optional(),
 });
 
+const secondaryGuardianSchema = z.object({
+  relationship: z.string().min(1, 'Relationship is required'),
+  title: z.string().optional(),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  phone: z.string().min(1, 'Phone number is required'),
+  email: z.string().min(1, 'Email is required').email('Invalid email address'),
+  occupation: z.string().min(1, 'Occupation is required'),
+  address: z.string().min(1, 'Address is required'),
+});
+
 const studentSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -51,7 +62,7 @@ const studentSchema = z.object({
   accountEmail: z.string().email('Invalid email address'),
   accountPhone: z.string().min(1, 'Phone number is required'),
   primaryGuardian: guardianSchema,
-  secondaryGuardian: guardianSchema.optional(),
+  secondaryGuardian: secondaryGuardianSchema.optional(),
   maritalStatus: z
     .enum(['MARRIED', 'SINGLE', 'DIVORCED', 'WIDOWED', 'SEPARATED'])
     .optional(),
@@ -842,7 +853,7 @@ export default function AddStudent() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="secondaryGuardian.email">
-                      Email Address
+                      Email Address *
                     </Label>
                     <Controller
                       name="secondaryGuardian.email"
@@ -863,7 +874,7 @@ export default function AddStudent() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="secondaryGuardian.occupation">
-                      Occupation
+                      Occupation *
                     </Label>
                     <Controller
                       name="secondaryGuardian.occupation"
@@ -872,6 +883,26 @@ export default function AddStudent() {
                         <Input id="secondaryGuardian.occupation" {...field} />
                       )}
                     />
+                    {errors.secondaryGuardian?.occupation && (
+                      <p className="text-sm text-destructive">
+                        {errors.secondaryGuardian.occupation.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="secondaryGuardian.address">Address *</Label>
+                    <Controller
+                      name="secondaryGuardian.address"
+                      control={control}
+                      render={({ field }) => (
+                        <Input id="secondaryGuardian.address" {...field} />
+                      )}
+                    />
+                    {errors.secondaryGuardian?.address && (
+                      <p className="text-sm text-destructive">
+                        {errors.secondaryGuardian.address.message}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <Button

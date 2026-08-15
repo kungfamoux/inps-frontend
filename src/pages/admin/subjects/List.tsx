@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2 } from "lucide-react";
+import { useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { adminApi } from '@/lib/api/admin';
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MoreHorizontal, Eye, Pencil, Power, PowerOff } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -12,18 +12,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import AdvancedSearch, {
+  FilterConfig,
+  SearchFilters,
+} from '@/components/admin/AdvancedSearch';
 
 export default function SubjectsList() {
   const navigate = useNavigate();
@@ -41,12 +44,12 @@ export default function SubjectsList() {
       options: [
         { value: 'ACTIVE', label: 'Active' },
         { value: 'INACTIVE', label: 'Inactive' },
-      ]
+      ],
     },
   ];
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["subjects", page, searchFilters, isSearching],
+    queryKey: ['subjects', page, searchFilters, isSearching],
     queryFn: () => {
       // Use search endpoint if there's a search query
       if (searchFilters.q && searchFilters.q.trim()) {
@@ -55,7 +58,7 @@ export default function SubjectsList() {
           q: searchFilters.q,
           page,
           limit,
-          status: searchFilters.status
+          status: searchFilters.status,
         });
       }
 
@@ -86,21 +89,15 @@ export default function SubjectsList() {
     navigate(`/admin/subjects/${subjectId}`);
   };
 
-  const deleteMutation = useMutation({
-    mutationFn: (subjectId: string) => adminApi.deleteSubject(subjectId),
+  const toggleActiveMutation = useMutation({
+    mutationFn: (subjectId: string) => adminApi.toggleSubjectActive(subjectId),
     onSuccess: () => {
-      toast.success("Subject deleted successfully");
+      toast.success('Subject status updated successfully');
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to delete subject");
+      toast.error(error.message || 'Failed to update subject status');
     },
   });
-
-  const handleDelete = (subjectId: string) => {
-    if (window.confirm("Are you sure you want to delete this subject? This action cannot be undone.")) {
-      deleteMutation.mutate(subjectId);
-    }
-  };
 
   return (
     <AdminLayout>
@@ -108,11 +105,10 @@ export default function SubjectsList() {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Subjects</h1>
-            <p className="text-sm text-muted-foreground">Manage curriculum and subject assignments</p>
+            <p className="text-sm text-muted-foreground">
+              Manage curriculum and subject assignments
+            </p>
           </div>
-          <Button className="gap-2" onClick={() => navigate("/admin/subjects/add")}>
-            <Plus className="size-4" /> Add Subject
-          </Button>
         </div>
 
         <Card>
@@ -159,20 +155,30 @@ export default function SubjectsList() {
                     <TableBody>
                       {subjects.map((subject) => (
                         <TableRow key={subject.id}>
-                          <TableCell className="font-medium">{subject.subjectCode}</TableCell>
+                          <TableCell className="font-medium">
+                            {subject.subjectCode}
+                          </TableCell>
                           <TableCell>{subject.subjectName}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
                               {subject.levels?.map((level: any) => (
-                                <Badge key={level.id} variant="outline" className="text-xs">
+                                <Badge
+                                  key={level.id}
+                                  variant="outline"
+                                  className="text-xs"
+                                >
                                   {level.level}
                                 </Badge>
                               ))}
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant={subject.isActive ? "default" : "secondary"}>
-                              {subject.isActive ? "Active" : "Inactive"}
+                            <Badge
+                              variant={
+                                subject.isActive ? 'default' : 'secondary'
+                              }
+                            >
+                              {subject.isActive ? 'Active' : 'Inactive'}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
@@ -183,18 +189,37 @@ export default function SubjectsList() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleView(subject.id)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleView(subject.id)}
+                                >
                                   <Eye className="mr-2 size-4" /> View
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEdit(subject.id)}>
+                                <DropdownMenuItem
+                                  onClick={() => handleEdit(subject.id)}
+                                >
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  className="text-destructive"
-                                  onClick={() => handleDelete(subject.id)}
-                                  disabled={deleteMutation.isPending}
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    toggleActiveMutation.mutate(subject.id)
+                                  }
+                                  className={
+                                    subject.isActive
+                                      ? 'text-destructive'
+                                      : 'text-green-600'
+                                  }
+                                  disabled={toggleActiveMutation.isPending}
                                 >
-                                  <Trash2 className="mr-2 size-4" /> Delete
+                                  {subject.isActive ? (
+                                    <>
+                                      <PowerOff className="mr-2 size-4" />{' '}
+                                      Deactivate
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Power className="mr-2 size-4" /> Activate
+                                    </>
+                                  )}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
@@ -208,7 +233,9 @@ export default function SubjectsList() {
                 {pagination && pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between pt-4">
                     <p className="text-sm text-muted-foreground">
-                      Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, pagination.total)} of {pagination.total} subjects
+                      Showing {(page - 1) * limit + 1} to{' '}
+                      {Math.min(page * limit, pagination.total)} of{' '}
+                      {pagination.total} subjects
                     </p>
                     <div className="flex gap-2">
                       <Button
@@ -222,7 +249,9 @@ export default function SubjectsList() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                        onClick={() =>
+                          setPage((p) => Math.min(pagination.totalPages, p + 1))
+                        }
                         disabled={page === pagination.totalPages}
                       >
                         Next
