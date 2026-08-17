@@ -28,18 +28,19 @@ import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { StaffRole, Gender, MaritalStatus, Term } from '@/lib/types/common';
 import { Qualification, PreviousEmployment } from '@/lib/types/staff';
+import { NIGERIAN_STATES, getLGAsByState } from '@/lib/data/nigeria-states';
 import { SessionTermSelector } from '@/components/admin/SessionTermSelector';
 
 const staffSchema = z
   .object({
     firstName: z.string().min(1, 'First name is required'),
     lastName: z.string().min(1, 'Last name is required'),
-    middleName: z.string().optional(),
+    middleName: z.string().min(1, 'Middle name is required'),
     email: z.string().email('Invalid email address'),
     phone: z.string().min(1, 'Phone number is required'),
     role: z.nativeEnum(StaffRole),
     gender: z.nativeEnum(Gender).optional(),
-    dateOfBirth: z.string().optional(),
+    dateOfBirth: z.string().min(1, 'Date of birth is required'),
     address: z.string().optional(),
     maritalStatus: z.nativeEnum(MaritalStatus).optional(),
     nationality: z.string().optional(),
@@ -66,7 +67,7 @@ const staffSchema = z
         }),
       )
       .optional(),
-    dateOfEmployment: z.string().optional(),
+    dateOfEmployment: z.string().min(1, 'Date of employment is required'),
     nextOfKinName: z.string().optional(),
     nextOfKinPhone: z.string().optional(),
     nextOfKinRelationship: z.string().optional(),
@@ -116,7 +117,9 @@ type StaffFormData = {
 
 export default function AddStaff() {
   const navigate = useNavigate();
-  const [qualifications, setQualifications] = useState<Qualification[]>([]);
+  const [qualifications, setQualifications] = useState<Qualification[]>([
+    { degree: '', institution: '', year: '' },
+  ]);
   const [previousEmployment, setPreviousEmployment] = useState<
     PreviousEmployment[]
   >([]);
@@ -136,6 +139,7 @@ export default function AddStaff() {
   const [selectedSessionName, setSelectedSessionName] = useState('');
   const [selectedTermId, setSelectedTermId] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
+  const [selectedState, setSelectedState] = useState('');
 
   const { data: subjects } = useQuery({
     queryKey: ['subjects'],
@@ -158,9 +162,8 @@ export default function AddStaff() {
     defaultValues: {
       role: StaffRole.TEACHER,
       gender: Gender.MALE,
-      qualifications: [],
+      qualifications: [{ degree: '', institution: '', year: '' }],
       previousEmployment: [],
-      middleName: '',
     },
   });
 
@@ -368,8 +371,13 @@ export default function AddStaff() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="middleName">Middle Name</Label>
+                    <Label htmlFor="middleName">Middle Name *</Label>
                     <Input id="middleName" {...register('middleName')} />
+                    {errors.middleName && (
+                      <p className="text-sm text-destructive">
+                        {errors.middleName.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address *</Label>
@@ -390,12 +398,17 @@ export default function AddStaff() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
+                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
                     <Input
                       id="dateOfBirth"
                       type="date"
                       {...register('dateOfBirth')}
                     />
+                    {errors.dateOfBirth && (
+                      <p className="text-sm text-destructive">
+                        {errors.dateOfBirth.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
@@ -460,11 +473,62 @@ export default function AddStaff() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Input id="state" {...register('state')} />
+                    <Controller
+                      name="state"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedState(value);
+                          }}
+                          value={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select state" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {NIGERIAN_STATES.map((state) => (
+                              <SelectItem key={state.name} value={state.name}>
+                                {state.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lga">LGA</Label>
-                    <Input id="lga" {...register('lga')} />
+                    <Controller
+                      name="lga"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={!selectedState}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                selectedState
+                                  ? 'Select LGA'
+                                  : 'Select state first'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedState &&
+                              getLGAsByState(selectedState).map((lga) => (
+                                <SelectItem key={lga} value={lga}>
+                                  {lga}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="religion">Religion</Label>
@@ -535,12 +599,19 @@ export default function AddStaff() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfEmployment">Date of Employment</Label>
+                    <Label htmlFor="dateOfEmployment">
+                      Date of Employment *
+                    </Label>
                     <Input
                       id="dateOfEmployment"
                       type="date"
                       {...register('dateOfEmployment')}
                     />
+                    {errors.dateOfEmployment && (
+                      <p className="text-sm text-destructive">
+                        {errors.dateOfEmployment.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subjectId">Subject Specialization</Label>

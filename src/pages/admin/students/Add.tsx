@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import { ArrowLeft, Loader2, Plus, Trash2 } from 'lucide-react';
 import { Gender } from '@/lib/types/common';
+import { NIGERIAN_STATES, getLGAsByState } from '@/lib/data/nigeria-states';
 
 const guardianSchema = z.object({
   relationship: z.string().min(1, 'Relationship is required'),
@@ -76,6 +77,7 @@ export default function AddStudent() {
   const [passportPhoto, setPassportPhoto] = useState<File | null>(null);
   const [currentTerm, setCurrentTerm] = useState<any>(null);
   const [showSecondaryGuardian, setShowSecondaryGuardian] = useState(false);
+  const [selectedState, setSelectedState] = useState('');
 
   const { data: classes, isLoading: classesLoading } = useQuery({
     queryKey: ['classes'],
@@ -379,7 +381,26 @@ export default function AddStudent() {
                     <Controller
                       name="state"
                       control={control}
-                      render={({ field }) => <Input id="state" {...field} />}
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedState(value);
+                          }}
+                          value={field.value}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select state" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {NIGERIAN_STATES.map((state) => (
+                              <SelectItem key={state.name} value={state.name}>
+                                {state.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     />
                     {errors.state && (
                       <p className="text-sm text-destructive">
@@ -392,7 +413,31 @@ export default function AddStudent() {
                     <Controller
                       name="lga"
                       control={control}
-                      render={({ field }) => <Input id="lga" {...field} />}
+                      render={({ field }) => (
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          disabled={!selectedState}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                selectedState
+                                  ? 'Select LGA'
+                                  : 'Select state first'
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedState &&
+                              getLGAsByState(selectedState).map((lga) => (
+                                <SelectItem key={lga} value={lga}>
+                                  {lga}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      )}
                     />
                     {errors.lga && (
                       <p className="text-sm text-destructive">
