@@ -1,56 +1,67 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BursaryLayout } from "@/components/layout/BursaryLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { bursaryApi } from "@/lib/api/bursary";
-import { ArrowLeft, Loader2, Save, Search, X } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { BursaryLayout } from '@/components/layout/BursaryLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { bursaryApi } from '@/lib/api/bursary';
+import { ArrowLeft, Loader2, Save, Search, X } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAlert } from '@/contexts/alert-context';
 
 export default function EditBill() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
-  const [name, setName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [academicYear, setAcademicYear] = useState("");
-  const [term, setTerm] = useState("");
-  const [scope, setScope] = useState<"ALL_STUDENTS" | "BY_CLASS" | "BY_STUDENT">("ALL_STUDENTS");
-  const [intakeType, setIntakeType] = useState("");
+  const { showAlert } = useAlert();
+  const [name, setName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [academicYear, setAcademicYear] = useState('');
+  const [term, setTerm] = useState('');
+  const [scope, setScope] = useState<
+    'ALL_STUDENTS' | 'BY_CLASS' | 'BY_STUDENT'
+  >('ALL_STUDENTS');
+  const [intakeType, setIntakeType] = useState('');
   const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [studentSearch, setStudentSearch] = useState("");
-  const [description, setDescription] = useState("");
+  const [studentSearch, setStudentSearch] = useState('');
+  const [description, setDescription] = useState('');
 
   const { data: billData, isLoading: isLoadingBill } = useQuery({
-    queryKey: ["bursary-bill", id],
+    queryKey: ['bursary-bill', id],
     queryFn: () => bursaryApi.getBillById(id!),
     enabled: !!id,
   });
 
   const { data: classesData, isLoading: classesLoading } = useQuery({
-    queryKey: ["bursary-classes"],
+    queryKey: ['bursary-classes'],
     queryFn: () => bursaryApi.getAllClasses(),
   });
 
   const { data: studentsData, isLoading: studentsLoading } = useQuery({
-    queryKey: ["bursary-students", studentSearch],
-    queryFn: () => bursaryApi.getAllStudents({ search: studentSearch, limit: 20 }),
-    enabled: scope === "BY_STUDENT" && studentSearch.length > 2,
+    queryKey: ['bursary-students', studentSearch],
+    queryFn: () =>
+      bursaryApi.getAllStudents({ search: studentSearch, limit: 20 }),
+    enabled: scope === 'BY_STUDENT' && studentSearch.length > 2,
   });
 
   // Load selected students for display
   const { data: selectedStudentsData } = useQuery({
-    queryKey: ["bursary-selected-students", selectedStudents],
+    queryKey: ['bursary-selected-students', selectedStudents],
     queryFn: () => bursaryApi.getAllStudents({ page: 1, limit: 100 }),
-    enabled: scope === "BY_STUDENT" && selectedStudents.length > 0,
+    enabled: scope === 'BY_STUDENT' && selectedStudents.length > 0,
   });
 
   useEffect(() => {
@@ -61,13 +72,13 @@ export default function EditBill() {
       setAcademicYear(bill.academicYear);
       setTerm(bill.term); // Keep the backend format (FIRST_TERM)
       setScope(bill.scope);
-      setIntakeType(bill.intakeType || "");
-      setDescription(bill.description || "");
-      
+      setIntakeType(bill.intakeType || '');
+      setDescription(bill.description || '');
+
       if (bill.classes) {
         setSelectedClasses(bill.classes.map((c: any) => c.class.id));
       }
-      
+
       if (bill.students) {
         setSelectedStudents(bill.students.map((s: any) => s.studentId));
       }
@@ -77,35 +88,35 @@ export default function EditBill() {
   const mutation = useMutation({
     mutationFn: (data: any) => bursaryApi.updateBill(id!, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bursary-bills"] });
-      queryClient.invalidateQueries({ queryKey: ["bursary-bill", id] });
-      navigate("/bursary/bills");
+      queryClient.invalidateQueries({ queryKey: ['bursary-bills'] });
+      queryClient.invalidateQueries({ queryKey: ['bursary-bill', id] });
+      navigate('/bursary/bills');
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate based on scope
-    if (scope === "BY_CLASS" && selectedClasses.length === 0) {
-      alert("Please select at least one class");
+    if (scope === 'BY_CLASS' && selectedClasses.length === 0) {
+      showAlert('Please select at least one class', 'error');
       return;
     }
-    
-    if (scope === "BY_STUDENT" && selectedStudents.length === 0) {
-      alert("Please select at least one student");
+
+    if (scope === 'BY_STUDENT' && selectedStudents.length === 0) {
+      showAlert('Please select at least one student', 'error');
       return;
     }
-    
+
     const billData = {
       name,
       amount: parseFloat(amount),
       academicYear,
-      term: term.toUpperCase().replace(/ /g, "_"), // Convert "First Term" to "FIRST_TERM"
+      term: term.toUpperCase().replace(/ /g, '_'), // Convert "First Term" to "FIRST_TERM"
       scope,
-      intakeType: scope === "ALL_STUDENTS" ? intakeType : undefined,
-      classIds: scope === "BY_CLASS" ? selectedClasses : undefined,
-      studentIds: scope === "BY_STUDENT" ? selectedStudents : undefined,
+      intakeType: scope === 'ALL_STUDENTS' ? intakeType : undefined,
+      classIds: scope === 'BY_CLASS' ? selectedClasses : undefined,
+      studentIds: scope === 'BY_STUDENT' ? selectedStudents : undefined,
       description,
     };
 
@@ -113,14 +124,18 @@ export default function EditBill() {
   };
 
   const handleClassToggle = (classId: string) => {
-    setSelectedClasses(prev =>
-      prev.includes(classId) ? prev.filter(id => id !== classId) : [...prev, classId]
+    setSelectedClasses((prev) =>
+      prev.includes(classId)
+        ? prev.filter((id) => id !== classId)
+        : [...prev, classId],
     );
   };
 
   const handleStudentToggle = (studentId: string) => {
-    setSelectedStudents(prev =>
-      prev.includes(studentId) ? prev.filter(id => id !== studentId) : [...prev, studentId]
+    setSelectedStudents((prev) =>
+      prev.includes(studentId)
+        ? prev.filter((id) => id !== studentId)
+        : [...prev, studentId],
     );
   };
 
@@ -131,7 +146,7 @@ export default function EditBill() {
   };
 
   const handleRemoveStudent = (studentId: string) => {
-    setSelectedStudents(prev => prev.filter(id => id !== studentId));
+    setSelectedStudents((prev) => prev.filter((id) => id !== studentId));
   };
 
   if (isLoadingBill) {
@@ -148,7 +163,7 @@ export default function EditBill() {
     <BursaryLayout>
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate("/bursary/bills")}>
+          <Button variant="ghost" onClick={() => navigate('/bursary/bills')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -216,7 +231,15 @@ export default function EditBill() {
 
               <div className="space-y-2">
                 <Label htmlFor="scope">Scope *</Label>
-                <Select value={scope} onValueChange={(value) => setScope(value as "ALL_STUDENTS" | "BY_CLASS" | "BY_STUDENT")} required>
+                <Select
+                  value={scope}
+                  onValueChange={(value) =>
+                    setScope(
+                      value as 'ALL_STUDENTS' | 'BY_CLASS' | 'BY_STUDENT',
+                    )
+                  }
+                  required
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select scope" />
                   </SelectTrigger>
@@ -228,7 +251,7 @@ export default function EditBill() {
                 </Select>
               </div>
 
-              {scope === "ALL_STUDENTS" && (
+              {scope === 'ALL_STUDENTS' && (
                 <div className="space-y-2">
                   <Label htmlFor="intakeType">Intake Type (Optional)</Label>
                   <Select value={intakeType} onValueChange={setIntakeType}>
@@ -237,13 +260,15 @@ export default function EditBill() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="NEW">New Students</SelectItem>
-                      <SelectItem value="CONTINUING">Continuing Students</SelectItem>
+                      <SelectItem value="CONTINUING">
+                        Continuing Students
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
 
-              {scope === "BY_CLASS" && (
+              {scope === 'BY_CLASS' && (
                 <div className="space-y-2">
                   <Label>Select Classes *</Label>
                   {classesLoading ? (
@@ -261,7 +286,10 @@ export default function EditBill() {
                             checked={selectedClasses.includes(cls.id)}
                             onCheckedChange={() => handleClassToggle(cls.id)}
                           />
-                          <label htmlFor={`class-${cls.id}`} className="cursor-pointer text-sm">
+                          <label
+                            htmlFor={`class-${cls.id}`}
+                            className="cursor-pointer text-sm"
+                          >
                             {cls.name}
                           </label>
                         </div>
@@ -271,7 +299,7 @@ export default function EditBill() {
                 </div>
               )}
 
-              {scope === "BY_STUDENT" && (
+              {scope === 'BY_STUDENT' && (
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="studentSearch">Search Students *</Label>
@@ -285,12 +313,14 @@ export default function EditBill() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setStudentSearch("")}
+                        onClick={() => setStudentSearch('')}
                       >
                         <X className="h-4 w-4" />
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">Type at least 3 characters to search</p>
+                    <p className="text-xs text-muted-foreground">
+                      Type at least 3 characters to search
+                    </p>
                   </div>
 
                   {studentSearch.length > 2 && (
@@ -304,23 +334,38 @@ export default function EditBill() {
                         </div>
                       ) : (
                         <div className="grid gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
-                          {studentsData?.data?.filter((student: any) => !selectedStudents.includes(student.admissionNumber)).map((student: any) => (
-                            <div
-                              key={student.admissionNumber}
-                              className="flex items-center justify-between p-2 border rounded hover:bg-accent cursor-pointer"
-                              onClick={() => handleAddStudent(student.admissionNumber)}
-                            >
-                              <div>
-                                <p className="font-medium text-sm">{student.firstName} {student.lastName}</p>
-                                <p className="text-xs text-muted-foreground">{student.admissionNumber}</p>
+                          {studentsData?.data
+                            ?.filter(
+                              (student: any) =>
+                                !selectedStudents.includes(
+                                  student.admissionNumber,
+                                ),
+                            )
+                            .map((student: any) => (
+                              <div
+                                key={student.admissionNumber}
+                                className="flex items-center justify-between p-2 border rounded hover:bg-accent cursor-pointer"
+                                onClick={() =>
+                                  handleAddStudent(student.admissionNumber)
+                                }
+                              >
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {student.firstName} {student.lastName}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {student.admissionNumber}
+                                  </p>
+                                </div>
+                                <Button type="button" size="sm" variant="ghost">
+                                  <Search className="h-4 w-4" />
+                                </Button>
                               </div>
-                              <Button type="button" size="sm" variant="ghost">
-                                <Search className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
+                            ))}
                           {studentsData?.data?.length === 0 && (
-                            <p className="text-sm text-muted-foreground text-center py-4">No students found</p>
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                              No students found
+                            </p>
                           )}
                         </div>
                       )}
@@ -329,18 +374,26 @@ export default function EditBill() {
 
                   {selectedStudents.length > 0 && (
                     <div className="space-y-2">
-                      <Label>Selected Students ({selectedStudents.length})</Label>
+                      <Label>
+                        Selected Students ({selectedStudents.length})
+                      </Label>
                       <div className="grid gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
                         {selectedStudents.map((studentId) => {
-                          const student = selectedStudentsData?.data?.find((s: any) => s.admissionNumber === studentId);
+                          const student = selectedStudentsData?.data?.find(
+                            (s: any) => s.admissionNumber === studentId,
+                          );
                           return (
                             <div
                               key={studentId}
                               className="flex items-center justify-between p-2 border rounded bg-accent/50"
                             >
                               <div>
-                                <p className="font-medium text-sm">{student?.firstName} {student?.lastName}</p>
-                                <p className="text-xs text-muted-foreground">{studentId}</p>
+                                <p className="font-medium text-sm">
+                                  {student?.firstName} {student?.lastName}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {studentId}
+                                </p>
                               </div>
                               <Button
                                 type="button"
@@ -373,7 +426,7 @@ export default function EditBill() {
               <div className="flex gap-2">
                 <Button
                   type="button"
-                  onClick={() => navigate("/bursary/bills")}
+                  onClick={() => navigate('/bursary/bills')}
                   variant="outline"
                 >
                   Cancel

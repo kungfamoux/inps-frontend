@@ -1,36 +1,73 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { BursaryLayout } from "@/components/layout/BursaryLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { bursaryApi } from "@/lib/api/bursary";
-import { FileText, Download, Search, Filter, Plus, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { BursaryLayout } from '@/components/layout/BursaryLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { bursaryApi } from '@/lib/api/bursary';
+import {
+  FileText,
+  Download,
+  Search,
+  Filter,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+} from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { SessionTermSelector } from '@/components/admin/SessionTermSelector';
 
 export default function InvoiceList() {
   const navigate = useNavigate();
-  const [academicYear, setAcademicYear] = useState("");
-  const [term, setTerm] = useState("");
-  const [status, setStatus] = useState("");
-  const [search, setSearch] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState('');
+  const [selectedSessionName, setSelectedSessionName] = useState('');
+  const [selectedTermId, setSelectedTermId] = useState('');
+  const [selectedTerm, setSelectedTerm] = useState('');
+  const [status, setStatus] = useState('');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  const { data: invoicesData, isLoading, refetch } = useQuery({
-    queryKey: ["bursary-invoices", academicYear, term, status, page, limit],
-    queryFn: () => bursaryApi.getAllInvoices({
-      academicYear: academicYear || undefined,
-      term: term || undefined,
-      status: status || undefined,
+  const {
+    data: invoicesData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      'bursary-invoices',
+      selectedSessionName,
+      selectedTerm,
+      status,
       page,
       limit,
-    }),
+    ],
+    queryFn: () =>
+      bursaryApi.getAllInvoices({
+        academicYear: selectedSessionName || undefined,
+        term: selectedTerm || undefined,
+        status: status || undefined,
+        page,
+        limit,
+      }),
   });
 
   const invoices = invoicesData?.data || [];
@@ -44,21 +81,21 @@ export default function InvoiceList() {
 
   const handleExport = () => {
     // Export functionality - to be implemented
-    console.log("Exporting invoices...");
+    console.log('Exporting invoices...');
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PAID":
-        return "bg-green-100 text-green-800";
-      case "PARTIAL":
-        return "bg-yellow-100 text-yellow-800";
-      case "PENDING":
-        return "bg-gray-100 text-gray-800";
-      case "OVERDUE":
-        return "bg-red-100 text-red-800";
+      case 'PAID':
+        return 'bg-green-100 text-green-800';
+      case 'PARTIAL':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'PENDING':
+        return 'bg-gray-100 text-gray-800';
+      case 'OVERDUE':
+        return 'bg-red-100 text-red-800';
       default:
-        return "bg-gray-100 text-gray-800";
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -68,10 +105,12 @@ export default function InvoiceList() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Invoices</h1>
-            <p className="text-muted-foreground mt-1">View and manage student invoices</p>
+            <p className="text-muted-foreground mt-1">
+              View and manage student invoices
+            </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => navigate("/bursary/invoices/generate")}>
+            <Button onClick={() => navigate('/bursary/invoices/generate')}>
               <Plus className="mr-2 h-4 w-4" />
               Generate Invoices
             </Button>
@@ -90,24 +129,20 @@ export default function InvoiceList() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-5">
-              <div className="space-y-2">
-                <Label>Academic Year</Label>
-                <Input placeholder="e.g., 2024/2025" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Term</Label>
-                <Select value={term} onValueChange={setTerm}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All terms" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FIRST_TERM">First Term</SelectItem>
-                    <SelectItem value="SECOND_TERM">Second Term</SelectItem>
-                    <SelectItem value="THIRD_TERM">Third Term</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid gap-4 md:grid-cols-4">
+              <SessionTermSelector
+                sessionId={selectedSessionId}
+                termId={selectedTermId}
+                onSessionChange={(id, name) => {
+                  setSelectedSessionId(id);
+                  setSelectedSessionName(name);
+                }}
+                onTermChange={(id, term) => {
+                  setSelectedTermId(id);
+                  setSelectedTerm(term);
+                }}
+                showBoth
+              />
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select value={status} onValueChange={setStatus}>
@@ -125,7 +160,11 @@ export default function InvoiceList() {
               <div className="space-y-2">
                 <Label>Search</Label>
                 <div className="flex gap-2">
-                  <Input placeholder="Invoice number or student name..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <Input
+                    placeholder="Invoice number or student name..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                   <Button onClick={handleSearch} variant="outline">
                     <Search className="h-4 w-4" />
                   </Button>
@@ -133,7 +172,11 @@ export default function InvoiceList() {
               </div>
               <div className="space-y-2">
                 <Label>&nbsp;</Label>
-                <Button onClick={() => refetch()} variant="outline" className="w-full">
+                <Button
+                  onClick={() => refetch()}
+                  variant="outline"
+                  className="w-full"
+                >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Refresh
                 </Button>
@@ -177,24 +220,41 @@ export default function InvoiceList() {
                     <TableBody>
                       {invoices.map((invoice: any) => (
                         <TableRow key={invoice.id}>
-                          <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                          <TableCell className="font-medium">
+                            {invoice.invoiceNumber}
+                          </TableCell>
                           <TableCell>
                             <div>
-                              <p className="font-medium">{invoice.student.firstName} {invoice.student.lastName}</p>
-                              <p className="text-xs text-muted-foreground">{invoice.student.admissionNumber}</p>
+                              <p className="font-medium">
+                                {invoice.student.firstName}{' '}
+                                {invoice.student.lastName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {invoice.student.admissionNumber}
+                              </p>
                             </div>
                           </TableCell>
                           <TableCell>{invoice.academicYear}</TableCell>
-                          <TableCell>{invoice.term.replace(/_/g, " ")}</TableCell>
-                          <TableCell>₦{invoice.amount.toLocaleString()}</TableCell>
-                          <TableCell>₦{invoice.amountPaid.toLocaleString()}</TableCell>
-                          <TableCell>₦{invoice.balance.toLocaleString()}</TableCell>
+                          <TableCell>
+                            {invoice.term.replace(/_/g, ' ')}
+                          </TableCell>
+                          <TableCell>
+                            ₦{invoice.amount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            ₦{invoice.amountPaid.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            ₦{invoice.balance.toLocaleString()}
+                          </TableCell>
                           <TableCell>
                             <Badge className={getStatusColor(invoice.status)}>
                               {invoice.status}
                             </Badge>
                           </TableCell>
-                          <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            {new Date(invoice.dueDate).toLocaleDateString()}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -204,13 +264,14 @@ export default function InvoiceList() {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <p className="text-sm text-muted-foreground">
-                      Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} invoices
+                      Showing {(page - 1) * limit + 1} to{' '}
+                      {Math.min(page * limit, total)} of {total} invoices
                     </p>
                     <div className="flex gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
                       >
                         <ChevronLeft className="h-4 w-4" />
@@ -219,7 +280,9 @@ export default function InvoiceList() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
                         disabled={page === totalPages}
                       >
                         Next

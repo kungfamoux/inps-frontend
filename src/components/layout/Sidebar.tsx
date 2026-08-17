@@ -40,6 +40,7 @@ const navigation = [
     icon: CalendarDays,
   },
   { label: 'Results', href: '/admin/results', icon: WalletCards },
+  { label: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
 interface SidebarProps {

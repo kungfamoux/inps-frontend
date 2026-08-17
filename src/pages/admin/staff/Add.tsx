@@ -1,62 +1,92 @@
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { staffApi } from "@/lib/api/staff";
-import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { toast } from "sonner";
-import { ArrowLeft, Loader2, Plus, Trash2, ChevronDown } from "lucide-react";
-import { StaffRole, Gender, MaritalStatus, Term } from "@/lib/types/common";
-import { Qualification, PreviousEmployment } from "@/lib/types/staff";
+import { useState, useEffect } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { staffApi } from '@/lib/api/staff';
+import { adminApi } from '@/lib/api/admin';
+import { AdminLayout } from '@/components/layout/AdminLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
+import { toast } from 'sonner';
+import { ArrowLeft, Loader2, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { StaffRole, Gender, MaritalStatus, Term } from '@/lib/types/common';
+import { Qualification, PreviousEmployment } from '@/lib/types/staff';
+import { SessionTermSelector } from '@/components/admin/SessionTermSelector';
 
-const staffSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  middleName: z.string().optional(),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(1, "Phone number is required"),
-  role: z.nativeEnum(StaffRole),
-  gender: z.nativeEnum(Gender).optional(),
-  dateOfBirth: z.string().optional(),
-  address: z.string().optional(),
-  maritalStatus: z.nativeEnum(MaritalStatus).optional(),
-  nationality: z.string().optional(),
-  state: z.string().optional(),
-  lga: z.string().optional(),
-  religion: z.string().optional(),
-  qualifications: z.array(z.object({
-    degree: z.string(),
-    institution: z.string(),
-    year: z.string(),
-  })).optional(),
-  subjectId: z.string().optional(),
-  yearsOfExperience: z.number().optional(),
-  previousEmployment: z.array(z.object({
-    company: z.string(),
-    position: z.string(),
-    period: z.string(),
-  })).optional(),
-  dateOfEmployment: z.string().optional(),
-  nextOfKinName: z.string().optional(),
-  nextOfKinPhone: z.string().optional(),
-  nextOfKinRelationship: z.string().optional(),
-  nextOfKinAddress: z.string().optional(),
-}).refine((data) => {
-  return !!data.firstName && !!data.lastName && !!data.email && !!data.phone && !!data.role;
-}, {
-  message: "All required fields must be filled",
-  path: [],
-});
+const staffSchema = z
+  .object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    middleName: z.string().optional(),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(1, 'Phone number is required'),
+    role: z.nativeEnum(StaffRole),
+    gender: z.nativeEnum(Gender).optional(),
+    dateOfBirth: z.string().optional(),
+    address: z.string().optional(),
+    maritalStatus: z.nativeEnum(MaritalStatus).optional(),
+    nationality: z.string().optional(),
+    state: z.string().optional(),
+    lga: z.string().optional(),
+    religion: z.string().optional(),
+    qualifications: z
+      .array(
+        z.object({
+          degree: z.string(),
+          institution: z.string(),
+          year: z.string(),
+        }),
+      )
+      .optional(),
+    subjectId: z.string().optional(),
+    yearsOfExperience: z.number().optional(),
+    previousEmployment: z
+      .array(
+        z.object({
+          company: z.string(),
+          position: z.string(),
+          period: z.string(),
+        }),
+      )
+      .optional(),
+    dateOfEmployment: z.string().optional(),
+    nextOfKinName: z.string().optional(),
+    nextOfKinPhone: z.string().optional(),
+    nextOfKinRelationship: z.string().optional(),
+    nextOfKinAddress: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      return (
+        !!data.firstName &&
+        !!data.lastName &&
+        !!data.email &&
+        !!data.phone &&
+        !!data.role
+      );
+    },
+    {
+      message: 'All required fields must be filled',
+      path: [],
+    },
+  );
 
 type StaffFormData = {
   firstName: string;
@@ -87,53 +117,35 @@ type StaffFormData = {
 export default function AddStaff() {
   const navigate = useNavigate();
   const [qualifications, setQualifications] = useState<Qualification[]>([]);
-  const [previousEmployment, setPreviousEmployment] = useState<PreviousEmployment[]>([]);
+  const [previousEmployment, setPreviousEmployment] = useState<
+    PreviousEmployment[]
+  >([]);
   const [enableAssignment, setEnableAssignment] = useState(false);
-  const [assignmentType, setAssignmentType] = useState<"classTeacher" | "subjectTeacher">("classTeacher");
+  const [assignmentType, setAssignmentType] = useState<
+    'classTeacher' | 'subjectTeacher'
+  >('classTeacher');
   const [assignmentData, setAssignmentData] = useState({
-    classId: "",
-    subjectId: "",
+    classId: '',
+    subjectId: '',
     selectedClassIds: new Set<string>(),
     term: Term.FIRST_TERM,
-    academicYear: "",
-    termId: "",
+    academicYear: '',
+    termId: '',
   });
+  const [selectedSessionId, setSelectedSessionId] = useState('');
+  const [selectedSessionName, setSelectedSessionName] = useState('');
+  const [selectedTermId, setSelectedTermId] = useState('');
+  const [selectedTerm, setSelectedTerm] = useState('');
 
   const { data: subjects } = useQuery({
-    queryKey: ["subjects"],
+    queryKey: ['subjects'],
     queryFn: () => adminApi.getAllSubjects(),
   });
 
   const { data: classes } = useQuery({
-    queryKey: ["classes"],
+    queryKey: ['classes'],
     queryFn: () => adminApi.getAllClasses(),
   });
-
-  const { data: currentSession } = useQuery({
-    queryKey: ["currentSession"],
-    queryFn: () => adminApi.getCurrentSession(),
-    retry: false,
-  });
-
-  const { data: currentTerm } = useQuery({
-    queryKey: ["currentTerm"],
-    queryFn: () => adminApi.getCurrentTerm(),
-    retry: false,
-  });
-
-  // Auto-fill assignment data when current session/term is available
-  useEffect(() => {
-    if (currentSession?.data && currentTerm?.data) {
-      setAssignmentData({
-        classId: "",
-        subjectId: "",
-        selectedClassIds: new Set<string>(),
-        term: currentTerm.data.term as Term,
-        academicYear: currentSession.data.session,
-        termId: currentTerm.data.id,
-      });
-    }
-  }, [currentSession, currentTerm]);
 
   const {
     control,
@@ -148,11 +160,40 @@ export default function AddStaff() {
       gender: Gender.MALE,
       qualifications: [],
       previousEmployment: [],
-      middleName: "",
+      middleName: '',
     },
   });
 
-  const selectedRole = watch("role");
+  // Auto-select current session/term for SessionTermSelector
+  useEffect(() => {
+    const fetchCurrentData = async () => {
+      try {
+        const [sessionData, termData] = await Promise.all([
+          adminApi.getCurrentSession(),
+          adminApi.getCurrentTerm(),
+        ]);
+
+        if (sessionData.data && termData.data) {
+          setSelectedSessionId(sessionData.data.id);
+          setSelectedSessionName(sessionData.data.session);
+          setSelectedTermId(termData.data.id);
+          setSelectedTerm(termData.data.term);
+          setAssignmentData({
+            ...assignmentData,
+            term: termData.data.term as Term,
+            academicYear: sessionData.data.session,
+            termId: termData.data.id,
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch current session/term:', error);
+      }
+    };
+
+    fetchCurrentData();
+  }, []);
+
+  const selectedRole = watch('role');
 
   const createStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {
@@ -160,17 +201,25 @@ export default function AddStaff() {
       const staff = await staffApi.createStaff({
         ...data,
         qualifications: qualifications.length > 0 ? qualifications : undefined,
-        previousEmployment: previousEmployment.length > 0 ? previousEmployment : undefined,
+        previousEmployment:
+          previousEmployment.length > 0 ? previousEmployment : undefined,
       });
 
       // If assignment is enabled and role is TEACHER, create assignment
       if (enableAssignment && data.role === StaffRole.TEACHER && staff.data) {
         try {
-          if (assignmentType === "classTeacher") {
+          if (assignmentType === 'classTeacher') {
             // Class teacher assignment
-            await adminApi.assignClassTeacher(assignmentData.classId, staff.data.id);
-            return { staff, assignmentCreated: true, assignmentType: "classTeacher" };
-          } else if (assignmentType === "subjectTeacher") {
+            await adminApi.assignClassTeacher(
+              assignmentData.classId,
+              staff.data.id,
+            );
+            return {
+              staff,
+              assignmentCreated: true,
+              assignmentType: 'classTeacher',
+            };
+          } else if (assignmentType === 'subjectTeacher') {
             // Subject teacher assignment (bulk)
             const classIds = Array.from(assignmentData.selectedClassIds);
             if (classIds.length > 0) {
@@ -182,12 +231,21 @@ export default function AddStaff() {
                 term: assignmentData.term,
                 termId: assignmentData.termId,
               });
-              return { staff, assignmentCreated: true, assignmentType: "subjectTeacher" };
+              return {
+                staff,
+                assignmentCreated: true,
+                assignmentType: 'subjectTeacher',
+              };
             }
           }
         } catch (assignmentError) {
-          console.error("Assignment failed:", assignmentError);
-          return { staff, assignmentCreated: false, assignmentError, assignmentType };
+          console.error('Assignment failed:', assignmentError);
+          return {
+            staff,
+            assignmentCreated: false,
+            assignmentError,
+            assignmentType,
+          };
         }
       }
 
@@ -195,20 +253,24 @@ export default function AddStaff() {
     },
     onSuccess: (result) => {
       if (result.assignmentCreated) {
-        if (result.assignmentType === "classTeacher") {
-          toast.success("Staff account and class teacher assignment created successfully");
-        } else if (result.assignmentType === "subjectTeacher") {
-          toast.success("Staff account and subject teacher assignment created successfully");
+        if (result.assignmentType === 'classTeacher') {
+          toast.success(
+            'Staff account and class teacher assignment created successfully',
+          );
+        } else if (result.assignmentType === 'subjectTeacher') {
+          toast.success(
+            'Staff account and subject teacher assignment created successfully',
+          );
         }
       } else if (result.assignmentError) {
-        toast.warning("Staff account created, but assignment failed");
+        toast.warning('Staff account created, but assignment failed');
       } else {
-        toast.success("Staff account created successfully");
+        toast.success('Staff account created successfully');
       }
-      navigate("/admin/staff");
+      navigate('/admin/staff');
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to create staff account");
+      toast.error(error.message || 'Failed to create staff account');
     },
   });
 
@@ -217,28 +279,42 @@ export default function AddStaff() {
   };
 
   const addQualification = () => {
-    setQualifications([...qualifications, { degree: "", institution: "", year: "" }]);
+    setQualifications([
+      ...qualifications,
+      { degree: '', institution: '', year: '' },
+    ]);
   };
 
   const removeQualification = (index: number) => {
     setQualifications(qualifications.filter((_, i) => i !== index));
   };
 
-  const updateQualification = (index: number, field: keyof Qualification, value: string) => {
+  const updateQualification = (
+    index: number,
+    field: keyof Qualification,
+    value: string,
+  ) => {
     const updated = [...qualifications];
     updated[index][field] = value;
     setQualifications(updated);
   };
 
   const addEmployment = () => {
-    setPreviousEmployment([...previousEmployment, { company: "", position: "", period: "" }]);
+    setPreviousEmployment([
+      ...previousEmployment,
+      { company: '', position: '', period: '' },
+    ]);
   };
 
   const removeEmployment = (index: number) => {
     setPreviousEmployment(previousEmployment.filter((_, i) => i !== index));
   };
 
-  const updateEmployment = (index: number, field: keyof PreviousEmployment, value: string) => {
+  const updateEmployment = (
+    index: number,
+    field: keyof PreviousEmployment,
+    value: string,
+  ) => {
     const updated = [...previousEmployment];
     updated[index][field] = value;
     setPreviousEmployment(updated);
@@ -248,12 +324,18 @@ export default function AddStaff() {
     <AdminLayout>
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/staff")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/admin/staff')}
+          >
             <ArrowLeft className="size-4" />
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Add New Staff</h1>
-            <p className="text-sm text-muted-foreground">Create a new staff account</p>
+            <p className="text-sm text-muted-foreground">
+              Create a new staff account
+            </p>
           </div>
         </div>
 
@@ -269,31 +351,51 @@ export default function AddStaff() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name *</Label>
-                    <Input id="firstName" {...register("firstName")} />
-                    {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
+                    <Input id="firstName" {...register('firstName')} />
+                    {errors.firstName && (
+                      <p className="text-sm text-destructive">
+                        {errors.firstName.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name *</Label>
-                    <Input id="lastName" {...register("lastName")} />
-                    {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
+                    <Input id="lastName" {...register('lastName')} />
+                    {errors.lastName && (
+                      <p className="text-sm text-destructive">
+                        {errors.lastName.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="middleName">Middle Name</Label>
-                    <Input id="middleName" {...register("middleName")} />
+                    <Input id="middleName" {...register('middleName')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address *</Label>
-                    <Input id="email" type="email" {...register("email")} />
-                    {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+                    <Input id="email" type="email" {...register('email')} />
+                    {errors.email && (
+                      <p className="text-sm text-destructive">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" {...register("phone")} />
-                    {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
+                    <Input id="phone" {...register('phone')} />
+                    {errors.phone && (
+                      <p className="text-sm text-destructive">
+                        {errors.phone.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                    <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      {...register('dateOfBirth')}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="gender">Gender</Label>
@@ -301,13 +403,18 @@ export default function AddStaff() {
                       name="gender"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value={Gender.MALE}>Male</SelectItem>
-                            <SelectItem value={Gender.FEMALE}>Female</SelectItem>
+                            <SelectItem value={Gender.FEMALE}>
+                              Female
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       )}
@@ -319,16 +426,29 @@ export default function AddStaff() {
                       name="maritalStatus"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select marital status" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={MaritalStatus.SINGLE}>Single</SelectItem>
-                            <SelectItem value={MaritalStatus.MARRIED}>Married</SelectItem>
-                            <SelectItem value={MaritalStatus.DIVORCED}>Divorced</SelectItem>
-                            <SelectItem value={MaritalStatus.WIDOWED}>Widowed</SelectItem>
-                            <SelectItem value={MaritalStatus.SEPARATED}>Separated</SelectItem>
+                            <SelectItem value={MaritalStatus.SINGLE}>
+                              Single
+                            </SelectItem>
+                            <SelectItem value={MaritalStatus.MARRIED}>
+                              Married
+                            </SelectItem>
+                            <SelectItem value={MaritalStatus.DIVORCED}>
+                              Divorced
+                            </SelectItem>
+                            <SelectItem value={MaritalStatus.WIDOWED}>
+                              Widowed
+                            </SelectItem>
+                            <SelectItem value={MaritalStatus.SEPARATED}>
+                              Separated
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       )}
@@ -336,30 +456,32 @@ export default function AddStaff() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="nationality">Nationality</Label>
-                    <Input id="nationality" {...register("nationality")} />
+                    <Input id="nationality" {...register('nationality')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Input id="state" {...register("state")} />
+                    <Input id="state" {...register('state')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lga">LGA</Label>
-                    <Input id="lga" {...register("lga")} />
+                    <Input id="lga" {...register('lga')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="religion">Religion</Label>
-                    <Input id="religion" {...register("religion")} />
+                    <Input id="religion" {...register('religion')} />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" {...register("address")} />
+                    <Input id="address" {...register('address')} />
                   </div>
                 </div>
               </div>
 
               {/* Professional Information */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Professional Information</h3>
+                <h3 className="text-lg font-semibold">
+                  Professional Information
+                </h3>
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="role">Role *</Label>
@@ -367,29 +489,58 @@ export default function AddStaff() {
                       name="role"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select role" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value={StaffRole.TEACHER}>Teacher</SelectItem>
-                            <SelectItem value={StaffRole.ADMIN}>Admin</SelectItem>
-                            <SelectItem value={StaffRole.HEAD_TEACHER}>Head Teacher</SelectItem>
-                            <SelectItem value={StaffRole.BURSARY}>Bursary</SelectItem>
-                            <SelectItem value={StaffRole.STOREKEEPER}>Storekeeper</SelectItem>
+                            <SelectItem value={StaffRole.TEACHER}>
+                              Teacher
+                            </SelectItem>
+                            <SelectItem value={StaffRole.ADMIN}>
+                              Admin
+                            </SelectItem>
+                            <SelectItem value={StaffRole.HEAD_TEACHER}>
+                              Head Teacher
+                            </SelectItem>
+                            <SelectItem value={StaffRole.BURSARY}>
+                              Bursary
+                            </SelectItem>
+                            <SelectItem value={StaffRole.STOREKEEPER}>
+                              Storekeeper
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       )}
                     />
-                    {errors.role && <p className="text-sm text-destructive">{errors.role.message}</p>}
+                    {errors.role && (
+                      <p className="text-sm text-destructive">
+                        {errors.role.message}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="yearsOfExperience">Years of Experience</Label>
-                    <Input id="yearsOfExperience" type="number" {...register("yearsOfExperience", { valueAsNumber: true })} />
+                    <Label htmlFor="yearsOfExperience">
+                      Years of Experience
+                    </Label>
+                    <Input
+                      id="yearsOfExperience"
+                      type="number"
+                      {...register('yearsOfExperience', {
+                        valueAsNumber: true,
+                      })}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dateOfEmployment">Date of Employment</Label>
-                    <Input id="dateOfEmployment" type="date" {...register("dateOfEmployment")} />
+                    <Input
+                      id="dateOfEmployment"
+                      type="date"
+                      {...register('dateOfEmployment')}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subjectId">Subject Specialization</Label>
@@ -397,7 +548,10 @@ export default function AddStaff() {
                       name="subjectId"
                       control={control}
                       render={({ field }) => (
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
                           <SelectTrigger>
                             <SelectValue placeholder="Select subject" />
                           </SelectTrigger>
@@ -418,17 +572,27 @@ export default function AddStaff() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label>Qualifications</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={addQualification}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addQualification}
+                    >
                       <Plus className="size-4 mr-1" /> Add Qualification
                     </Button>
                   </div>
                   {qualifications.map((qual, index) => (
-                    <div key={index} className="grid gap-3 md:grid-cols-3 items-end p-4 border rounded-lg">
+                    <div
+                      key={index}
+                      className="grid gap-3 md:grid-cols-3 items-end p-4 border rounded-lg"
+                    >
                       <div className="space-y-2">
                         <Label>Degree</Label>
                         <Input
                           value={qual.degree}
-                          onChange={(e) => updateQualification(index, "degree", e.target.value)}
+                          onChange={(e) =>
+                            updateQualification(index, 'degree', e.target.value)
+                          }
                           placeholder="e.g., B.Sc Computer Science"
                         />
                       </div>
@@ -436,7 +600,13 @@ export default function AddStaff() {
                         <Label>Institution</Label>
                         <Input
                           value={qual.institution}
-                          onChange={(e) => updateQualification(index, "institution", e.target.value)}
+                          onChange={(e) =>
+                            updateQualification(
+                              index,
+                              'institution',
+                              e.target.value,
+                            )
+                          }
                           placeholder="e.g., University of Lagos"
                         />
                       </div>
@@ -445,10 +615,17 @@ export default function AddStaff() {
                         <div className="flex gap-2">
                           <Input
                             value={qual.year}
-                            onChange={(e) => updateQualification(index, "year", e.target.value)}
+                            onChange={(e) =>
+                              updateQualification(index, 'year', e.target.value)
+                            }
                             placeholder="e.g., 2020"
                           />
-                          <Button type="button" variant="ghost" size="icon" onClick={() => removeQualification(index)}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeQualification(index)}
+                          >
                             <Trash2 className="size-4 text-destructive" />
                           </Button>
                         </div>
@@ -461,17 +638,27 @@ export default function AddStaff() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label>Previous Employment</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={addEmployment}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addEmployment}
+                    >
                       <Plus className="size-4 mr-1" /> Add Employment
                     </Button>
                   </div>
                   {previousEmployment.map((emp, index) => (
-                    <div key={index} className="grid gap-3 md:grid-cols-3 items-end p-4 border rounded-lg">
+                    <div
+                      key={index}
+                      className="grid gap-3 md:grid-cols-3 items-end p-4 border rounded-lg"
+                    >
                       <div className="space-y-2">
                         <Label>Company</Label>
                         <Input
                           value={emp.company}
-                          onChange={(e) => updateEmployment(index, "company", e.target.value)}
+                          onChange={(e) =>
+                            updateEmployment(index, 'company', e.target.value)
+                          }
                           placeholder="e.g., ABC School"
                         />
                       </div>
@@ -479,7 +666,9 @@ export default function AddStaff() {
                         <Label>Position</Label>
                         <Input
                           value={emp.position}
-                          onChange={(e) => updateEmployment(index, "position", e.target.value)}
+                          onChange={(e) =>
+                            updateEmployment(index, 'position', e.target.value)
+                          }
                           placeholder="e.g., Mathematics Teacher"
                         />
                       </div>
@@ -488,10 +677,17 @@ export default function AddStaff() {
                         <div className="flex gap-2">
                           <Input
                             value={emp.period}
-                            onChange={(e) => updateEmployment(index, "period", e.target.value)}
+                            onChange={(e) =>
+                              updateEmployment(index, 'period', e.target.value)
+                            }
                             placeholder="e.g., 2018-2022"
                           />
-                          <Button type="button" variant="ghost" size="icon" onClick={() => removeEmployment(index)}>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeEmployment(index)}
+                          >
                             <Trash2 className="size-4 text-destructive" />
                           </Button>
                         </div>
@@ -507,19 +703,30 @@ export default function AddStaff() {
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="nextOfKinName">Next of Kin Name</Label>
-                    <Input id="nextOfKinName" {...register("nextOfKinName")} />
+                    <Input id="nextOfKinName" {...register('nextOfKinName')} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="nextOfKinPhone">Next of Kin Phone</Label>
-                    <Input id="nextOfKinPhone" {...register("nextOfKinPhone")} />
+                    <Input
+                      id="nextOfKinPhone"
+                      {...register('nextOfKinPhone')}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="nextOfKinRelationship">Relationship</Label>
-                    <Input id="nextOfKinRelationship" {...register("nextOfKinRelationship")} />
+                    <Input
+                      id="nextOfKinRelationship"
+                      {...register('nextOfKinRelationship')}
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="nextOfKinAddress">Next of Kin Address</Label>
-                    <Input id="nextOfKinAddress" {...register("nextOfKinAddress")} />
+                    <Label htmlFor="nextOfKinAddress">
+                      Next of Kin Address
+                    </Label>
+                    <Input
+                      id="nextOfKinAddress"
+                      {...register('nextOfKinAddress')}
+                    />
                   </div>
                 </div>
               </div>
@@ -529,7 +736,9 @@ export default function AddStaff() {
                 <Collapsible>
                   <CollapsibleTrigger asChild>
                     <div className="flex items-center justify-between cursor-pointer py-2 border-b">
-                      <h3 className="text-lg font-semibold">Teacher Assignment (Optional)</h3>
+                      <h3 className="text-lg font-semibold">
+                        Teacher Assignment (Optional)
+                      </h3>
                       <ChevronDown className="size-4" />
                     </div>
                   </CollapsibleTrigger>
@@ -550,27 +759,42 @@ export default function AddStaff() {
                     {enableAssignment && (
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label htmlFor="assignmentType">Assignment Type *</Label>
+                          <Label htmlFor="assignmentType">
+                            Assignment Type *
+                          </Label>
                           <Select
                             value={assignmentType}
-                            onValueChange={(value) => setAssignmentType(value as "classTeacher" | "subjectTeacher")}
+                            onValueChange={(value) =>
+                              setAssignmentType(
+                                value as 'classTeacher' | 'subjectTeacher',
+                              )
+                            }
                           >
                             <SelectTrigger>
                               <SelectValue placeholder="Select assignment type" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="classTeacher">Class Teacher</SelectItem>
-                              <SelectItem value="subjectTeacher">Subject Teacher</SelectItem>
+                              <SelectItem value="classTeacher">
+                                Class Teacher
+                              </SelectItem>
+                              <SelectItem value="subjectTeacher">
+                                Subject Teacher
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
 
-                        {assignmentType === "classTeacher" && (
+                        {assignmentType === 'classTeacher' && (
                           <div className="space-y-2">
                             <Label htmlFor="assignmentClass">Class *</Label>
                             <Select
                               value={assignmentData.classId}
-                              onValueChange={(value) => setAssignmentData({ ...assignmentData, classId: value })}
+                              onValueChange={(value) =>
+                                setAssignmentData({
+                                  ...assignmentData,
+                                  classId: value,
+                                })
+                              }
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder="Select class" />
@@ -589,21 +813,32 @@ export default function AddStaff() {
                           </div>
                         )}
 
-                        {assignmentType === "subjectTeacher" && (
+                        {assignmentType === 'subjectTeacher' && (
                           <div className="space-y-4">
                             <div className="space-y-2">
-                              <Label htmlFor="assignmentSubject">Subject *</Label>
+                              <Label htmlFor="assignmentSubject">
+                                Subject *
+                              </Label>
                               <Select
                                 value={assignmentData.subjectId}
-                                onValueChange={(value) => setAssignmentData({ ...assignmentData, subjectId: value })}
+                                onValueChange={(value) =>
+                                  setAssignmentData({
+                                    ...assignmentData,
+                                    subjectId: value,
+                                  })
+                                }
                               >
                                 <SelectTrigger>
                                   <SelectValue placeholder="Select subject" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {subjects?.data?.map((subject) => (
-                                    <SelectItem key={subject.id} value={subject.id}>
-                                      {subject.subjectCode} - {subject.subjectName}
+                                    <SelectItem
+                                      key={subject.id}
+                                      value={subject.id}
+                                    >
+                                      {subject.subjectCode} -{' '}
+                                      {subject.subjectName}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
@@ -611,26 +846,41 @@ export default function AddStaff() {
                             </div>
 
                             <div className="space-y-2">
-                              <Label htmlFor="assignmentClasses">Classes *</Label>
+                              <Label htmlFor="assignmentClasses">
+                                Classes *
+                              </Label>
                               <div className="space-y-2">
                                 {classes?.data?.map((cls) => (
-                                  <div key={cls.id} className="flex items-center space-x-2">
+                                  <div
+                                    key={cls.id}
+                                    className="flex items-center space-x-2"
+                                  >
                                     <input
                                       type="checkbox"
                                       id={`class-${cls.id}`}
-                                      checked={assignmentData.selectedClassIds.has(cls.id)}
+                                      checked={assignmentData.selectedClassIds.has(
+                                        cls.id,
+                                      )}
                                       onChange={(e) => {
-                                        const newSelected = new Set(assignmentData.selectedClassIds);
+                                        const newSelected = new Set(
+                                          assignmentData.selectedClassIds,
+                                        );
                                         if (e.target.checked) {
                                           newSelected.add(cls.id);
                                         } else {
                                           newSelected.delete(cls.id);
                                         }
-                                        setAssignmentData({ ...assignmentData, selectedClassIds: newSelected });
+                                        setAssignmentData({
+                                          ...assignmentData,
+                                          selectedClassIds: newSelected,
+                                        });
                                       }}
                                       className="rounded"
                                     />
-                                    <Label htmlFor={`class-${cls.id}`} className="text-sm">
+                                    <Label
+                                      htmlFor={`class-${cls.id}`}
+                                      className="text-sm"
+                                    >
                                       {cls.name}
                                     </Label>
                                   </div>
@@ -639,41 +889,38 @@ export default function AddStaff() {
                             </div>
 
                             <div className="grid gap-4 md:grid-cols-2">
-                              <div className="space-y-2">
-                                <Label htmlFor="assignmentTerm">Term *</Label>
-                                <Select
-                                  value={assignmentData.term || Term.FIRST_TERM}
-                                  onValueChange={(value) => setAssignmentData({ ...assignmentData, term: value as Term })}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select term" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value={Term.FIRST_TERM}>First Term</SelectItem>
-                                    <SelectItem value={Term.SECOND_TERM}>Second Term</SelectItem>
-                                    <SelectItem value={Term.THIRD_TERM}>Third Term</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-
-                              <div className="space-y-2">
-                                <Label htmlFor="assignmentAcademicYear">Academic Year *</Label>
-                                <Input
-                                  id="assignmentAcademicYear"
-                                  value={assignmentData.academicYear}
-                                  onChange={(e) => setAssignmentData({ ...assignmentData, academicYear: e.target.value })}
-                                  placeholder="e.g., 2024/2025"
-                                />
-                              </div>
+                              <SessionTermSelector
+                                sessionId={selectedSessionId}
+                                termId={selectedTermId}
+                                onSessionChange={(id, name) => {
+                                  setSelectedSessionId(id);
+                                  setSelectedSessionName(name);
+                                  setAssignmentData({
+                                    ...assignmentData,
+                                    academicYear: name,
+                                  });
+                                }}
+                                onTermChange={(id, term) => {
+                                  setSelectedTermId(id);
+                                  setSelectedTerm(term);
+                                  setAssignmentData({
+                                    ...assignmentData,
+                                    term: term as Term,
+                                    termId: id,
+                                  });
+                                }}
+                                required
+                              />
                             </div>
                           </div>
                         )}
                       </div>
                     )}
 
-                    {!currentSession?.data && (
+                    {!selectedSessionId && (
                       <p className="text-sm text-amber-600">
-                        No current academic session set. Please set up academic sessions before assigning subjects.
+                        No current academic session set. Please set up academic
+                        sessions before assigning subjects.
                       </p>
                     )}
                   </CollapsibleContent>
@@ -681,7 +928,11 @@ export default function AddStaff() {
               )}
 
               <div className="flex gap-4 justify-end">
-                <Button type="button" variant="outline" onClick={() => navigate("/admin/staff")}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => navigate('/admin/staff')}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
@@ -691,7 +942,7 @@ export default function AddStaff() {
                       Creating...
                     </>
                   ) : (
-                    "Create Staff Account"
+                    'Create Staff Account'
                   )}
                 </Button>
               </div>

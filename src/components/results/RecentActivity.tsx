@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Clock, User, BookOpen, CheckCircle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Clock, User, BookOpen, CheckCircle } from 'lucide-react';
 
 interface RecentActivityProps {
   activities: Array<{
-    type: "entry" | "verification";
+    type: 'entry' | 'verification';
     action: string;
     time: string;
     studentId?: string;
@@ -12,13 +12,16 @@ interface RecentActivityProps {
 }
 
 export default function RecentActivity({ activities }: RecentActivityProps) {
-  console.log("📝 [RecentActivity] Component rendering with activities:", activities);
-  
+  console.log(
+    '📝 [RecentActivity] Component rendering with activities:',
+    activities,
+  );
+
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case "entry":
+      case 'entry':
         return BookOpen;
-      case "verification":
+      case 'verification':
         return CheckCircle;
       default:
         return Clock;
@@ -27,12 +30,12 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case "entry":
-        return "text-blue-600 bg-blue-100";
-      case "verification":
-        return "text-green-600 bg-green-100";
+      case 'entry':
+        return 'text-blue-600 bg-blue-100';
+      case 'verification':
+        return 'text-green-600 bg-green-100';
       default:
-        return "text-gray-600 bg-gray-100";
+        return 'text-gray-600 bg-gray-100';
     }
   };
 
@@ -41,7 +44,7 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
       <CardHeader>
         <CardTitle>Recent Activity</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="h-96 overflow-y-auto">
         {activities.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             No recent activity
@@ -51,7 +54,7 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
             {activities.map((activity, index) => {
               const Icon = getActivityIcon(activity.type);
               const colorClass = getActivityColor(activity.type);
-              
+
               return (
                 <div key={index} className="flex items-start gap-3">
                   <div className={`p-2 rounded-full ${colorClass}`}>
@@ -59,7 +62,9 @@ export default function RecentActivity({ activities }: RecentActivityProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-medium">{activity.action}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {activity.time}
+                    </p>
                   </div>
                 </div>
               );

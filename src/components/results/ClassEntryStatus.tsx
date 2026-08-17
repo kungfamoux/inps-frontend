@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ChevronRight } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ChevronRight } from 'lucide-react';
 
 interface ClassEntryStatusProps {
   classStatus: Array<{
@@ -10,34 +10,42 @@ interface ClassEntryStatusProps {
     className: string;
     totalStudents: number;
     completionPercentage: number;
-    entryStatus: "complete" | "in_progress" | "not_started";
+    entryStatus: 'complete' | 'in_progress' | 'not_started';
   }>;
   onClassClick?: (classId: string) => void;
 }
 
-export default function ClassEntryStatus({ classStatus, onClassClick }: ClassEntryStatusProps) {
-  console.log("📊 [ClassEntryStatus] Component rendering with classStatus:", classStatus);
-  
+export default function ClassEntryStatus({
+  classStatus,
+  onClassClick,
+}: ClassEntryStatusProps) {
+  console.log(
+    '📊 [ClassEntryStatus] Component rendering with classStatus:',
+    classStatus,
+  );
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "complete":
-        return "bg-green-500";
-      case "in_progress":
-        return "bg-yellow-500";
-      case "not_started":
-        return "bg-gray-300";
+      case 'complete':
+        return 'bg-green-500';
+      case 'in_progress':
+        return 'bg-yellow-500';
+      case 'not_started':
+        return 'bg-gray-300';
       default:
-        return "bg-gray-300";
+        return 'bg-gray-300';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "complete":
+      case 'complete':
         return <Badge className="bg-green-100 text-green-800">Complete</Badge>;
-      case "in_progress":
-        return <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>;
-      case "not_started":
+      case 'in_progress':
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">In Progress</Badge>
+        );
+      case 'not_started':
         return <Badge className="bg-gray-100 text-gray-800">Not Started</Badge>;
       default:
         return <Badge>Unknown</Badge>;
@@ -49,7 +57,7 @@ export default function ClassEntryStatus({ classStatus, onClassClick }: ClassEnt
       <CardHeader>
         <CardTitle>Class Entry Status</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="h-96 overflow-y-auto">
         <div className="space-y-4">
           {classStatus.map((cls) => (
             <div

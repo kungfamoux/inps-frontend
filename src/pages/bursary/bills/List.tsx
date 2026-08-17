@@ -1,31 +1,45 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { BursaryLayout } from "@/components/layout/BursaryLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { bursaryApi } from "@/lib/api/bursary";
-import { Plus, FileText, Edit, Trash2, Loader2, Search } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { BursaryLayout } from '@/components/layout/BursaryLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { bursaryApi } from '@/lib/api/bursary';
+import { Plus, FileText, Edit, Trash2, Loader2, Search } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import { SessionTermSelector } from '@/components/admin/SessionTermSelector';
 
 export default function BillsList() {
   const navigate = useNavigate();
-  const [academicYear, setAcademicYear] = useState("");
-  const [term, setTerm] = useState("");
-  const [scope, setScope] = useState("");
-  const [search, setSearch] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState('');
+  const [selectedSessionName, setSelectedSessionName] = useState('');
+  const [selectedTermId, setSelectedTermId] = useState('');
+  const [selectedTerm, setSelectedTerm] = useState('');
+  const [scope, setScope] = useState('');
+  const [search, setSearch] = useState('');
 
-  const { data: billsData, isLoading, refetch } = useQuery({
-    queryKey: ["bursary-bills", academicYear, term, scope],
-    queryFn: () => bursaryApi.getAllBills({
-      academicYear: academicYear || undefined,
-      term: term || undefined,
-      scope: scope || undefined,
-    }),
+  const {
+    data: billsData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['bursary-bills', selectedSessionName, selectedTerm, scope],
+    queryFn: () =>
+      bursaryApi.getAllBills({
+        academicYear: selectedSessionName || undefined,
+        term: selectedTerm || undefined,
+        scope: scope || undefined,
+      }),
   });
 
   const bills = billsData?.data || [];
@@ -39,10 +53,14 @@ export default function BillsList() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Bills Management</h1>
-            <p className="text-muted-foreground mt-1">Create and manage fee bills</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Bills Management
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Create and manage fee bills
+            </p>
           </div>
-          <Button onClick={() => navigate("/bursary/bills/add")}>
+          <Button onClick={() => navigate('/bursary/bills/add')}>
             <Plus className="mr-2 h-4 w-4" />
             Add Bill
           </Button>
@@ -53,24 +71,20 @@ export default function BillsList() {
             <CardTitle>Filter Bills</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div className="space-y-2">
-                <Label>Academic Year</Label>
-                <Input placeholder="e.g., 2024/2025" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Term</Label>
-                <Select value={term} onValueChange={setTerm}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select term" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FIRST_TERM">First Term</SelectItem>
-                    <SelectItem value="SECOND_TERM">Second Term</SelectItem>
-                    <SelectItem value="THIRD_TERM">Third Term</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              <SessionTermSelector
+                sessionId={selectedSessionId}
+                termId={selectedTermId}
+                onSessionChange={(id, name) => {
+                  setSelectedSessionId(id);
+                  setSelectedSessionName(name);
+                }}
+                onTermChange={(id, term) => {
+                  setSelectedTermId(id);
+                  setSelectedTerm(term);
+                }}
+                showBoth
+              />
               <div className="space-y-2">
                 <Label>Scope</Label>
                 <Select value={scope} onValueChange={setScope}>
@@ -87,7 +101,11 @@ export default function BillsList() {
               <div className="space-y-2">
                 <Label>Search</Label>
                 <div className="flex gap-2">
-                  <Input placeholder="Search bills..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <Input
+                    placeholder="Search bills..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                   <Button onClick={handleSearch} variant="outline">
                     <Search className="h-4 w-4" />
                   </Button>
@@ -126,19 +144,26 @@ export default function BillsList() {
                       <div>
                         <p className="font-semibold">{bill.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {bill.academicYear} - {bill.term} • ₦{bill.amount.toLocaleString()}
+                          {bill.academicYear} - {bill.term} • ₦
+                          {bill.amount.toLocaleString()}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={bill.status === "ACTIVE" ? "default" : "secondary"}>
+                      <Badge
+                        variant={
+                          bill.status === 'ACTIVE' ? 'default' : 'secondary'
+                        }
+                      >
                         {bill.status}
                       </Badge>
                       <Badge variant="outline">{bill.scope}</Badge>
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => navigate(`/bursary/bills/edit/${bill.id}`)}
+                        onClick={() =>
+                          navigate(`/bursary/bills/edit/${bill.id}`)
+                        }
                       >
                         <Edit className="h-4 w-4" />
                       </Button>

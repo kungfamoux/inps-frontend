@@ -1,39 +1,80 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { BursaryLayout } from "@/components/layout/BursaryLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { bursaryApi } from "@/lib/api/bursary";
-import { Search, Filter, ChevronLeft, ChevronRight, Download, FileText, Loader2, CreditCard, IndianRupee, ArrowRight } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { BursaryLayout } from '@/components/layout/BursaryLayout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { bursaryApi } from '@/lib/api/bursary';
+import {
+  Search,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  FileText,
+  Loader2,
+  CreditCard,
+  IndianRupee,
+  ArrowRight,
+} from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { SessionTermSelector } from '@/components/admin/SessionTermSelector';
 
 export default function FeeCollections() {
-  const [academicYear, setAcademicYear] = useState("");
-  const [term, setTerm] = useState("");
-  const [classFilter, setClassFilter] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [status, setStatus] = useState("");
-  const [search, setSearch] = useState("");
+  const [selectedSessionId, setSelectedSessionId] = useState('');
+  const [selectedSessionName, setSelectedSessionName] = useState('');
+  const [selectedTermId, setSelectedTermId] = useState('');
+  const [selectedTerm, setSelectedTerm] = useState('');
+  const [classFilter, setClassFilter] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [status, setStatus] = useState('');
+  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(20);
 
-  const { data: collectionsData, isLoading, refetch } = useQuery({
-    queryKey: ["bursary-collections", academicYear, term, classFilter, paymentMethod, status, page, limit],
-    queryFn: () => bursaryApi.getFeeCollections({
-      academicYear: academicYear || undefined,
-      term: term || undefined,
-      classFilter: classFilter || undefined,
-      paymentMethod: paymentMethod || undefined,
-      status: status || undefined,
-      search: search || undefined,
+  const {
+    data: collectionsData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: [
+      'bursary-collections',
+      selectedSessionName,
+      selectedTerm,
+      classFilter,
+      paymentMethod,
+      status,
       page,
       limit,
-    }),
+    ],
+    queryFn: () =>
+      bursaryApi.getFeeCollections({
+        academicYear: selectedSessionName || undefined,
+        term: selectedTerm || undefined,
+        classFilter: classFilter || undefined,
+        paymentMethod: paymentMethod || undefined,
+        status: status || undefined,
+        search: search || undefined,
+        page,
+        limit,
+      }),
   });
 
   const collections = collectionsData?.data || [];
@@ -47,7 +88,7 @@ export default function FeeCollections() {
 
   const handleExport = () => {
     // Export functionality - to be implemented
-    console.log("Exporting fee collections...");
+    console.log('Exporting fee collections...');
   };
 
   return (
@@ -55,8 +96,12 @@ export default function FeeCollections() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Fee Collections</h1>
-            <p className="text-muted-foreground mt-1">View and manage fee payment records</p>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Fee Collections
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              View and manage fee payment records
+            </p>
           </div>
           <Button onClick={handleExport} variant="outline">
             <Download className="mr-2 h-4 w-4" />
@@ -72,27 +117,27 @@ export default function FeeCollections() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-6">
-              <div className="space-y-2">
-                <Label>Academic Year</Label>
-                <Input placeholder="e.g., 2024/2025" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label>Term</Label>
-                <Select value={term} onValueChange={setTerm}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select term" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="FIRST_TERM">First Term</SelectItem>
-                    <SelectItem value="SECOND_TERM">Second Term</SelectItem>
-                    <SelectItem value="THIRD_TERM">Third Term</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid gap-4 md:grid-cols-5">
+              <SessionTermSelector
+                sessionId={selectedSessionId}
+                termId={selectedTermId}
+                onSessionChange={(id, name) => {
+                  setSelectedSessionId(id);
+                  setSelectedSessionName(name);
+                }}
+                onTermChange={(id, term) => {
+                  setSelectedTermId(id);
+                  setSelectedTerm(term);
+                }}
+                showBoth
+              />
               <div className="space-y-2">
                 <Label>Class</Label>
-                <Input placeholder="e.g., JSS 1A" value={classFilter} onChange={(e) => setClassFilter(e.target.value)} />
+                <Input
+                  placeholder="e.g., JSS 1A"
+                  value={classFilter}
+                  onChange={(e) => setClassFilter(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Payment Method</Label>
@@ -124,7 +169,11 @@ export default function FeeCollections() {
               <div className="space-y-2">
                 <Label>Search</Label>
                 <div className="flex gap-2">
-                  <Input placeholder="Search..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <Input
+                    placeholder="Search..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
                   <Button onClick={handleSearch} variant="outline">
                     <Search className="h-4 w-4" />
                   </Button>
@@ -171,22 +220,31 @@ export default function FeeCollections() {
                     <TableBody>
                       {collections.map((collection: any) => {
                         const paidAmount = collection.paidAmount || 0;
-                        const balance = collection.balance || (collection.amount - paidAmount);
+                        const balance =
+                          collection.balance || collection.amount - paidAmount;
                         const isFullyPaid = balance <= 0;
-                        const hasPayments = collection.payments && collection.payments.length > 0;
+                        const hasPayments =
+                          collection.payments && collection.payments.length > 0;
 
                         return (
                           <TableRow key={collection.id}>
                             <TableCell className="font-medium">
-                              {collection.student?.firstName} {collection.student?.lastName}
+                              {collection.student?.firstName}{' '}
+                              {collection.student?.lastName}
                             </TableCell>
-                            <TableCell>{collection.student?.admissionNumber}</TableCell>
-                            <TableCell>{collection.student?.class?.name}</TableCell>
+                            <TableCell>
+                              {collection.student?.admissionNumber}
+                            </TableCell>
+                            <TableCell>
+                              {collection.student?.class?.name}
+                            </TableCell>
                             <TableCell>{collection.bill?.name}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <IndianRupee className="h-4 w-4" />
-                                <span className="font-semibold">{collection.amount.toLocaleString()}</span>
+                                <span className="font-semibold">
+                                  {collection.amount.toLocaleString()}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell className="text-green-600 font-semibold">
@@ -195,33 +253,65 @@ export default function FeeCollections() {
                                 <span>{paidAmount.toLocaleString()}</span>
                               </div>
                             </TableCell>
-                            <TableCell className={balance > 0 ? "text-red-600 font-semibold" : "text-green-600 font-semibold"}>
+                            <TableCell
+                              className={
+                                balance > 0
+                                  ? 'text-red-600 font-semibold'
+                                  : 'text-green-600 font-semibold'
+                              }
+                            >
                               <div className="flex items-center gap-1">
                                 <IndianRupee className="h-4 w-4" />
                                 <span>{balance.toLocaleString()}</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline">{collection.paymentMethod}</Badge>
+                              <Badge variant="outline">
+                                {collection.paymentMethod}
+                              </Badge>
                             </TableCell>
-                            <TableCell>{new Date(collection.paymentDate).toLocaleDateString()}</TableCell>
                             <TableCell>
-                              <Badge variant={isFullyPaid ? "default" : collection.status === "PENDING" ? "secondary" : "destructive"}>
-                                {isFullyPaid ? "PAID" : collection.status}
+                              {new Date(
+                                collection.paymentDate,
+                              ).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={
+                                  isFullyPaid
+                                    ? 'default'
+                                    : collection.status === 'PENDING'
+                                      ? 'secondary'
+                                      : 'destructive'
+                                }
+                              >
+                                {isFullyPaid ? 'PAID' : collection.status}
                               </Badge>
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
                                 {hasPayments && (
-                                  <Button variant="ghost" size="icon" title="View Payments">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="View Payments"
+                                  >
                                     <CreditCard className="h-4 w-4" />
                                   </Button>
                                 )}
-                                <Button variant="ghost" size="icon" title="View Details">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="View Details"
+                                >
                                   <FileText className="h-4 w-4" />
                                 </Button>
                                 {!isFullyPaid && (
-                                  <Button variant="ghost" size="icon" title="Record Payment">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Record Payment"
+                                  >
                                     <ArrowRight className="h-4 w-4" />
                                   </Button>
                                 )}
@@ -237,22 +327,26 @@ export default function FeeCollections() {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-4">
                     <div className="text-sm text-muted-foreground">
-                      Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} entries
+                      Showing {(page - 1) * limit + 1} to{' '}
+                      {Math.min(page * limit, total)} of {total} entries
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1,
+                        ).map((pageNum) => (
                           <Button
                             key={pageNum}
-                            variant={page === pageNum ? "default" : "outline"}
+                            variant={page === pageNum ? 'default' : 'outline'}
                             size="icon"
                             className="w-8 h-8"
                             onClick={() => setPage(pageNum)}
@@ -264,7 +358,9 @@ export default function FeeCollections() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        onClick={() =>
+                          setPage((p) => Math.min(totalPages, p + 1))
+                        }
                         disabled={page === totalPages}
                       >
                         <ChevronRight className="h-4 w-4" />
