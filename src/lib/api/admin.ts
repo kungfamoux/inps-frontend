@@ -25,6 +25,10 @@ export const adminApi = {
     return apiClient.delete<ApiResponse<void>>(`/api/admin/students/${admissionNumber}`);
   },
 
+  async checkStudentDeletion(admissionNumber: string): Promise<ApiResponse<{ hasOtherChildren: boolean; otherChildrenCount: number; parentEmail: string; studentName: string }>> {
+    return apiClient.get<ApiResponse<{ hasOtherChildren: boolean; otherChildrenCount: number; parentEmail: string; studentName: string }>>(`/api/admin/students/${admissionNumber}?check=true`);
+  },
+
   async createStudentWithEnrollment(
     studentData: FormData,
     enrollmentData: { classId: string; sectionId?: string; academicYear: string; term: string }

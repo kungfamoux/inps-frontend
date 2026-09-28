@@ -117,9 +117,32 @@ export default function StudentsList() {
   });
 
   const handleDelete = (admissionNumber: string) => {
-    if (window.confirm("Are you sure you want to delete this student? This action cannot be undone.")) {
-      deleteStudentMutation.mutate(admissionNumber);
-    }
+    // First check if parent has other children
+    adminApi.checkStudentDeletion(admissionNumber)
+      .then((response) => {
+        if (response.success && response.data) {
+          const { hasOtherChildren, otherChildrenCount, parentEmail, studentName } = response.data;
+          
+          let message = `Are you sure you want to delete ${studentName}? This action cannot be undone.`;
+          
+          if (hasOtherChildren) {
+            message += `\n\nWarning: Parent account (${parentEmail}) still has ${otherChildrenCount} other child(ren) registered.`;
+          } else {
+            message += `\n\nNote: Parent account will have no registered children.`;
+          }
+          
+          if (window.confirm(message)) {
+            deleteStudentMutation.mutate(admissionNumber);
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error checking student deletion:', error);
+        // If check fails, proceed with normal confirmation
+        if (window.confirm("Are you sure you want to delete this student? This action cannot be undone.")) {
+          deleteStudentMutation.mutate(admissionNumber);
+        }
+      });
   };
 
   return (
