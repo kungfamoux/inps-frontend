@@ -33,7 +33,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const { isAuthenticated, userType, user } = useAuth();
   const isParent = userType === "parent";
   const isBursary = userType === "staff" && user && "role" in user && user.role === "BURSARY";
-  
+
   const [currentSession, setCurrentSession] = useState<AcademicSession | null>(null);
   const [currentTerm, setCurrentTerm] = useState<AcademicTerm | null>(null);
   const [selectedSession, setSelectedSession] = useState<AcademicSession | null>(null);

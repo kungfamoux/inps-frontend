@@ -36,6 +36,7 @@ interface AuthContextValue {
 interface StoredSession {
   user: AuthUser;
   userType: UserType;
+  loginTimestamp: number;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -44,7 +45,14 @@ function clearSession() {
   localStorage.removeItem('auth_token');
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('user_data');
+  localStorage.removeItem('login_timestamp');
 }
+
+// Session timeout durations (in milliseconds)
+const SESSION_TIMEOUTS = {
+  staff: 3 * 60 * 60 * 1000, // 3 hours for staff
+  parent: 8 * 60 * 60 * 1000, // 8 hours for parents
+};
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -61,9 +69,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedToken = localStorage.getItem('auth_token');
     const storedSession = localStorage.getItem('user_data');
+    const loginTimestamp = localStorage.getItem('login_timestamp');
+    
     if (storedToken && storedSession) {
       try {
         const session = JSON.parse(storedSession) as StoredSession;
+        
+        // Check session timeout
+        const timeout = session.userType === 'staff' 
+          ? SESSION_TIMEOUTS.staff 
+          : SESSION_TIMEOUTS.parent;
+        
+        const elapsed = loginTimestamp ? Date.now() - parseInt(loginTimestamp) : 0;
+        
+        if (elapsed > timeout) {
+          // Session expired, logout
+          clearSession();
+          setUser(null);
+          setUserType(null);
+          setIsLoading(false);
+          return;
+        }
+        
         setUser(session.user);
         setUserType(session.userType);
       } catch {
@@ -78,6 +105,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener('auth:expired', handleExpired);
     return () => window.removeEventListener('auth:expired', handleExpired);
   }, [logout]);
+
+  // Periodic session timeout check
+  useEffect(() => {
+    if (!user || !userType) return;
+
+    const checkSessionTimeout = () => {
+      const loginTimestamp = localStorage.getItem('login_timestamp');
+      if (!loginTimestamp) return;
+
+      const timeout = userType === 'staff' 
+        ? SESSION_TIMEOUTS.staff 
+        : SESSION_TIMEOUTS.parent;
+      
+      const elapsed = Date.now() - parseInt(loginTimestamp);
+      
+      if (elapsed > timeout) {
+        logout();
+      }
+    };
+
+    // Check every minute
+    const interval = setInterval(checkSessionTimeout, 60000);
+    
+    return () => clearInterval(interval);
+  }, [user, userType, logout]);
 
   const login = useCallback(
     async (email: string, password: string, type: UserType) => {
@@ -96,10 +148,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('refresh_token', response.refreshToken);
           localStorage.setItem(
             'user_data',
-            JSON.stringify({ user: response.user, userType: type }),
+            JSON.stringify({ user: response.user, userType: type, loginTimestamp: Date.now() }),
           );
+          localStorage.setItem('login_timestamp', Date.now().toString());
           setUser(response.user);
           setUserType(type);
+
+          // Redirect based on role
+          if (type === 'staff' && 'role' in response.user) {
+            const role = response.user.role;
+            if (role === StaffRole.BURSARY) {
+              window.location.assign('/bursary/dashboard');
+            } else {
+              window.location.assign('/admin/dashboard');
+            }
+          }
         } else {
           throw new Error('Login failed');
         }

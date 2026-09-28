@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth, type UserType } from "@/contexts/auth-context";
 import { SchoolLogo } from "@/components/shared/SchoolLogo";
 import { SupportDialog } from "@/components/ui/SupportDialog";
+import { StaffRole } from "@/lib/types/common";
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, "Email is required.").email("Enter a valid email address."),
@@ -46,12 +47,17 @@ export default function Login() {
       if (accountType === "parent") {
         navigate("/parent/dashboard", { replace: true });
       } else {
-        // Check if user has BURSARY role
+        // Check user role and redirect accordingly
         const user = localStorage.getItem("user_data");
         if (user) {
           const userData = JSON.parse(user);
-          if (userData.user && "role" in userData.user && userData.user.role === "BURSARY") {
-            navigate("/bursary/dashboard", { replace: true });
+          if (userData.user && "role" in userData.user) {
+            const role = userData.user.role;
+            if (role === StaffRole.BURSARY) {
+              navigate("/bursary/dashboard", { replace: true });
+            } else {
+              navigate("/admin/dashboard", { replace: true });
+            }
           } else {
             navigate("/admin/dashboard", { replace: true });
           }
@@ -67,22 +73,8 @@ export default function Login() {
     try {
       await login(values.email, values.password, accountType);
       
-      if (accountType === "parent") {
-        navigate("/parent/dashboard", { replace: true });
-      } else {
-        // Check if user has BURSARY role
-        const user = localStorage.getItem("user_data");
-        if (user) {
-          const userData = JSON.parse(user);
-          if (userData.user && "role" in userData.user && userData.user.role === "BURSARY") {
-            navigate("/bursary/dashboard", { replace: true });
-          } else {
-            navigate("/admin/dashboard", { replace: true });
-          }
-        } else {
-          navigate("/admin/dashboard", { replace: true });
-        }
-      }
+      // The auth context now handles the redirect based on role
+      // So we don't need to navigate here anymore
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "We could not sign you in. Please try again.");
     }

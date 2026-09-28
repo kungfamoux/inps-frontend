@@ -24,7 +24,7 @@ export class ApiError extends Error {
 
 const client = axios.create({
   baseURL: API_URL,
-  timeout: 30_000,
+  timeout: 60_000, // Increased to 60 seconds for Firebase operations
   headers: { 'Content-Type': 'application/json' },
 });
 
