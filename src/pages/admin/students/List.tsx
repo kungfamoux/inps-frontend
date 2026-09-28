@@ -107,8 +107,11 @@ export default function StudentsList() {
     mutationFn: async (admissionNumber: string) => {
       return adminApi.deleteStudent(admissionNumber);
     },
-    onSuccess: () => {
-      toast.success("Student deleted successfully");
+    onSuccess: (result: any) => {
+      toast.success(result.message || "Student deleted successfully");
+      if (result.warning) {
+        toast.warning(result.warning);
+      }
       refetch();
     },
     onError: (error: Error) => {

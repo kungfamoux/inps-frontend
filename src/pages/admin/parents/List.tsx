@@ -93,7 +93,7 @@ export default function ParentsList() {
     mutationFn: async (parentId: string) => {
       return adminApi.deleteParent(parentId);
     },
-    onSuccess: (result) => {
+    onSuccess: (result: any) => {
       toast.success(result.message || "Parent deleted successfully");
       if (result.warning) {
         toast.warning(result.warning);

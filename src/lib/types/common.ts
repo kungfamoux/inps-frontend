@@ -21,6 +21,8 @@ export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   message?: string;
+  warning?: string;
+  info?: string;
 }
 
 export interface PaginationMeta {
