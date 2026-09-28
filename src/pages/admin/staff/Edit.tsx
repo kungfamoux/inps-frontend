@@ -142,7 +142,6 @@ export default function EditStaff() {
     register,
     handleSubmit,
     setValue,
-    reset,
     watch,
     formState: { errors, isSubmitting },
   } = useForm<StaffFormData>({
@@ -207,7 +206,7 @@ export default function EditStaff() {
         setPreviousEmployment([]);
       }
     }
-  }, [staff, reset]);
+  }, [staff, setValue]);
 
   const updateStaffMutation = useMutation({
     mutationFn: async (data: StaffFormData) => {

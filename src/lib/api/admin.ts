@@ -5,7 +5,7 @@ import { ApiResponse, PaginatedResponse, CreateClassRequest, UpdateClassRequest,
 
 export const adminApi = {
   // Students
-  async getAllStudents(params?: { status?: string; page?: number; limit?: number }): Promise<PaginatedResponse<Student>> {
+  async getAllStudents(params?: { status?: string; page?: number; limit?: number; academicYear?: string; term?: string }): Promise<PaginatedResponse<Student>> {
     return apiClient.get<PaginatedResponse<Student>>("/api/admin/students", params);
   },
 
@@ -296,10 +296,6 @@ export const adminApi = {
 
   async updateAssignment(assignmentId: string, data: UpdateAssignmentRequest): Promise<ApiResponse<SubjectAssignment>> {
     return apiClient.patch<ApiResponse<SubjectAssignment>>(`/api/admin/assignments/${assignmentId}`, data);
-  },
-
-  async removeAssignment(assignmentId: string): Promise<ApiResponse<void>> {
-    return apiClient.delete<ApiResponse<void>>(`/api/admin/assignments/${assignmentId}`);
   },
 
   // Enrollment

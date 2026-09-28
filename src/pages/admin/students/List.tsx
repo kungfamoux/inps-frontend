@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "@/contexts/session-context";
 import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
+import { toast } from "sonner";
 
 export default function StudentsList() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function StudentsList() {
     },
   ];
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["students", page, searchFilters, selectedSession, selectedTerm, isSearching],
     queryFn: () => {
       if (!selectedSession || !selectedTerm) {
@@ -100,6 +101,25 @@ export default function StudentsList() {
 
   const handleView = (admissionNumber: string) => {
     navigate(`/admin/students/${admissionNumber}`);
+  };
+
+  const deleteStudentMutation = useMutation({
+    mutationFn: async (admissionNumber: string) => {
+      return adminApi.deleteStudent(admissionNumber);
+    },
+    onSuccess: () => {
+      toast.success("Student deleted successfully");
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete student");
+    },
+  });
+
+  const handleDelete = (admissionNumber: string) => {
+    if (window.confirm("Are you sure you want to delete this student? This action cannot be undone.")) {
+      deleteStudentMutation.mutate(admissionNumber);
+    }
   };
 
   return (
@@ -196,7 +216,7 @@ export default function StudentsList() {
                                 <DropdownMenuItem onClick={() => handleEdit(student.admissionNumber)}>
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="text-destructive">
+                                <DropdownMenuItem onClick={() => handleDelete(student.admissionNumber)} className="text-destructive">
                                   <Trash2 className="mr-2 size-4" /> Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
