@@ -154,40 +154,39 @@ export default function EditStaff() {
     if (staff?.data) {
       console.log('📋 [EditStaff] Loading staff data:', staff.data);
 
-      const formData = {
-        firstName: staff.data.firstName || '',
-        lastName: staff.data.lastName || '',
-        middleName: staff.data.middleName || '',
-        email: staff.data.email || '',
-        phone: staff.data.phone || '',
-        role: staff.data.role,
-        gender: staff.data.gender,
-        dateOfBirth: staff.data.dateOfBirth?.split('T')[0] || '',
-        address: staff.data.address || '',
-        maritalStatus: staff.data.maritalStatus,
-        nationality: staff.data.nationality || '',
-        state: staff.data.state || '',
-        lga: staff.data.lga || '',
-        religion: staff.data.religion || '',
-        subjectId: staff.data.subjectId || '',
-        yearsOfExperience: staff.data.yearsOfExperience,
-        dateOfEmployment: staff.data.dateOfEmployment?.split('T')[0] || '',
-        nextOfKinName: staff.data.nextOfKinName || '',
-        nextOfKinPhone: staff.data.nextOfKinPhone || '',
-        nextOfKinRelationship: staff.data.nextOfKinRelationship || '',
-        nextOfKinAddress: staff.data.nextOfKinAddress || '',
-      };
-
-      console.log('📋 [EditStaff] Form data to reset:', formData);
-      reset(formData);
-
       setSelectedState(staff.data.state || '');
 
-      if (staff.data.qualifications && staff.data.qualifications.length > 0) {
-        console.log(
-          '📋 [EditStaff] Loading qualifications:',
-          staff.data.qualifications,
-        );
+      // Basic information
+      setValue('firstName', staff.data.firstName || '');
+      setValue('lastName', staff.data.lastName || '');
+      setValue('middleName', staff.data.middleName || '');
+      setValue('email', staff.data.email || '');
+      setValue('phone', staff.data.phone || '');
+      setValue('role', staff.data.role);
+      
+      // Personal information
+      setValue('gender', staff.data.gender);
+      setValue('dateOfBirth', staff.data.dateOfBirth?.split('T')[0] || '');
+      setValue('address', staff.data.address || '');
+      setValue('maritalStatus', staff.data.maritalStatus);
+      setValue('nationality', staff.data.nationality || '');
+      setValue('state', staff.data.state || '');
+      setValue('lga', staff.data.lga || '');
+      setValue('religion', staff.data.religion || '');
+      
+      // Professional information
+      setValue('subjectId', staff.data.subjectId || '');
+      setValue('yearsOfExperience', staff.data.yearsOfExperience);
+      setValue('dateOfEmployment', staff.data.dateOfEmployment?.split('T')[0] || '');
+      
+      // Next of kin information
+      setValue('nextOfKinName', staff.data.nextOfKinName || '');
+      setValue('nextOfKinPhone', staff.data.nextOfKinPhone || '');
+      setValue('nextOfKinRelationship', staff.data.nextOfKinRelationship || '');
+      setValue('nextOfKinAddress', staff.data.nextOfKinAddress || '');
+
+      // Arrays
+      if (staff.data.qualifications) {
         setQualifications(staff.data.qualifications);
       } else {
         setQualifications([]);
