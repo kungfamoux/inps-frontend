@@ -67,7 +67,7 @@ const studentSchema = z.object({
   maritalStatus: z
     .enum(['MARRIED', 'SINGLE', 'DIVORCED', 'WIDOWED', 'SEPARATED'])
     .optional(),
-  classId: z.string().optional(),
+  classId: z.string().min(1, 'Class assignment is required'),
 });
 
 type StudentFormData = z.infer<typeof studentSchema>;
@@ -155,6 +155,7 @@ export default function AddStudent() {
 
       formData.append('parentData', JSON.stringify(parentData));
       formData.append('intakeType', 'NEW'); // Default to NEW for new students
+      formData.append('classId', data.classId); // Class assignment is now required
 
       // Create student
       const studentResponse = await adminApi.createStudent(formData);
@@ -165,28 +166,9 @@ export default function AddStudent() {
         throw new Error(studentResponse.message || 'Failed to create student');
       }
 
-      // Enroll student if class is selected
-      if (data.classId && currentTerm) {
-        const enrollmentData = {
-          studentId: studentResponse.data?.admissionNumber || '',
-          classId: data.classId,
-          academicYear: currentTerm.session?.session || '',
-          term:
-            currentTerm.term?.toUpperCase().replace(' ', '_') || 'FIRST_TERM',
-        };
-
-        const enrollmentResponse = await adminApi.enrollStudent(enrollmentData);
-
-        if (!enrollmentResponse.success) {
-          // Rollback: Delete the created student since enrollment failed
-          await adminApi.deleteStudent(
-            studentResponse.data?.admissionNumber || '',
-          );
-          throw new Error(
-            enrollmentResponse.message || 'Failed to enroll student',
-          );
-        }
-      }
+      // Student is now automatically enrolled during creation
+      toast.success('Student registered and enrolled successfully');
+      navigate('/admin/students');
 
       return { student: studentResponse.data };
     },
@@ -1023,7 +1005,7 @@ export default function AddStudent() {
             <div className="space-y-4">
               <div className="grid gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="classId">Class</Label>
+                  <Label htmlFor="classId">Class *</Label>
                   <Controller
                     name="classId"
                     control={control}
@@ -1033,7 +1015,7 @@ export default function AddStudent() {
                         value={field.value}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select class" />
+                          <SelectValue placeholder="Select class (required)" />
                         </SelectTrigger>
                         <SelectContent>
                           {classes?.data?.map((cls: any) => (
