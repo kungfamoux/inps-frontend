@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api/admin';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoreHorizontal, Eye, Pencil, Users } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Users, Trash2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -26,6 +26,7 @@ import AdvancedSearch, {
   FilterConfig,
   SearchFilters,
 } from '@/components/admin/AdvancedSearch';
+import { toast } from 'sonner';
 
 export default function ParentsList() {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ export default function ParentsList() {
     },
   ];
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['parents', page, searchFilters, isSearching],
     queryFn: () => {
       // Use search endpoint if there's a search query
@@ -86,6 +87,36 @@ export default function ParentsList() {
 
   const handleEdit = (parentId: string) => {
     navigate(`/admin/parents/${parentId}/edit`);
+  };
+
+  const deleteParentMutation = useMutation({
+    mutationFn: async (parentId: string) => {
+      return adminApi.deleteParent(parentId);
+    },
+    onSuccess: (result) => {
+      toast.success(result.message || "Parent deleted successfully");
+      if (result.warning) {
+        toast.warning(result.warning);
+      }
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete parent");
+    },
+  });
+
+  const handleDelete = (parentId: string, parentName: string, studentCount: number) => {
+    let message = `Are you sure you want to delete ${parentName}? This action cannot be undone.`;
+    
+    if (studentCount > 0) {
+      message += `\n\nWarning: This parent has ${studentCount} registered child(ren). Deleting the parent will also delete their Firebase account.`;
+    } else {
+      message += `\n\nThis will delete the parent account from both the database and Firebase.`;
+    }
+    
+    if (window.confirm(message)) {
+      deleteParentMutation.mutate(parentId);
+    }
   };
 
   return (
@@ -185,6 +216,16 @@ export default function ParentsList() {
                                   onClick={() => handleEdit(parent.id)}
                                 >
                                   <Pencil className="mr-2 size-4" /> Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDelete(
+                                    parent.id,
+                                    `${parent.primaryGuardian?.firstName} ${parent.primaryGuardian?.lastName}`,
+                                    parent.students?.length || 0
+                                  )}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="mr-2 size-4" /> Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
