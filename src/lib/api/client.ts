@@ -206,6 +206,28 @@ export const apiClient = {
         return response.data;
       });
   },
+  patchUpload: <T>(
+    url: string,
+    formData: FormData,
+    onProgress?: (percentage: number) => void,
+  ) => {
+    console.log(`📡 [API Client] PATCH UPLOAD request initiated:`, { url });
+    return client
+      .patch<T>(url, formData, {
+        headers: { 'Content-Type': undefined },
+        onUploadProgress: (event) => {
+          if (event.total && onProgress)
+            onProgress(Math.round((event.loaded / event.total) * 100));
+        },
+      })
+      .then((response) => {
+        console.log(`📡 [API Client] PATCH UPLOAD request completed:`, {
+          url,
+          status: response.status,
+        });
+        return response.data;
+      });
+  },
   getBlob: (url: string, params?: unknown) => {
     console.log(`📡 [API Client] GET BLOB request initiated:`, { url, params });
     return client.get(url, { params, responseType: 'blob' }).then((response) => {

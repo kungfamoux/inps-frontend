@@ -18,7 +18,7 @@ export const adminApi = {
   },
 
   async updateStudent(admissionNumber: string, data: FormData): Promise<ApiResponse<Student>> {
-    return apiClient.upload<ApiResponse<Student>>(`/api/admin/students/${admissionNumber}`, data);
+    return apiClient.patchUpload<ApiResponse<Student>>(`/api/admin/students/${admissionNumber}`, data);
   },
 
   async deleteStudent(admissionNumber: string): Promise<ApiResponse<void>> {
