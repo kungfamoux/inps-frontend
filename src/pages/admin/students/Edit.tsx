@@ -87,9 +87,7 @@ export default function EditStudent() {
   const navigate = useNavigate();
   const { admissionNumber } = useParams<{ admissionNumber: string }>();
   const [showTransfer, setShowTransfer] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<string>("");
   const [selectedClass, setSelectedClass] = useState<string>("");
-  const [transferMode, setTransferMode] = useState<"section" | "class">("section");
   const [passportPhoto, setPassportPhoto] = useState<File | null>(null);
   const [selectedState, setSelectedState] = useState("");
   const [showSecondaryGuardian, setShowSecondaryGuardian] = useState(false);
@@ -279,24 +277,18 @@ export default function EditStudent() {
   };
 
   const transferMutation = useMutation({
-    mutationFn: ({ sectionId, classId }: { sectionId: string; classId?: string }) => {
+    mutationFn: (classId: string) => {
       const enrollmentId = student.data.enrollments?.[0]?.id;
       if (!enrollmentId) {
         throw new Error("No active enrollment found for this student");
       }
       
-      if (transferMode === "class" && classId) {
-        return adminApi.transferStudentWithClass(enrollmentId, classId, sectionId);
-      } else {
-        return adminApi.transferStudent(enrollmentId, sectionId);
-      }
+      return adminApi.transferStudent(enrollmentId, classId);
     },
     onSuccess: () => {
       toast.success("Student transferred successfully");
       setShowTransfer(false);
-      setSelectedSection("");
       setSelectedClass("");
-      setTransferMode("section");
       window.location.reload();
     },
     onError: (error: Error) => {
@@ -966,9 +958,15 @@ export default function EditStudent() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label>Current Section</Label>
+                        <Label>Academic Year</Label>
                         <div className="text-sm bg-muted p-2 rounded">
-                          {student.data.enrollments?.[0]?.section?.name || "Not assigned"}
+                          {student.data.enrollments?.[0]?.academicYear || "N/A"}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Term</Label>
+                        <div className="text-sm bg-muted p-2 rounded">
+                          {student.data.enrollments?.[0]?.term || "N/A"}
                         </div>
                       </div>
                     </div>
@@ -989,82 +987,21 @@ export default function EditStudent() {
                     {showTransfer && (
                       <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
                         <div className="space-y-2">
-                          <Label>Transfer Mode</Label>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              variant={transferMode === "section" ? "default" : "outline"}
-                              onClick={() => setTransferMode("section")}
-                              size="sm"
-                            >
-                              Section Only
-                            </Button>
-                            <Button
-                              type="button"
-                              variant={transferMode === "class" ? "default" : "outline"}
-                              onClick={() => setTransferMode("class")}
-                              size="sm"
-                            >
-                              Class + Section
-                            </Button>
-                          </div>
-                        </div>
-
-                        {transferMode === "class" && (
-                          <div className="space-y-2">
-                            <Label htmlFor="newClass">Select New Class</Label>
-                            <Select value={selectedClass} onValueChange={setSelectedClass}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select class to transfer to" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {classes?.data?.map((cls: any) => (
-                                  <SelectItem 
-                                    key={cls.id} 
-                                    value={cls.id}
-                                    disabled={cls.id === student.data.enrollments?.[0]?.class?.id}
-                                  >
-                                    {cls.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        )}
-
-                        <div className="space-y-2">
-                          <Label htmlFor="newSection">Select New Section</Label>
-                          <Select 
-                            value={selectedSection} 
-                            onValueChange={setSelectedSection}
-                            disabled={transferMode === "class" && !selectedClass}
-                          >
+                          <Label htmlFor="newClass">Select New Class</Label>
+                          <Select value={selectedClass} onValueChange={setSelectedClass}>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select section to transfer to" />
+                              <SelectValue placeholder="Select class to transfer to" />
                             </SelectTrigger>
                             <SelectContent>
-                              {transferMode === "class" 
-                                ? classes?.data?.find((cls: any) => cls.id === selectedClass)?.sections?.map((section: any) => (
-                                    <SelectItem 
-                                      key={section.id} 
-                                      value={section.id}
-                                      disabled={section.id === student.data.enrollments?.[0]?.section?.id}
-                                    >
-                                      {section.name}
-                                    </SelectItem>
-                                  ))
-                                : classes?.data?.map((cls: any) => 
-                                    cls.sections?.map((section: any) => (
-                                      <SelectItem 
-                                        key={section.id} 
-                                        value={section.id}
-                                        disabled={section.id === student.data.enrollments?.[0]?.section?.id}
-                                      >
-                                        {cls.name} - {section.name}
-                                      </SelectItem>
-                                    ))
-                                  )
-                              }
+                              {classes?.data?.map((cls: any) => (
+                                <SelectItem 
+                                  key={cls.id} 
+                                  value={cls.id}
+                                  disabled={cls.id === student.data.enrollments?.[0]?.class?.id}
+                                >
+                                  {cls.name}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -1073,9 +1010,7 @@ export default function EditStudent() {
                             type="button" 
                             onClick={() => {
                               setShowTransfer(false);
-                              setSelectedSection("");
                               setSelectedClass("");
-                              setTransferMode("section");
                             }}
                             variant="outline"
                           >
@@ -1083,11 +1018,8 @@ export default function EditStudent() {
                           </Button>
                           <Button 
                             type="button" 
-                            disabled={transferMutation.isPending || !selectedSection || (transferMode === "class" && !selectedClass)}
-                            onClick={() => selectedSection && transferMutation.mutate({ 
-                              sectionId: selectedSection, 
-                              classId: transferMode === "class" ? selectedClass : undefined 
-                            })}
+                            disabled={transferMutation.isPending || !selectedClass}
+                            onClick={() => selectedClass && transferMutation.mutate(selectedClass)}
                           >
                             {transferMutation.isPending ? (
                               <>
