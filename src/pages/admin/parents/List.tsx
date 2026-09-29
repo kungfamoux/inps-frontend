@@ -4,7 +4,7 @@ import { adminApi } from '@/lib/api/admin';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoreHorizontal, Eye, Pencil, Users, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Users, Trash2, SearchX } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -19,13 +19,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import AdvancedSearch, {
   FilterConfig,
   SearchFilters,
 } from '@/components/admin/AdvancedSearch';
+import { EntityAvatar } from '@/components/admin/lists/EntityAvatar';
+import { StatusDotBadge } from '@/components/admin/lists/StatusDotBadge';
+import { NumberedPagination } from '@/components/admin/lists/NumberedPagination';
+import { ListEmptyState } from '@/components/admin/lists/ListEmptyState';
+import { ListTableSkeleton } from '@/components/admin/lists/ListTableSkeleton';
 import { toast } from 'sonner';
 
 export default function ParentsList() {
@@ -146,63 +149,85 @@ export default function ParentsList() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
+              <ListTableSkeleton rows={6} />
             ) : error ? (
               <div className="text-center py-8 text-destructive">
                 Failed to load parents. Please try again.
               </div>
             ) : parents.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No parents found
-              </div>
+              <ListEmptyState
+                icon={Users}
+                title="No parents found"
+                message={
+                  isSearching || searchFilters.q
+                    ? 'No parents match your current search. Try adjusting or clearing the filters.'
+                    : 'Parent accounts appear here once students are registered and linked to them.'
+                }
+                action={
+                  isSearching || searchFilters.q ? (
+                    <Button variant="outline" onClick={handleClear}>
+                      <SearchX className="size-4" /> Clear Filters
+                    </Button>
+                  ) : undefined
+                }
+              />
             ) : (
               <>
-                <div className="rounded-md border">
+                <div className="overflow-hidden rounded-xl border shadow-sm">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Children</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Parent</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Phone</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Children</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {parents.map((parent) => (
-                        <TableRow key={parent.id}>
-                          <TableCell className="font-medium">
-                            {parent.primaryGuardian?.firstName}{' '}
-                            {parent.primaryGuardian?.lastName}
-                          </TableCell>
-                          <TableCell>{parent.accountEmail}</TableCell>
-                          <TableCell>{parent.accountPhone}</TableCell>
+                        <TableRow
+                          key={parent.id}
+                          className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                          onClick={() => handleView(parent.id)}
+                        >
                           <TableCell>
-                            <div className="flex items-center gap-1">
-                              <Users className="size-4 text-muted-foreground" />
-                              <span>{parent.students?.length || 0}</span>
+                            <div className="flex items-center gap-3">
+                              <EntityAvatar
+                                name={`${parent.primaryGuardian?.firstName || ''} ${parent.primaryGuardian?.lastName || ''}`}
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate font-medium">
+                                  {parent.primaryGuardian?.firstName}{' '}
+                                  {parent.primaryGuardian?.lastName}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {parent.accountEmail}
+                                </p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">{parent.accountPhone}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Users className="size-4" />
+                              <span className="font-medium text-foreground">
+                                {parent.students?.length || 0}
+                              </span>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              variant={
-                                parent.status === 'ACTIVE'
-                                  ? 'default'
-                                  : 'secondary'
-                              }
-                            >
-                              {parent.status}
-                            </Badge>
+                            <StatusDotBadge status={parent.status} />
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label="Open actions"
+                                  className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                >
                                   <MoreHorizontal className="size-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -236,34 +261,15 @@ export default function ParentsList() {
                   </Table>
                 </div>
 
-                {pagination && pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {(page - 1) * limit + 1} to{' '}
-                      {Math.min(page * limit, pagination.total)} of{' '}
-                      {pagination.total} parents
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) => Math.min(pagination.totalPages, p + 1))
-                        }
-                        disabled={page === pagination.totalPages}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
+                {pagination && (
+                  <NumberedPagination
+                    page={page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    limit={limit}
+                    onPageChange={setPage}
+                    itemLabel="parents"
+                  />
                 )}
               </>
             )}

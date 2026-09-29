@@ -5,7 +5,7 @@ import { adminApi } from "@/lib/api/admin";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, MoreHorizontal, Eye, Pencil, ShieldCheck, ShieldX } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Pencil, ShieldCheck, ShieldX, Users, SearchX } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -21,9 +21,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
+import { EntityAvatar } from "@/components/admin/lists/EntityAvatar";
+import { StatusDotBadge } from "@/components/admin/lists/StatusDotBadge";
+import { NumberedPagination } from "@/components/admin/lists/NumberedPagination";
+import { ListEmptyState } from "@/components/admin/lists/ListEmptyState";
+import { ListTableSkeleton } from "@/components/admin/lists/ListTableSkeleton";
 
 export default function StaffList() {
   const navigate = useNavigate();
@@ -139,57 +143,83 @@ export default function StaffList() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
+              <ListTableSkeleton rows={6} />
             ) : error ? (
               <div className="text-center py-8 text-destructive">
                 Failed to load staff. Please try again.
               </div>
             ) : staff.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No staff found
-              </div>
+              <ListEmptyState
+                icon={Users}
+                title="No staff found"
+                message={
+                  isSearching || searchFilters.q
+                    ? "No staff match your current search. Try adjusting or clearing the filters."
+                    : "Get started by adding your first staff member."
+                }
+                action={
+                  isSearching || searchFilters.q ? (
+                    <Button variant="outline" onClick={handleClear}>
+                      <SearchX className="size-4" /> Clear Filters
+                    </Button>
+                  ) : (
+                    <Button onClick={() => navigate("/admin/staff/add")}>
+                      <Plus className="size-4" /> Add Staff
+                    </Button>
+                  )
+                }
+              />
             ) : (
               <>
-                <div className="rounded-md border">
+                <div className="overflow-hidden rounded-xl border shadow-sm">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Staff ID</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Phone</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Staff</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Phone</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Role</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Type</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {staff.map((member) => (
-                        <TableRow key={member.id}>
-                          <TableCell className="font-medium">{member.staffId}</TableCell>
+                        <TableRow
+                          key={member.id}
+                          className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                          onClick={() => handleView(member.id)}
+                        >
                           <TableCell>
-                            {member.firstName} {member.middleName && member.middleName + " "}{member.lastName}
+                            <div className="flex items-center gap-3">
+                              <EntityAvatar
+                                name={`${member.firstName} ${member.middleName || ""} ${member.lastName}`}
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate font-medium">
+                                  {member.firstName} {member.middleName && member.middleName + " "}{member.lastName}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                              </div>
+                            </div>
                           </TableCell>
-                          <TableCell>{member.email}</TableCell>
-                          <TableCell>{member.phone}</TableCell>
+                          <TableCell className="text-muted-foreground">{member.phone}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{member.role}</Badge>
+                            <Badge variant="outline" className="text-xs">{member.role}</Badge>
                           </TableCell>
-                          <TableCell>{member.type}</TableCell>
+                          <TableCell className="text-muted-foreground">{member.type}</TableCell>
                           <TableCell>
-                            <Badge variant={member.status === "ACTIVE" ? "default" : "secondary"}>
-                              {member.status}
-                            </Badge>
+                            <StatusDotBadge status={member.status} />
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label="Open actions"
+                                  className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                >
                                   <MoreHorizontal className="size-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -223,30 +253,15 @@ export default function StaffList() {
                   </Table>
                 </div>
 
-                {pagination && pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, pagination.total)} of {pagination.total} staff
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
-                        disabled={page === pagination.totalPages}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
+                {pagination && (
+                  <NumberedPagination
+                    page={page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    limit={limit}
+                    onPageChange={setPage}
+                    itemLabel="staff"
+                  />
                 )}
               </>
             )}

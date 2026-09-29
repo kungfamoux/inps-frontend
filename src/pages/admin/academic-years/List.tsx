@@ -8,16 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { 
-  Plus, 
-  ChevronRight, 
-  Calendar, 
-  Trash2, 
-  Edit, 
-  CheckCircle,
-  AlertCircle,
-  Clock
+import {
+  Plus,
+  ChevronRight,
+  Calendar,
+  Trash2,
+  Edit
 } from "lucide-react";
+import { StatusDotBadge } from "@/components/admin/lists/StatusDotBadge";
+import { ListEmptyState } from "@/components/admin/lists/ListEmptyState";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,34 +75,6 @@ export default function AcademicYearsList() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "CURRENT":
-        return (
-          <Badge variant="default" className="gap-1">
-            <CheckCircle className="size-3" />
-            Current
-          </Badge>
-        );
-      case "COMPLETED":
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <CheckCircle className="size-3" />
-            Completed
-          </Badge>
-        );
-      case "UPCOMING":
-        return (
-          <Badge variant="outline" className="gap-1">
-            <Clock className="size-3" />
-            Upcoming
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
   const isCurrentSession = (sessionId: string) => {
     return currentSession?.data?.id === sessionId;
   };
@@ -123,10 +94,12 @@ export default function AcademicYearsList() {
 
         {/* Current Session/Term Indicator */}
         {(currentSession?.data && !currentSessionError) || (currentTerm?.data && !currentTermError) ? (
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="border-primary/20 bg-primary/5">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calendar className="size-5" />
+              <CardTitle className="flex items-center gap-3 text-lg">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Calendar className="size-5" />
+                </span>
                 Current Academic Period
               </CardTitle>
             </CardHeader>
@@ -169,62 +142,78 @@ export default function AcademicYearsList() {
                 Failed to load sessions. Please try again.
               </div>
             ) : !sessions?.data || sessions.data.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No sessions found. Create your first academic session to get started.
-              </div>
+              <ListEmptyState
+                icon={Calendar}
+                title="No sessions found"
+                message="Create your first academic session to start managing terms and enrollment periods."
+                action={
+                  <Button onClick={() => navigate("/admin/academic-years/add")}>
+                    <Plus className="size-4" /> Add Session
+                  </Button>
+                }
+              />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {sessions.data.map((session) => (
                   <Card
                     key={session.id}
-                    className="transition-all hover:shadow-md hover:border-primary/50"
+                    onClick={() => navigate(`/admin/academic-years/${session.id}`)}
+                    className="group cursor-pointer gap-0 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
                   >
                     <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{session.session}</CardTitle>
-                          <div className="flex items-center gap-2 mt-1">
-                            {getStatusBadge(session.status)}
+                      <div className="flex items-start gap-3">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <Calendar className="size-5" />
+                        </span>
+                        <div className="min-w-0">
+                          <CardTitle className="truncate text-base leading-snug">
+                            {session.session}
+                          </CardTitle>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <StatusDotBadge status={session.status} />
                             {isCurrentSession(session.id) && (
-                              <Badge variant="default" className="gap-1 bg-green-600">
-                                <CheckCircle className="size-3" />
-                                Active
-                              </Badge>
+                              <StatusDotBadge status="ACTIVE" label="Active" />
                             )}
                           </div>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 text-sm">
                           <span className="text-muted-foreground">Terms</span>
-                          <span className="font-medium">
+                          <span className="font-semibold">
                             {session.terms?.length || 0}
                           </span>
                         </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                        <div
+                          className="flex items-center gap-2"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
                             className="flex-1"
                             onClick={() => navigate(`/admin/academic-years/${session.id}`)}
                           >
-                            <ChevronRight className="size-4 mr-1" />
                             View
+                            <ChevronRight className="size-4" />
                           </Button>
                           {!isCurrentSession(session.id) && (
                             <>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="icon"
+                                aria-label="Edit session"
+                                className="hover:text-foreground"
                                 onClick={() => navigate(`/admin/academic-years/${session.id}/edit`)}
                               >
                                 <Edit className="size-4" />
                               </Button>
-                              <Button 
-                                variant="ghost" 
+                              <Button
+                                variant="ghost"
                                 size="icon"
+                                aria-label="Delete session"
                                 onClick={() => handleDeleteSession(session.id)}
                                 disabled={deleteSessionMutation.isPending}
                               >

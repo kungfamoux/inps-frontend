@@ -5,11 +5,12 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { Plus, Users, ChevronRight, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Plus, Users, ChevronRight, School, SearchX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
+import { StatusDotBadge } from "@/components/admin/lists/StatusDotBadge";
+import { ListEmptyState } from "@/components/admin/lists/ListEmptyState";
 
 export default function ClassesList() {
   const navigate = useNavigate();
@@ -129,47 +130,64 @@ export default function ClassesList() {
                 Failed to load classes. Please try again.
               </div>
             ) : classes.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No classes found
-              </div>
+              <ListEmptyState
+                icon={School}
+                title="No classes found"
+                message={
+                  isSearching || searchFilters.q
+                    ? "No classes match your current search. Try adjusting or clearing the filters."
+                    : "Get started by creating your first class."
+                }
+                action={
+                  isSearching || searchFilters.q ? (
+                    <Button variant="outline" onClick={handleClear}>
+                      <SearchX className="size-4" /> Clear Filters
+                    </Button>
+                  ) : (
+                    <Button onClick={() => navigate("/admin/classes/add")}>
+                      <Plus className="size-4" /> Add Class
+                    </Button>
+                  )
+                }
+              />
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {classes.map((cls) => (
                   <Card
                     key={cls.id}
-                    className="cursor-pointer transition-all hover:shadow-md hover:border-primary/50"
+                    onClick={() => navigate(`/admin/classes/${cls.id}`)}
+                    className="group cursor-pointer gap-0 rounded-xl shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
                   >
                     <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{cls.className || cls.name}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{cls.level}</p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <School className="size-5" />
+                          </span>
+                          <div className="min-w-0">
+                            <CardTitle className="truncate text-base leading-snug">
+                              {cls.className || cls.name}
+                            </CardTitle>
+                            <p className="text-sm text-muted-foreground">{cls.level}</p>
+                          </div>
                         </div>
-                        <Badge variant={cls.status === "ACTIVE" ? "default" : "secondary"}>
-                          {cls.status}
-                        </Badge>
+                        <StatusDotBadge status={cls.status} />
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Total Students</span>
-                          <span className="font-medium">
+                        <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Users className="size-4" /> Students
+                          </span>
+                          <span className="font-semibold">
                             {cls._count?.enrollments || cls.currentEnrollment || 0}
                           </span>
                         </div>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="w-full justify-between"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/admin/classes/${cls.id}`);
-                          }}
-                        >
+                        <div className="flex items-center justify-end gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-primary">
                           View Details
-                          <ChevronRight className="size-4" />
-                        </Button>
+                          <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

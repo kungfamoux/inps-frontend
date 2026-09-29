@@ -19,15 +19,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Plus, MoreHorizontal, Edit, Trash2, Filter, Layers, Users, BookOpen } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, Filter, Layers, BookOpen, SearchX } from "lucide-react";
 import { Term, SubjectAssignmentStatus } from "@/lib/types/common";
+import { EntityAvatar } from "@/components/admin/lists/EntityAvatar";
+import { StatusDotBadge } from "@/components/admin/lists/StatusDotBadge";
+import { ListEmptyState } from "@/components/admin/lists/ListEmptyState";
+import { ListTableSkeleton } from "@/components/admin/lists/ListTableSkeleton";
 
 export default function AssignmentsList() {
   const navigate = useNavigate();
@@ -131,16 +134,7 @@ export default function AssignmentsList() {
     return acc;
   }, {} as Record<string, typeof assignments.data>);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return <Badge variant="default">Active</Badge>;
-      case "INACTIVE":
-        return <Badge variant="secondary">Inactive</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const hasActiveFilters = Object.values(filters).some(Boolean);
 
   return (
     <AdminLayout>
@@ -277,64 +271,102 @@ export default function AssignmentsList() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
+              <ListTableSkeleton rows={6} />
             ) : error ? (
               <div className="text-center py-8 text-destructive">
                 Failed to load assignments. Please try again.
               </div>
             ) : !assignments?.data || assignments.data.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No assignments found. Create your first assignment to get started.
-              </div>
+              <ListEmptyState
+                icon={Layers}
+                title="No assignments found"
+                message={
+                  hasActiveFilters
+                    ? "No assignments match the current filters. Try adjusting or clearing them."
+                    : "Assignments link teachers to subjects and classes. Create your first one to get started."
+                }
+                action={
+                  hasActiveFilters ? (
+                    <Button
+                      variant="outline"
+                      onClick={() => setFilters({ classId: "", subjectId: "", teacherId: "", academicYear: "", term: "" as Term, status: "" as SubjectAssignmentStatus })}
+                    >
+                      <SearchX className="size-4" /> Clear Filters
+                    </Button>
+                  ) : (
+                    <Button onClick={() => navigate("/admin/assignments/add")}>
+                      <Plus className="size-4" /> Add Assignment
+                    </Button>
+                  )
+                }
+              />
             ) : viewMode === "all" ? (
-              <div className="rounded-md border">
+              <div className="overflow-hidden rounded-xl border shadow-sm">
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12">
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
+                      <TableHead className="w-12 h-11">
                         <Checkbox
                           checked={selectedAssignments.size === assignments.data.length && assignments.data.length > 0}
                           onCheckedChange={handleSelectAll}
+                          aria-label="Select all assignments"
                         />
                       </TableHead>
-                      <TableHead>Teacher</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Class</TableHead>
-                      <TableHead>Academic Year</TableHead>
-                      <TableHead>Term</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="h-11 text-xs uppercase tracking-wider">Teacher</TableHead>
+                      <TableHead className="h-11 text-xs uppercase tracking-wider">Subject</TableHead>
+                      <TableHead className="h-11 text-xs uppercase tracking-wider">Class</TableHead>
+                      <TableHead className="h-11 text-xs uppercase tracking-wider">Academic Year</TableHead>
+                      <TableHead className="h-11 text-xs uppercase tracking-wider">Term</TableHead>
+                      <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
+                      <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {assignments.data.map((assignment) => (
-                      <TableRow key={assignment.id}>
-                        <TableCell>
+                      <TableRow
+                        key={assignment.id}
+                        className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                        onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}
+                      >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
                           <Checkbox
                             checked={selectedAssignments.has(assignment.id)}
                             onCheckedChange={(checked) => handleSelectAssignment(assignment.id, checked)}
+                            aria-label="Select assignment"
                           />
                         </TableCell>
                         <TableCell>
-                          {assignment.teacher?.firstName} {assignment.teacher?.lastName}
+                          <div className="flex items-center gap-3">
+                            <EntityAvatar
+                              name={`${assignment.teacher?.firstName || ""} ${assignment.teacher?.lastName || ""}`}
+                              className="size-8"
+                            />
+                            <span className="truncate font-medium">
+                              {assignment.teacher?.firstName} {assignment.teacher?.lastName}
+                            </span>
+                          </div>
                         </TableCell>
                         <TableCell>
-                          {assignment.subject?.subjectCode} - {assignment.subject?.subjectName}
+                          <span className="font-medium">{assignment.subject?.subjectCode}</span>
+                          <span className="text-muted-foreground"> — {assignment.subject?.subjectName}</span>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-muted-foreground">
                           {assignment.class?.name}
                         </TableCell>
-                        <TableCell>{assignment.academicYear}</TableCell>
-                        <TableCell>{assignment.term.replace("_", " ")}</TableCell>
-                        <TableCell>{getStatusBadge(assignment.status)}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-muted-foreground">{assignment.academicYear}</TableCell>
+                        <TableCell className="text-muted-foreground">{assignment.term.replace("_", " ")}</TableCell>
+                        <TableCell>
+                          <StatusDotBadge status={assignment.status} />
+                        </TableCell>
+                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                aria-label="Open actions"
+                                className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                              >
                                 <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -359,57 +391,81 @@ export default function AssignmentsList() {
             ) : viewMode === "byTeacher" ? (
               <div className="space-y-6">
                 {Object.entries(groupedByTeacher || {}).map(([teacherId, teacherAssignments]) => (
-                  <Card key={teacherId}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="size-5" />
-                        {teacherAssignments[0]?.teacher?.firstName} {teacherAssignments[0]?.teacher?.lastName}
+                  <Card key={teacherId} className="overflow-hidden py-0 shadow-sm">
+                    <CardHeader className="border-b bg-muted/40 py-4">
+                      <CardTitle className="flex items-center gap-3 text-base">
+                        <EntityAvatar
+                          name={`${teacherAssignments[0]?.teacher?.firstName || ""} ${teacherAssignments[0]?.teacher?.lastName || ""}`}
+                        />
+                        <span>
+                          {teacherAssignments[0]?.teacher?.firstName} {teacherAssignments[0]?.teacher?.lastName}
+                        </span>
+                        <Badge variant="secondary" className="ml-auto font-normal">
+                          {teacherAssignments.length}{" "}
+                          {teacherAssignments.length === 1 ? "assignment" : "assignments"}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Subject</TableHead>
-                            <TableHead>Class</TableHead>
-                            <TableHead>Academic Year</TableHead>
-                            <TableHead>Term</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {teacherAssignments.map((assignment) => (
-                            <TableRow key={assignment.id}>
-                              <TableCell>{assignment.subject?.subjectCode} - {assignment.subject?.subjectName}</TableCell>
-                              <TableCell>{assignment.class?.name}</TableCell>
-                              <TableCell>{assignment.academicYear}</TableCell>
-                              <TableCell>{assignment.term.replace("_", " ")}</TableCell>
-                              <TableCell>{getStatusBadge(assignment.status)}</TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                      <MoreHorizontal className="size-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}>
-                                      <Edit className="mr-2 size-4" /> Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleDelete(assignment.id)}
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="mr-2 size-4" /> Remove
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
+                    <CardContent className="p-0">
+                      <div className="rounded-none border-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="hover:bg-muted/50">
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Subject</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Class</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Academic Year</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Term</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Status</TableHead>
+                              <TableHead className="h-10 text-right text-xs uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {teacherAssignments.map((assignment) => (
+                              <TableRow
+                                key={assignment.id}
+                                className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                                onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}
+                              >
+                                <TableCell>
+                                  <span className="font-medium">{assignment.subject?.subjectCode}</span>
+                                  <span className="text-muted-foreground"> — {assignment.subject?.subjectName}</span>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{assignment.class?.name}</TableCell>
+                                <TableCell className="text-muted-foreground">{assignment.academicYear}</TableCell>
+                                <TableCell className="text-muted-foreground">{assignment.term.replace("_", " ")}</TableCell>
+                                <TableCell>
+                                  <StatusDotBadge status={assignment.status} />
+                                </TableCell>
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label="Open actions"
+                                        className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                      >
+                                        <MoreHorizontal className="size-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}>
+                                        <Edit className="mr-2 size-4" /> Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleDelete(assignment.id)}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="mr-2 size-4" /> Remove
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -417,59 +473,89 @@ export default function AssignmentsList() {
             ) : (
               <div className="space-y-6">
                 {Object.entries(groupedByClass || {}).map(([classId, classAssignments]) => (
-                  <Card key={classId}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="size-5" />
-                        {classAssignments[0]?.class?.name}
+                  <Card key={classId} className="overflow-hidden py-0 shadow-sm">
+                    <CardHeader className="border-b bg-muted/40 py-4">
+                      <CardTitle className="flex items-center gap-3 text-base">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                          <BookOpen className="size-4" />
+                        </span>
+                        <span>{classAssignments[0]?.class?.name}</span>
+                        <Badge variant="secondary" className="ml-auto font-normal">
+                          {classAssignments.length}{" "}
+                          {classAssignments.length === 1 ? "assignment" : "assignments"}
+                        </Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Teacher</TableHead>
-                            <TableHead>Subject</TableHead>
-                            <TableHead>Academic Year</TableHead>
-                            <TableHead>Term</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {classAssignments.map((assignment) => (
-                            <TableRow key={assignment.id}>
-                              <TableCell>
-                                {assignment.teacher?.firstName} {assignment.teacher?.lastName}
-                              </TableCell>
-                              <TableCell>{assignment.subject?.subjectCode} - {assignment.subject?.subjectName}</TableCell>
-                              <TableCell>{assignment.academicYear}</TableCell>
-                              <TableCell>{assignment.term.replace("_", " ")}</TableCell>
-                              <TableCell>{getStatusBadge(assignment.status)}</TableCell>
-                              <TableCell className="text-right">
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon">
-                                      <MoreHorizontal className="size-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}>
-                                      <Edit className="mr-2 size-4" /> Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => handleDelete(assignment.id)}
-                                      className="text-destructive"
-                                    >
-                                      <Trash2 className="mr-2 size-4" /> Remove
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
+                    <CardContent className="p-0">
+                      <div className="rounded-none border-0">
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="hover:bg-muted/50">
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Teacher</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Subject</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Academic Year</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Term</TableHead>
+                              <TableHead className="h-10 text-xs uppercase tracking-wider">Status</TableHead>
+                              <TableHead className="h-10 text-right text-xs uppercase tracking-wider">Actions</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {classAssignments.map((assignment) => (
+                              <TableRow
+                                key={assignment.id}
+                                className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                                onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}
+                              >
+                                <TableCell>
+                                  <div className="flex items-center gap-3">
+                                    <EntityAvatar
+                                      name={`${assignment.teacher?.firstName || ""} ${assignment.teacher?.lastName || ""}`}
+                                      className="size-8"
+                                    />
+                                    <span className="truncate font-medium">
+                                      {assignment.teacher?.firstName} {assignment.teacher?.lastName}
+                                    </span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <span className="font-medium">{assignment.subject?.subjectCode}</span>
+                                  <span className="text-muted-foreground"> — {assignment.subject?.subjectName}</span>
+                                </TableCell>
+                                <TableCell className="text-muted-foreground">{assignment.academicYear}</TableCell>
+                                <TableCell className="text-muted-foreground">{assignment.term.replace("_", " ")}</TableCell>
+                                <TableCell>
+                                  <StatusDotBadge status={assignment.status} />
+                                </TableCell>
+                                <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        aria-label="Open actions"
+                                        className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                      >
+                                        <MoreHorizontal className="size-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem onClick={() => navigate(`/admin/assignments/${assignment.id}/edit`)}>
+                                        <Edit className="mr-2 size-4" /> Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => handleDelete(assignment.id)}
+                                        className="text-destructive"
+                                      >
+                                        <Trash2 className="mr-2 size-4" /> Remove
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

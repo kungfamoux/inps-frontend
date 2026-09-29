@@ -4,7 +4,7 @@ import { adminApi } from '@/lib/api/admin';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MoreHorizontal, Eye, Pencil, Power, PowerOff } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Power, PowerOff, BookOpen, SearchX } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -20,13 +20,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import AdvancedSearch, {
   FilterConfig,
   SearchFilters,
 } from '@/components/admin/AdvancedSearch';
+import { EntityAvatar } from '@/components/admin/lists/EntityAvatar';
+import { StatusDotBadge } from '@/components/admin/lists/StatusDotBadge';
+import { NumberedPagination } from '@/components/admin/lists/NumberedPagination';
+import { ListEmptyState } from '@/components/admin/lists/ListEmptyState';
+import { ListTableSkeleton } from '@/components/admin/lists/ListTableSkeleton';
 
 export default function SubjectsList() {
   const navigate = useNavigate();
@@ -126,39 +130,62 @@ export default function SubjectsList() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
+              <ListTableSkeleton rows={6} />
             ) : error ? (
               <div className="text-center py-8 text-destructive">
                 Failed to load subjects. Please try again.
               </div>
             ) : subjects.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No subjects found
-              </div>
+              <ListEmptyState
+                icon={BookOpen}
+                title="No subjects found"
+                message={
+                  isSearching || searchFilters.q
+                    ? 'No subjects match your current search. Try adjusting or clearing the filters.'
+                    : 'Subjects appear here once they have been added to the curriculum.'
+                }
+                action={
+                  isSearching || searchFilters.q ? (
+                    <Button variant="outline" onClick={handleClear}>
+                      <SearchX className="size-4" /> Clear Filters
+                    </Button>
+                  ) : undefined
+                }
+              />
             ) : (
               <>
-                <div className="rounded-md border">
+                <div className="overflow-hidden rounded-xl border shadow-sm">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Subject Code</TableHead>
-                        <TableHead>Subject Name</TableHead>
-                        <TableHead>Levels</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Subject</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Levels</TableHead>
+                        <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {subjects.map((subject) => (
-                        <TableRow key={subject.id}>
-                          <TableCell className="font-medium">
-                            {subject.subjectCode}
+                        <TableRow
+                          key={subject.id}
+                          className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                          onClick={() => handleView(subject.id)}
+                        >
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <EntityAvatar
+                                shape="square"
+                                name={subject.subjectName}
+                                initials={subject.subjectCode?.slice(0, 3)}
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate font-medium">{subject.subjectName}</p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {subject.subjectCode}
+                                </p>
+                              </div>
+                            </div>
                           </TableCell>
-                          <TableCell>{subject.subjectName}</TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
                               {subject.levels?.map((level: any) => (
@@ -173,18 +200,19 @@ export default function SubjectsList() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge
-                              variant={
-                                subject.isActive ? 'default' : 'secondary'
-                              }
-                            >
-                              {subject.isActive ? 'Active' : 'Inactive'}
-                            </Badge>
+                            <StatusDotBadge
+                              status={subject.isActive ? 'ACTIVE' : 'INACTIVE'}
+                            />
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label="Open actions"
+                                  className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                >
                                   <MoreHorizontal className="size-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -230,34 +258,15 @@ export default function SubjectsList() {
                   </Table>
                 </div>
 
-                {pagination && pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between pt-4">
-                    <p className="text-sm text-muted-foreground">
-                      Showing {(page - 1) * limit + 1} to{' '}
-                      {Math.min(page * limit, pagination.total)} of{' '}
-                      {pagination.total} subjects
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        disabled={page === 1}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setPage((p) => Math.min(pagination.totalPages, p + 1))
-                        }
-                        disabled={page === pagination.totalPages}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
+                {pagination && (
+                  <NumberedPagination
+                    page={page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    limit={limit}
+                    onPageChange={setPage}
+                    itemLabel="subjects"
+                  />
                 )}
               </>
             )}
