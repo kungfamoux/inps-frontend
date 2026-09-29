@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Loader2, ArrowRight, ChevronDown, ChevronUp, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Gender, StudentStatus } from "@/lib/types/common";
 import { NIGERIAN_STATES, getLGAsByState } from "@/lib/data/nigeria-states";
@@ -32,17 +32,6 @@ const guardianSchema = z.object({
   email: z.string().email("Invalid email address").or(z.literal("")).optional(),
   occupation: z.string().optional(),
   address: z.string().optional(),
-});
-
-const secondaryGuardianSchema = z.object({
-  relationship: z.string().min(1, "Relationship is required"),
-  title: z.string().optional(),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  phone: z.string().min(1, "Phone number is required"),
-  email: z.string().min(1, "Email is required").email("Invalid email address"),
-  occupation: z.string().min(1, "Occupation is required"),
-  address: z.string().min(1, "Address is required"),
 });
 
 const studentSchema = z.object({
@@ -65,10 +54,6 @@ const studentSchema = z.object({
   accountEmail: z.string().email("Invalid email address"),
   accountPhone: z.string().min(1, "Phone number is required"),
   primaryGuardian: guardianSchema,
-  secondaryGuardian: secondaryGuardianSchema.optional(),
-  maritalStatus: z
-    .enum(["MARRIED", "SINGLE", "DIVORCED", "WIDOWED", "SEPARATED"])
-    .optional(),
 });
 
 type StudentFormData = z.infer<typeof studentSchema>;
@@ -78,19 +63,14 @@ interface CollapsibleSection {
   additional: boolean;
   account: boolean;
   guardian: boolean;
-  secondaryGuardian: boolean;
-  transfer: boolean;
   files: boolean;
 }
 
 export default function EditStudent() {
   const navigate = useNavigate();
   const { admissionNumber } = useParams<{ admissionNumber: string }>();
-  const [showTransfer, setShowTransfer] = useState(false);
-  const [selectedClass, setSelectedClass] = useState<string>("");
   const [passportPhoto, setPassportPhoto] = useState<File | null>(null);
   const [selectedState, setSelectedState] = useState("");
-  const [showSecondaryGuardian, setShowSecondaryGuardian] = useState(false);
   
   // Collapsible sections state
   const [sections, setSections] = useState<CollapsibleSection>({
@@ -98,8 +78,6 @@ export default function EditStudent() {
     additional: false,
     account: false,
     guardian: false,
-    secondaryGuardian: false,
-    transfer: false,
     files: false,
   });
 
@@ -113,8 +91,6 @@ export default function EditStudent() {
       additional: true,
       account: true,
       guardian: true,
-      secondaryGuardian: showSecondaryGuardian,
-      transfer: true,
       files: true,
     });
   };
@@ -125,8 +101,6 @@ export default function EditStudent() {
       additional: false,
       account: false,
       guardian: false,
-      secondaryGuardian: false,
-      transfer: false,
       files: false,
     });
   };
@@ -135,11 +109,6 @@ export default function EditStudent() {
     queryKey: ["student", admissionNumber],
     queryFn: () => adminApi.getStudentByAdmissionNumber(admissionNumber!),
     enabled: !!admissionNumber,
-  });
-
-  const { data: classes } = useQuery({
-    queryKey: ["classes"],
-    queryFn: () => adminApi.getAllClassesWithSections(),
   });
 
   const {
@@ -199,20 +168,6 @@ export default function EditStudent() {
             console.error("Failed to parse primary guardian data:", e);
           }
         }
-        
-        if (student.data.parent.secondaryGuardian) {
-          try {
-            const secondaryGuardian = typeof student.data.parent.secondaryGuardian === 'string'
-              ? JSON.parse(student.data.parent.secondaryGuardian)
-              : student.data.parent.secondaryGuardian;
-            setValue("secondaryGuardian", secondaryGuardian);
-            setShowSecondaryGuardian(true);
-          } catch (e) {
-            console.error("Failed to parse secondary guardian data:", e);
-          }
-        }
-        
-        setValue("maritalStatus", student.data.parent.maritalStatus || undefined);
       }
       
       if (student.data.state) {
@@ -254,9 +209,7 @@ export default function EditStudent() {
       // Parent data
       const parentData: any = {
         primaryGuardian: data.primaryGuardian,
-        secondaryGuardian: data.secondaryGuardian || null,
         address: data.address || null,
-        maritalStatus: data.maritalStatus || null,
       };
 
       formData.append("parentData", JSON.stringify(parentData));
@@ -274,43 +227,6 @@ export default function EditStudent() {
 
   const onSubmit = (data: StudentFormData) => {
     updateStudentMutation.mutate(data);
-  };
-
-  const transferMutation = useMutation({
-    mutationFn: (classId: string) => {
-      const enrollmentId = student.data.enrollments?.[0]?.id;
-      if (!enrollmentId) {
-        throw new Error("No active enrollment found for this student");
-      }
-      
-      return adminApi.transferStudent(enrollmentId, classId);
-    },
-    onSuccess: () => {
-      toast.success("Student transferred successfully");
-      setShowTransfer(false);
-      setSelectedClass("");
-      window.location.reload();
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || "Failed to transfer student");
-    },
-  });
-
-  const addSecondaryGuardian = () => {
-    setShowSecondaryGuardian(true);
-    setValue("secondaryGuardian", {
-      relationship: "Mother",
-      firstName: "",
-      lastName: "",
-      phone: "",
-      email: "",
-      occupation: "",
-    });
-  };
-
-  const removeSecondaryGuardian = () => {
-    setShowSecondaryGuardian(false);
-    setValue("secondaryGuardian", undefined);
   };
 
   const SectionHeader = ({ title, sectionKey }: { title: string; sectionKey: keyof CollapsibleSection }) => (
@@ -790,249 +706,6 @@ export default function EditStudent() {
                         <Input id="primaryGuardian.address" {...register("primaryGuardian.address")} />
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Secondary Guardian */}
-              <div className="space-y-4 border-t pt-4">
-                <SectionHeader title="Secondary Guardian" sectionKey="secondaryGuardian" />
-                {sections.secondaryGuardian && (
-                  <div className="space-y-4">
-                    {!showSecondaryGuardian ? (
-                      <Button type="button" variant="outline" onClick={addSecondaryGuardian} className="gap-2">
-                        <Plus className="size-4" />
-                        Add Secondary Guardian
-                      </Button>
-                    ) : (
-                      <>
-                        <div className="grid gap-4 md:grid-cols-2">
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.relationship">Relationship *</Label>
-                            <Controller
-                              name="secondaryGuardian.relationship"
-                              control={control}
-                              render={({ field }) => (
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select relationship" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Father">Father</SelectItem>
-                                    <SelectItem value="Mother">Mother</SelectItem>
-                                    <SelectItem value="Guardian">Guardian</SelectItem>
-                                    <SelectItem value="Uncle">Uncle</SelectItem>
-                                    <SelectItem value="Aunt">Aunt</SelectItem>
-                                    <SelectItem value="Grandparent">Grandparent</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            />
-                            {errors.secondaryGuardian?.relationship && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.relationship.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.title">Title</Label>
-                            <Controller
-                              name="secondaryGuardian.title"
-                              control={control}
-                              render={({ field }) => (
-                                <Select
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select title" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Mr.">Mr.</SelectItem>
-                                    <SelectItem value="Mrs.">Mrs.</SelectItem>
-                                    <SelectItem value="Ms.">Ms.</SelectItem>
-                                    <SelectItem value="Dr.">Dr.</SelectItem>
-                                    <SelectItem value="Chief">Chief</SelectItem>
-                                    <SelectItem value="Engr.">Engr.</SelectItem>
-                                    <SelectItem value="Pastor">Pastor</SelectItem>
-                                    <SelectItem value="Imam">Imam</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              )}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.firstName">First Name *</Label>
-                            <Input id="secondaryGuardian.firstName" {...register("secondaryGuardian.firstName")} />
-                            {errors.secondaryGuardian?.firstName && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.firstName.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.lastName">Last Name *</Label>
-                            <Input id="secondaryGuardian.lastName" {...register("secondaryGuardian.lastName")} />
-                            {errors.secondaryGuardian?.lastName && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.lastName.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.phone">Phone *</Label>
-                            <Input id="secondaryGuardian.phone" {...register("secondaryGuardian.phone")} />
-                            {errors.secondaryGuardian?.phone && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.phone.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.email">Email *</Label>
-                            <Input id="secondaryGuardian.email" type="email" {...register("secondaryGuardian.email")} />
-                            {errors.secondaryGuardian?.email && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.email.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.occupation">Occupation *</Label>
-                            <Input id="secondaryGuardian.occupation" {...register("secondaryGuardian.occupation")} />
-                            {errors.secondaryGuardian?.occupation && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.occupation.message}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="secondaryGuardian.address">Address *</Label>
-                            <Input id="secondaryGuardian.address" {...register("secondaryGuardian.address")} />
-                            {errors.secondaryGuardian?.address && (
-                              <p className="text-sm text-destructive">{errors.secondaryGuardian.address.message}</p>
-                            )}
-                          </div>
-                        </div>
-                        <Button type="button" variant="outline" onClick={removeSecondaryGuardian} className="gap-2">
-                          <Trash2 className="size-4" />
-                          Remove Secondary Guardian
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Marital Status */}
-              <div className="space-y-4 border-t pt-4">
-                <SectionHeader title="Marital Status" sectionKey="guardian" />
-                {sections.guardian && (
-                  <div className="space-y-2">
-                    <Controller
-                      name="maritalStatus"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select marital status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="MARRIED">Married</SelectItem>
-                            <SelectItem value="SINGLE">Single</SelectItem>
-                            <SelectItem value="DIVORCED">Divorced</SelectItem>
-                            <SelectItem value="WIDOWED">Widowed</SelectItem>
-                            <SelectItem value="SEPARATED">Separated</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Transfer Section */}
-              <div className="space-y-4 border-t pt-4">
-                <SectionHeader title="Transfer Student" sectionKey="transfer" />
-                {sections.transfer && (
-                  <div className="space-y-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label>Current Class</Label>
-                        <div className="text-sm bg-muted p-2 rounded">
-                          {student.data.enrollments?.[0]?.class?.name || "Not enrolled"}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Academic Year</Label>
-                        <div className="text-sm bg-muted p-2 rounded">
-                          {student.data.enrollments?.[0]?.academicYear || "N/A"}
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Term</Label>
-                        <div className="text-sm bg-muted p-2 rounded">
-                          {student.data.enrollments?.[0]?.term || "N/A"}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded border border-amber-200">
-                      <AlertTriangle className="size-4" />
-                      <span>Transfers are only allowed within the same academic year and term.</span>
-                    </div>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      onClick={() => setShowTransfer(!showTransfer)}
-                      className="gap-2"
-                    >
-                      <ArrowRight className="size-4" />
-                      {showTransfer ? "Cancel Transfer" : "Transfer Student"}
-                    </Button>
-
-                    {showTransfer && (
-                      <div className="space-y-4 border rounded-lg p-4 bg-muted/50">
-                        <div className="space-y-2">
-                          <Label htmlFor="newClass">Select New Class</Label>
-                          <Select value={selectedClass} onValueChange={setSelectedClass}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select class to transfer to" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {classes?.data?.map((cls: any) => (
-                                <SelectItem 
-                                  key={cls.id} 
-                                  value={cls.id}
-                                  disabled={cls.id === student.data.enrollments?.[0]?.class?.id}
-                                >
-                                  {cls.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button 
-                            type="button" 
-                            onClick={() => {
-                              setShowTransfer(false);
-                              setSelectedClass("");
-                            }}
-                            variant="outline"
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            type="button" 
-                            disabled={transferMutation.isPending || !selectedClass}
-                            onClick={() => selectedClass && transferMutation.mutate(selectedClass)}
-                          >
-                            {transferMutation.isPending ? (
-                              <>
-                                <Loader2 className="mr-2 size-4 animate-spin" />
-                                Transferring...
-                              </>
-                            ) : (
-                              "Confirm Transfer"
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
