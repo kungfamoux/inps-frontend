@@ -30,40 +30,27 @@ type LoginValues = z.infer<typeof loginSchema>;
 const formVariants = {
   initial: (direction: number) => ({
     opacity: 0,
-    rotateY: 100 * direction,
-    transition: { duration: 0.3, ease: "easeIn" },
+    rotateY: 90 * direction,
+    transition: { duration: 0.3 },
   }),
   animate: {
     opacity: 1,
     rotateY: 0,
-    transition: { duration: 0.5, ease: "easeOut" },
+    transition: { duration: 0.4, ease: "easeOut" },
   },
   exit: (direction: number) => ({
     opacity: 0,
-    rotateY: -100 * direction,
+    rotateY: -90 * direction,
     transition: { duration: 0.3, ease: "easeIn" },
   }),
 };
 
-const heroContainerVariants = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
+const heroVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2 } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.3 } },
 };
 
-const heroItemVariants = {
-  initial: { opacity: 0, x: -20 },
-  animate: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
-  exit: { opacity: 0, x: 20, transition: { duration: 0.3, ease: "easeIn" } },
-};
-
-const accountTypes = [
-  { id: 'staff', label: 'Staff Login' },
-  { id: 'parent', label: 'Parent Login' },
-];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -153,29 +140,13 @@ export default function Login() {
             onValueChange={handleAccountTypeChange}
             className="mb-7"
           >
-            <TabsList className="relative grid h-12 w-full grid-cols-2 rounded-xl bg-secondary p-1.5">
-              {accountTypes.map((tab) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className="relative h-9 rounded-lg font-semibold text-muted-foreground data-[state=active]:text-primary"
-                  style={{ WebkitTapHighlightColor: "transparent" }}
-                >
-                  {accountType === tab.id && (
-                    <motion.span
-                      layoutId="active-tab-indicator"
-                      className="absolute inset-0 z-10 bg-card shadow-sm"
-                      style={{ borderRadius: 8 }}
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
-                  <span className="relative z-20">{tab.label}</span>
-                </TabsTrigger>
-              ))}
+            <TabsList className="grid h-12 w-full grid-cols-2 rounded-xl bg-secondary p-1.5">
+              <TabsTrigger value="staff" className="h-9 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:text-primary">Staff login</TabsTrigger>
+              <TabsTrigger value="parent" className="h-9 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:text-primary">Parent login</TabsTrigger>
             </TabsList>
           </Tabs>
 
-          <div className="relative" style={{ perspective: "1500px" }}>
+          <div className="relative" style={{ perspective: "1200px" }}>
             <AnimatePresence mode="wait" custom={animationDirection}>
               <motion.div
                 key={accountType}
@@ -301,7 +272,8 @@ export default function Login() {
         </div>
       </section>
       
-      <section className="hidden lg:flex relative overflow-hidden bg-gradient-to-br from-blue-700 via-purple-700 to-indigo-800 animated-gradient">
+      <section className="hidden lg:flex relative overflow-hidden bg-primary">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/70 to-primary/50" />
         <div className="relative z-10 flex h-full flex-col justify-between p-12 text-primary-foreground">
           <div className="flex justify-center">
             <SchoolLogo size="large" variant="full" forceWhiteBackground />
@@ -310,7 +282,7 @@ export default function Login() {
           <AnimatePresence mode="wait">
             <motion.div
               key={accountType}
-              variants={heroContainerVariants}
+              variants={heroVariants}
               initial="initial"
               animate="animate"
               exit="exit"
@@ -318,44 +290,44 @@ export default function Login() {
             >
               {accountType === 'staff' ? (
                 <>
-                  <motion.h2 variants={heroItemVariants} className="text-3xl font-extrabold mb-4">Streamline School Management</motion.h2>
-                  <motion.p variants={heroItemVariants} className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
+                  <h2 className="text-3xl font-extrabold mb-4">Streamline School Management</h2>
+                  <p className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
                     Access powerful tools to manage student data, track academic progress, and collaborate with colleagues efficiently.
-                  </motion.p>
+                  </p>
                   <div className="space-y-4 text-left">
-                    <motion.div variants={heroItemVariants} className="flex items-center gap-3 text-primary-foreground/80">
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
                       <ClipboardList className="size-5 flex-shrink-0" />
                       <span>Comprehensive Student Records</span>
-                    </motion.div>
-                    <motion.div variants={heroItemVariants} className="flex items-center gap-3 text-primary-foreground/80">
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
                       <BarChart3 className="size-5 flex-shrink-0" />
                       <span>Insightful Performance Analytics</span>
-                    </motion.div>
-                    <motion.div variants={heroItemVariants} className="flex items-center gap-3 text-primary-foreground/80">
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
                       <Users className="size-5 flex-shrink-0" />
                       <span>Seamless Staff Collaboration</span>
-                    </motion.div>
+                    </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <motion.h2 variants={heroItemVariants} className="text-3xl font-extrabold mb-4">Your Child's Journey, Simplified</motion.h2>
-                  <motion.p variants={heroItemVariants} className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
+                  <h2 className="text-3xl font-extrabold mb-4">Your Child's Journey, Simplified</h2>
+                  <p className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
                     Stay informed and engaged in your child's education. Track progress, view results, and handle payments with ease.
-                  </motion.p>
+                  </p>
                   <div className="space-y-4 text-left">
-                    <motion.div variants={heroItemVariants} className="flex items-center gap-3 text-primary-foreground/80">
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
                       <GraduationCap className="size-5 flex-shrink-0" />
                       <span>Real-time Academic Updates</span>
-                    </motion.div>
-                    <motion.div variants={heroItemVariants} className="flex items-center gap-3 text-primary-foreground/80">
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
                       <Wallet className="size-5 flex-shrink-0" />
                       <span>Convenient Fee Payments</span>
-                    </motion.div>
-                    <motion.div variants={heroItemVariants} className="flex items-center gap-3 text-primary-foreground/80">
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
                       <MessageSquareText className="size-5 flex-shrink-0" />
                       <span>Direct School Communication</span>
-                    </motion.div>
+                    </div>
                   </div>
                 </>
               )}
