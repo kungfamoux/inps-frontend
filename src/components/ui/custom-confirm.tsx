@@ -1,4 +1,5 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import { AlertTriangle, Info, Trash2 } from "lucide-react";
 
 export type ConfirmType = "danger" | "warning" | "info";
@@ -76,7 +77,7 @@ export function CustomConfirm({
           <AlertDialogCancel onClick={handleCancel}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
-            variant={config.confirmVariant}
+            className={buttonVariants({ variant: config.confirmVariant })}
           >
             {displayConfirmText}
           </AlertDialogAction>

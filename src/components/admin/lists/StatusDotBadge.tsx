@@ -22,6 +22,7 @@ const COLOR_CLASSES: Record<DotColor, { wrapper: string; dot: string }> = {
 };
 
 function statusToColor(status: string): DotColor {
+  if (!status) return "gray";
   switch (status.toUpperCase()) {
     case "ACTIVE":
     case "CURRENT":
@@ -39,6 +40,7 @@ function statusToColor(status: string): DotColor {
 }
 
 function formatLabel(status: string): string {
+  if (!status) return "Unknown";
   return status
     .replace(/_/g, " ")
     .split(" ")

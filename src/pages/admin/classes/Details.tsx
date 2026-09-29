@@ -262,8 +262,8 @@ export default function ClassDetails() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {subjectsData.data.map((item: any) => (
-                      <TableRow key={item.id}>
+                    {subjectsData.data.map((item: any, index: number) => (
+                      <TableRow key={item.id || item.subject?.id || `subject-${index}`}>
                         <TableCell className="font-medium">
                           {item.subject?.subjectName ||
                             item.subjectName ||
@@ -349,10 +349,10 @@ export default function ClassDetails() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {studentsData.data.map((enrollment: any) => {
+                    {studentsData.data.map((enrollment: any, index: number) => {
                       const student = enrollment.student || enrollment;
                       return (
-                        <TableRow key={enrollment.id}>
+                        <TableRow key={enrollment.id || student?.id || student?.admissionNumber || `student-${index}`}>
                           <TableCell className="font-medium">
                             {student.firstName || ''} {student.lastName || ''}
                           </TableCell>
