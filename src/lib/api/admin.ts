@@ -101,7 +101,8 @@ export const adminApi = {
   },
 
   async getAllClassesWithSections(params?: { level?: string; status?: string }): Promise<ApiResponse<any[]>> {
-    return apiClient.get<ApiResponse<any[]>>("/api/admin/classes/with-sections", params);
+    // Use the existing /api/admin/classes endpoint which already includes sections
+    return this.getAllClasses(params);
   },
 
   async getClassById(classId: string): Promise<ApiResponse<any>> {
