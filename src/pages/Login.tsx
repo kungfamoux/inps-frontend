@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, LockKeyhole, Mail, HelpCircle } from "lucide-react";
+import {
+  Eye, EyeOff, LockKeyhole, Mail, HelpCircle,
+  ClipboardList, BarChart3, Users, GraduationCap, Wallet, MessageSquareText
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
@@ -24,6 +27,31 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
+const formVariants = {
+  initial: (direction: number) => ({
+    opacity: 0,
+    rotateY: 90 * direction,
+    transition: { duration: 0.3 },
+  }),
+  animate: {
+    opacity: 1,
+    rotateY: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    rotateY: -90 * direction,
+    transition: { duration: 0.3, ease: "easeIn" },
+  }),
+};
+
+const heroVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.5, delay: 0.2 } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.3 } },
+};
+
+
 export default function Login() {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useAuth();
@@ -31,6 +59,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState(1);
 
   const {
     register,
@@ -38,6 +67,7 @@ export default function Login() {
     setValue,
     watch,
     formState: { errors, isSubmitting },
+    reset,
   } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "", agreeToTerms: false },
@@ -48,7 +78,6 @@ export default function Login() {
       if (accountType === "parent") {
         navigate("/parent/dashboard", { replace: true });
       } else {
-        // Check user role and redirect accordingly
         const user = localStorage.getItem("user_data");
         if (user) {
           const userData = JSON.parse(user);
@@ -73,12 +102,17 @@ export default function Login() {
     setSubmitError("");
     try {
       await login(values.email, values.password, accountType);
-      
-      // The auth context now handles the redirect based on role
-      // So we don't need to navigate here anymore
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "We could not sign you in. Please try again.");
     }
+  };
+
+  const handleAccountTypeChange = (value: string) => {
+    const newType = value as UserType;
+    setAnimationDirection(newType === 'staff' ? -1 : 1);
+    setAccountType(newType);
+    setSubmitError("");
+    reset({ email: "", password: "", agreeToTerms: watch("agreeToTerms") });
   };
 
   return (
@@ -103,10 +137,7 @@ export default function Login() {
 
           <Tabs
             value={accountType}
-            onValueChange={(value) => {
-              setAccountType(value as UserType);
-              setSubmitError("");
-            }}
+            onValueChange={handleAccountTypeChange}
             className="mb-7"
           >
             <TabsList className="grid h-12 w-full grid-cols-2 rounded-xl bg-secondary p-1.5">
@@ -115,118 +146,121 @@ export default function Login() {
             </TabsList>
           </Tabs>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={accountType}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              {submitError && (
-                <Alert variant="destructive" className="mb-5 rounded-xl bg-destructive/5">
-                  <AlertDescription>{submitError}</AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-foreground">Email address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                    <Input
-                      id="email"
-                      type="email"
-                      autoComplete="email"
-                      autoFocus
-                      placeholder={accountType === "staff" ? "name@inps.edu.ng" : "parent@example.com"}
-                      aria-invalid={Boolean(errors.email)}
-                      aria-describedby={errors.email ? "email-error" : undefined}
-                      className="h-12 rounded-xl bg-card pl-11 text-base shadow-sm"
-                      {...register("email")}
-                    />
-                  </div>
-                  {errors.email && <p id="email-error" className="text-sm font-medium text-destructive">{errors.email.message}</p>}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
-                  <div className="relative">
-                    <LockKeyhole className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      autoComplete="current-password"
-                      placeholder="Enter your password"
-                      aria-invalid={Boolean(errors.password)}
-                      aria-describedby={errors.password ? "password-error" : undefined}
-                      className="h-12 rounded-xl bg-card px-11 text-base shadow-sm"
-                      {...register("password")}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((visible) => !visible)}
-                      className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
-                    </button>
-                  </div>
-                  {errors.password && <p id="password-error" className="text-sm font-medium text-destructive">{errors.password.message}</p>}
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setSupportDialogOpen(true)}
-                    className="text-sm text-accent hover:text-accent/80 transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <Checkbox
-                    id="agree-terms"
-                    checked={watch("agreeToTerms")}
-                    onCheckedChange={(checked) => setValue("agreeToTerms", checked === true)}
-                    className="rounded border-input data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
-                  />
-                  <Label htmlFor="agree-terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I agree to the{" "}
-                    <Link to="/terms-of-service" className="text-accent hover:underline">
-                      Terms of Service
-                    </Link>
-                    {" "}and{" "}
-                    <Link to="/privacy-policy" className="text-accent hover:underline">
-                      Privacy Policy
-                    </Link>
-                  </Label>
-                </div>
-                {errors.agreeToTerms && (
-                  <p className="text-sm font-medium text-destructive">{errors.agreeToTerms.message}</p>
+          <div className="relative" style={{ perspective: "1200px" }}>
+            <AnimatePresence mode="wait" custom={animationDirection}>
+              <motion.div
+                key={accountType}
+                custom={animationDirection}
+                variants={formVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                style={{ transformStyle: "preserve-3d" }}
+              >
+                {submitError && (
+                  <Alert variant="destructive" className="mb-5 rounded-xl bg-destructive/5">
+                    <AlertDescription>{submitError}</AlertDescription>
+                  </Alert>
                 )}
 
-                <Button type="submit" disabled={isSubmitting} className="h-12 w-full rounded-xl font-semibold shadow-sm">
-                  {isSubmitting ? "Signing in..." : "Sign in"}
-                </Button>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-semibold text-foreground">Email address</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                      <Input
+                        id="email"
+                        type="email"
+                        autoComplete="email"
+                        autoFocus
+                        placeholder={accountType === "staff" ? "name@inps.edu.ng" : "parent@example.com"}
+                        aria-invalid={Boolean(errors.email)}
+                        aria-describedby={errors.email ? "email-error" : undefined}
+                        className="h-12 rounded-xl bg-card pl-11 text-base shadow-sm"
+                        {...register("email")}
+                      />
+                    </div>
+                    {errors.email && <p id="email-error" className="text-sm font-medium text-destructive">{errors.email.message}</p>}
+                  </div>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setSupportDialogOpen(true)}
-                  className="w-full rounded-xl font-semibold"
-                >
-                  <HelpCircle className="mr-2 size-4" />
-                  Contact Admin
-                </Button>
-              </form>
-            </motion.div>
-          </AnimatePresence>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
+                    <div className="relative">
+                      <LockKeyhole className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="current-password"
+                        placeholder="Enter your password"
+                        aria-invalid={Boolean(errors.password)}
+                        aria-describedby={errors.password ? "password-error" : undefined}
+                        className="h-12 rounded-xl bg-card px-11 text-base shadow-sm"
+                        {...register("password")}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((visible) => !visible)}
+                        className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+                      </button>
+                    </div>
+                    {errors.password && <p id="password-error" className="text-sm font-medium text-destructive">{errors.password.message}</p>}
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setSupportDialogOpen(true)}
+                      className="text-sm text-accent hover:text-accent/80 transition-colors"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2.5">
+                    <Checkbox
+                      id="agree-terms"
+                      checked={watch("agreeToTerms")}
+                      onCheckedChange={(checked) => setValue("agreeToTerms", checked === true)}
+                      className="rounded border-input data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
+                    />
+                    <Label htmlFor="agree-terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I agree to the{" "}
+                      <Link to="/terms-of-service" className="text-accent hover:underline">
+                        Terms of Service
+                      </Link>
+                      {" "}and{" "}
+                      <Link to="/privacy-policy" className="text-accent hover:underline">
+                        Privacy Policy
+                      </Link>
+                    </Label>
+                  </div>
+                  {errors.agreeToTerms && (
+                    <p className="text-sm font-medium text-destructive">{errors.agreeToTerms.message}</p>
+                  )}
+
+                  <Button type="submit" disabled={isSubmitting} className="h-12 w-full rounded-xl font-semibold shadow-sm">
+                    {isSubmitting ? "Signing in..." : "Sign in"}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setSupportDialogOpen(true)}
+                    className="w-full rounded-xl font-semibold"
+                  >
+                    <HelpCircle className="mr-2 size-4" />
+                    Contact Admin
+                  </Button>
+                </form>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
         
-        {/* Footer with copyright and terms */}
-        <div className="mt-8 pt-6 border-t border-border">
+        <div className="mt-auto pt-6 border-t border-border">
           <div className="text-center space-y-2">
             <p className="text-xs text-muted-foreground">
               © {new Date().getFullYear()} International Nursery and Primary School. All rights reserved.
@@ -238,30 +272,69 @@ export default function Login() {
         </div>
       </section>
       
-      {/* Right side - visible only on large screens */}
       <section className="hidden lg:flex relative overflow-hidden bg-primary">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/70 to-primary/50" />
-        <div className="relative z-10 flex h-full flex-col justify-center px-12 text-center">
-          <div className="flex justify-center mb-8">
+        <div className="relative z-10 flex h-full flex-col justify-between p-12 text-primary-foreground">
+          <div className="flex justify-center">
             <SchoolLogo size="large" variant="full" forceWhiteBackground />
           </div>
-          <h2 className="text-4xl font-extrabold text-primary-foreground mb-4">INPS School Portal</h2>
-          <p className="text-xl text-primary-foreground/80 mb-8 max-w-md mx-auto">
-            Empowering education through technology. Manage students, staff, classes, and results all in one place.
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 text-primary-foreground/70">
-              <LockKeyhole className="size-5" />
-              <span>Secure & Reliable</span>
-            </div>
-            <div className="flex items-center gap-3 text-primary-foreground/70">
-              <Mail className="size-5" />
-              <span>Real-time Notifications</span>
-            </div>
-          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={accountType}
+              variants={heroVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="flex flex-col items-center text-center"
+            >
+              {accountType === 'staff' ? (
+                <>
+                  <h2 className="text-3xl font-extrabold mb-4">Streamline School Management</h2>
+                  <p className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
+                    Access powerful tools to manage student data, track academic progress, and collaborate with colleagues efficiently.
+                  </p>
+                  <div className="space-y-4 text-left">
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
+                      <ClipboardList className="size-5 flex-shrink-0" />
+                      <span>Comprehensive Student Records</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
+                      <BarChart3 className="size-5 flex-shrink-0" />
+                      <span>Insightful Performance Analytics</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
+                      <Users className="size-5 flex-shrink-0" />
+                      <span>Seamless Staff Collaboration</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-3xl font-extrabold mb-4">Your Child's Journey, Simplified</h2>
+                  <p className="text-lg text-primary-foreground/80 mb-8 max-w-md mx-auto">
+                    Stay informed and engaged in your child's education. Track progress, view results, and handle payments with ease.
+                  </p>
+                  <div className="space-y-4 text-left">
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
+                      <GraduationCap className="size-5 flex-shrink-0" />
+                      <span>Real-time Academic Updates</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
+                      <Wallet className="size-5 flex-shrink-0" />
+                      <span>Convenient Fee Payments</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-primary-foreground/80">
+                      <MessageSquareText className="size-5 flex-shrink-0" />
+                      <span>Direct School Communication</span>
+                    </div>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
           
-          {/* Footer with copyright */}
-          <div className="mt-12 pt-6 border-t border-primary-foreground/20">
+          <div className="pt-6 border-t border-primary-foreground/20">
             <div className="text-center space-y-1">
               <p className="text-xs text-primary-foreground/60">
                 © {new Date().getFullYear()} International Nursery and Primary School. All rights reserved.
@@ -274,7 +347,6 @@ export default function Login() {
         </div>
       </section>
 
-      {/* Support Dialog */}
       <SupportDialog open={supportDialogOpen} onOpenChange={setSupportDialogOpen} />
     </main>
   );
