@@ -4,6 +4,7 @@ import { Eye, EyeOff, LockKeyhole, Mail, HelpCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
+import { motion, AnimatePresence } from "framer-motion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -114,104 +115,114 @@ export default function Login() {
             </TabsList>
           </Tabs>
 
-          {submitError && (
-            <Alert variant="destructive" className="mb-5 rounded-xl bg-destructive/5">
-              <AlertDescription>{submitError}</AlertDescription>
-            </Alert>
-          )}
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-semibold text-foreground">Email address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  autoFocus
-                  placeholder={accountType === "staff" ? "name@inps.edu.ng" : "parent@example.com"}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? "email-error" : undefined}
-                  className="h-12 rounded-xl bg-card pl-11 text-base shadow-sm"
-                  {...register("email")}
-                />
-              </div>
-              {errors.email && <p id="email-error" className="text-sm font-medium text-destructive">{errors.email.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
-              <div className="relative">
-                <LockKeyhole className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  placeholder="Enter your password"
-                  aria-invalid={Boolean(errors.password)}
-                  aria-describedby={errors.password ? "password-error" : undefined}
-                  className="h-12 rounded-xl bg-card px-11 text-base shadow-sm"
-                  {...register("password")}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((visible) => !visible)}
-                  className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
-                </button>
-              </div>
-              {errors.password && <p id="password-error" className="text-sm font-medium text-destructive">{errors.password.message}</p>}
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSupportDialogOpen(true)}
-                className="text-sm text-accent hover:text-accent/80 transition-colors"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <Checkbox
-                id="agree-terms"
-                checked={watch("agreeToTerms")}
-                onCheckedChange={(checked) => setValue("agreeToTerms", checked === true)}
-                className="rounded border-input data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
-              />
-              <Label htmlFor="agree-terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                I agree to the{" "}
-                <Link to="/terms-of-service" className="text-accent hover:underline">
-                  Terms of Service
-                </Link>
-                {" "}and{" "}
-                <Link to="/privacy-policy" className="text-accent hover:underline">
-                  Privacy Policy
-                </Link>
-              </Label>
-            </div>
-            {errors.agreeToTerms && (
-              <p className="text-sm font-medium text-destructive">{errors.agreeToTerms.message}</p>
-            )}
-
-            <Button type="submit" disabled={isSubmitting} className="h-12 w-full rounded-xl font-semibold shadow-sm">
-              {isSubmitting ? "Signing in..." : "Sign in"}
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setSupportDialogOpen(true)}
-              className="w-full rounded-xl font-semibold"
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={accountType}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
-              <HelpCircle className="mr-2 size-4" />
-              Contact Admin
-            </Button>
-          </form>
+              {submitError && (
+                <Alert variant="destructive" className="mb-5 rounded-xl bg-destructive/5">
+                  <AlertDescription>{submitError}</AlertDescription>
+                </Alert>
+              )}
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold text-foreground">Email address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                      id="email"
+                      type="email"
+                      autoComplete="email"
+                      autoFocus
+                      placeholder={accountType === "staff" ? "name@inps.edu.ng" : "parent@example.com"}
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? "email-error" : undefined}
+                      className="h-12 rounded-xl bg-card pl-11 text-base shadow-sm"
+                      {...register("email")}
+                    />
+                  </div>
+                  {errors.email && <p id="email-error" className="text-sm font-medium text-destructive">{errors.email.message}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-semibold text-foreground">Password</Label>
+                  <div className="relative">
+                    <LockKeyhole className="absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      placeholder="Enter your password"
+                      aria-invalid={Boolean(errors.password)}
+                      aria-describedby={errors.password ? "password-error" : undefined}
+                      className="h-12 rounded-xl bg-card px-11 text-base shadow-sm"
+                      {...register("password")}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((visible) => !visible)}
+                      className="absolute right-3 top-1/2 grid size-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="size-[18px]" /> : <Eye className="size-[18px]" />}
+                    </button>
+                  </div>
+                  {errors.password && <p id="password-error" className="text-sm font-medium text-destructive">{errors.password.message}</p>}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setSupportDialogOpen(true)}
+                    className="text-sm text-accent hover:text-accent/80 transition-colors"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <Checkbox
+                    id="agree-terms"
+                    checked={watch("agreeToTerms")}
+                    onCheckedChange={(checked) => setValue("agreeToTerms", checked === true)}
+                    className="rounded border-input data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
+                  />
+                  <Label htmlFor="agree-terms" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    I agree to the{" "}
+                    <Link to="/terms-of-service" className="text-accent hover:underline">
+                      Terms of Service
+                    </Link>
+                    {" "}and{" "}
+                    <Link to="/privacy-policy" className="text-accent hover:underline">
+                      Privacy Policy
+                    </Link>
+                  </Label>
+                </div>
+                {errors.agreeToTerms && (
+                  <p className="text-sm font-medium text-destructive">{errors.agreeToTerms.message}</p>
+                )}
+
+                <Button type="submit" disabled={isSubmitting} className="h-12 w-full rounded-xl font-semibold shadow-sm">
+                  {isSubmitting ? "Signing in..." : "Sign in"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setSupportDialogOpen(true)}
+                  className="w-full rounded-xl font-semibold"
+                >
+                  <HelpCircle className="mr-2 size-4" />
+                  Contact Admin
+                </Button>
+              </form>
+            </motion.div>
+          </AnimatePresence>
         </div>
         
         {/* Footer with copyright and terms */}
