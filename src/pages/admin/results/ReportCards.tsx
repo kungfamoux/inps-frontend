@@ -1,5 +1,6 @@
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -8,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Download, FileText, Users, Loader2, Eye } from 'lucide-react';
+import { Download, FileText, Users, Eye, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { adminApi } from '@/lib/api/admin';
@@ -26,7 +27,8 @@ export default function ReportCards() {
   const { showAlert, showSuccess } = useAlert();
 
   const [loading, setLoading] = useState(false);
-  const [generating, setGenerating] = useState(false);
+  const [activeAction, setActiveAction] = useState<'preview' | 'generate' | null>(null);
+  const generating = activeAction !== null;
   const [selectedSession, setSelectedSession] = useState('');
   const [selectedSessionName, setSelectedSessionName] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
@@ -131,12 +133,13 @@ export default function ReportCards() {
   };
 
   const handlePreview = async () => {
+    if (generating) return;
     if (!selectedSession || !selectedTerm || !selectedStudent) {
       showAlert('Please select session, term, and student', 'error');
       return;
     }
 
-    setGenerating(true);
+    setActiveAction('preview');
     try {
       const response = await fetch(
         `http://localhost:3000/api/admin/results/report-card/${selectedStudent}/preview?termId=${selectedTerm}&sessionId=${selectedSession}`,
@@ -163,11 +166,12 @@ export default function ReportCards() {
       console.error('Error loading preview:', error);
       showAlert(`Failed to load preview data: ${error.message}`, 'error');
     } finally {
-      setGenerating(false);
+      setActiveAction(null);
     }
   };
 
   const handleGenerate = async () => {
+    if (generating) return;
     if (!selectedSession || !selectedTerm) {
       showAlert('Please select session and term', 'error');
       return;
@@ -183,7 +187,7 @@ export default function ReportCards() {
       return;
     }
 
-    setGenerating(true);
+    setActiveAction('generate');
     try {
       if (mode === 'single') {
         // Generate single report card using html2pdf.js for WYSIWYG output
@@ -256,7 +260,7 @@ export default function ReportCards() {
       console.error('Error generating report card:', error);
       showAlert('Failed to generate report card. Please try again.', 'error');
     } finally {
-      setGenerating(false);
+      setActiveAction(null);
     }
   };
 
@@ -414,9 +418,11 @@ export default function ReportCards() {
             </div>
 
             {mode === 'single' ? (
-              <div className="flex gap-2">
-                <Button
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <LoadingButton
                   onClick={handlePreview}
+                  loading={activeAction === 'preview'}
+                  loadingText="Loading preview..."
                   disabled={
                     generating ||
                     !selectedSession ||
@@ -426,20 +432,13 @@ export default function ReportCards() {
                   variant="outline"
                   className="flex-1"
                 >
-                  {generating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Preview
-                    </>
-                  )}
-                </Button>
-                <Button
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
+                </LoadingButton>
+                <LoadingButton
                   onClick={handleGenerate}
+                  loading={activeAction === 'generate'}
+                  loadingText="Generating..."
                   disabled={
                     generating ||
                     !selectedSession ||
@@ -448,22 +447,15 @@ export default function ReportCards() {
                   }
                   className="flex-1"
                 >
-                  {generating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download PDF
-                    </>
-                  )}
-                </Button>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </LoadingButton>
               </div>
             ) : (
-              <Button
+              <LoadingButton
                 onClick={handleGenerate}
+                loading={activeAction === 'generate'}
+                loadingText="Generating..."
                 disabled={
                   generating ||
                   !selectedSession ||
@@ -472,18 +464,9 @@ export default function ReportCards() {
                 }
                 className="w-full md:w-auto"
               >
-                {generating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-4 w-4" />
-                    Generate Report Cards
-                  </>
-                )}
-              </Button>
+                <Download className="mr-2 h-4 w-4" />
+                Generate Report Cards
+              </LoadingButton>
             )}
 
             {/* PDF-style Preview Modal */}

@@ -10,6 +10,7 @@ import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/shared/LoadingButton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -99,6 +100,7 @@ export default function Login() {
   }, [isAuthenticated, accountType, navigate]);
 
   const onSubmit = async (values: LoginValues) => {
+    if (isSubmitting) return;
     setSubmitError("");
     try {
       await login(values.email, values.password, accountType);
@@ -141,8 +143,8 @@ export default function Login() {
             className="mb-7"
           >
             <TabsList className="grid h-12 w-full grid-cols-2 rounded-xl bg-secondary p-1.5">
-              <TabsTrigger value="staff" className="h-9 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:text-primary">Staff login</TabsTrigger>
-              <TabsTrigger value="parent" className="h-9 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:text-primary">Parent login</TabsTrigger>
+              <TabsTrigger value="staff" disabled={isSubmitting} className="h-9 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:text-primary">Staff login</TabsTrigger>
+              <TabsTrigger value="parent" disabled={isSubmitting} className="h-9 rounded-lg font-semibold data-[state=active]:bg-card data-[state=active]:text-primary">Parent login</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -241,9 +243,14 @@ export default function Login() {
                     <p className="text-sm font-medium text-destructive">{errors.agreeToTerms.message}</p>
                   )}
 
-                  <Button type="submit" disabled={isSubmitting} className="h-12 w-full rounded-xl font-semibold shadow-sm">
-                    {isSubmitting ? "Signing in..." : "Sign in"}
-                  </Button>
+                  <LoadingButton
+                    type="submit"
+                    loading={isSubmitting}
+                    loadingText="Signing in..."
+                    className="h-12 w-full rounded-xl font-semibold shadow-sm"
+                  >
+                    Sign in
+                  </LoadingButton>
 
                   <Button
                     type="button"

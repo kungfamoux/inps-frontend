@@ -7,6 +7,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api/admin';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const guardianSchema = z.object({
@@ -106,6 +107,7 @@ export default function EditParent() {
   });
 
   const onSubmit = (data: ParentFormData) => {
+    if (updateParentMutation.isPending) return;
     updateParentMutation.mutate(data);
   };
 
@@ -620,20 +622,14 @@ export default function EditParent() {
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={isSubmitting}
+          <LoadingButton
+            type="button"
+            loading={isSubmitting || updateParentMutation.isPending}
+            loadingText="Updating..."
             onClick={handleSubmit(onSubmit)}
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Updating...
-              </>
-            ) : (
-              'Update Parent'
-            )}
-          </Button>
+            Update Parent
+          </LoadingButton>
         </div>
       </div>
     </AdminLayout>

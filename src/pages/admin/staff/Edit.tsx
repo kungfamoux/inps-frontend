@@ -8,6 +8,7 @@ import { staffApi } from '@/lib/api/staff';
 import { adminApi } from '@/lib/api/admin';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -330,6 +331,7 @@ export default function EditStaff() {
   });
 
   const onSubmit = (data: StaffFormData) => {
+    if (updateStaffMutation.isPending) return;
     console.log('📝 [EditStaff] Form submitted with data:', data);
     console.log('📝 [EditStaff] Form validation errors:', errors);
     updateStaffMutation.mutate(data);
@@ -1229,16 +1231,13 @@ export default function EditStaff() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    'Update Staff'
-                  )}
-                </Button>
+                <LoadingButton
+                  type="submit"
+                  loading={isSubmitting || updateStaffMutation.isPending}
+                  loadingText="Updating..."
+                >
+                  Update Staff
+                </LoadingButton>
               </div>
             </form>
           </CardContent>

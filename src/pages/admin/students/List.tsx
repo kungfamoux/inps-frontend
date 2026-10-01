@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Users, SearchX } from "lucide-react";
+import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Users, SearchX, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -36,6 +36,8 @@ export default function StudentsList() {
   const [page, setPage] = useState(1);
   const limit = 20;
   const [isSearching, setIsSearching] = useState(false);
+  const [deletingStudent, setDeletingStudent] = useState<string | null>(null);
+  const deletionInProgress = useRef(false);
 
   // Filter configuration for students
   const filterConfig: FilterConfig[] = [
@@ -122,33 +124,46 @@ export default function StudentsList() {
     },
   });
 
-  const handleDelete = (admissionNumber: string) => {
-    // First check if parent has other children
-    adminApi.checkStudentDeletion(admissionNumber)
-      .then((response) => {
-        if (response.success && response.data) {
-          const { hasOtherChildren, otherChildrenCount, parentEmail, studentName } = response.data;
-          
-          let message = `Are you sure you want to delete ${studentName}? This action cannot be undone.`;
-          
-          if (hasOtherChildren) {
-            message += `\n\nWarning: Parent account (${parentEmail}) still has ${otherChildrenCount} other child(ren) registered.`;
-          } else {
-            message += `\n\nNote: Parent account will have no registered children.`;
-          }
-          
-          if (window.confirm(message)) {
-            deleteStudentMutation.mutate(admissionNumber);
-          }
+  const handleDelete = async (admissionNumber: string) => {
+    if (deletionInProgress.current) return;
+    deletionInProgress.current = true;
+    setDeletingStudent(admissionNumber);
+
+    const progressToast = toast.loading("Checking student deletion...");
+    try {
+      let message = "Are you sure you want to delete this student? This action cannot be undone.";
+
+      try {
+        const response = await adminApi.checkStudentDeletion(admissionNumber);
+        if (!response.success || !response.data) {
+          toast.error("Unable to check student deletion. Please try again.");
+          return;
         }
-      })
-      .catch((error) => {
+
+        const { hasOtherChildren, otherChildrenCount, parentEmail, studentName } = response.data;
+        message = `Are you sure you want to delete ${studentName}? This action cannot be undone.`;
+        message += hasOtherChildren
+          ? `\n\nWarning: Parent account (${parentEmail}) still has ${otherChildrenCount} other child(ren) registered.`
+          : "\n\nNote: Parent account will have no registered children.";
+      } catch (error) {
         console.error('Error checking student deletion:', error);
-        // If check fails, proceed with normal confirmation
-        if (window.confirm("Are you sure you want to delete this student? This action cannot be undone.")) {
-          deleteStudentMutation.mutate(admissionNumber);
-        }
-      });
+        // Preserve the existing fallback confirmation if the check fails.
+      }
+
+      toast.dismiss(progressToast);
+      if (!window.confirm(message)) return;
+
+      toast.loading("Deleting student...", { id: progressToast });
+      try {
+        await deleteStudentMutation.mutateAsync(admissionNumber);
+      } catch {
+        // The mutation's onError callback displays the failure toast.
+      }
+    } finally {
+      toast.dismiss(progressToast);
+      deletionInProgress.current = false;
+      setDeletingStudent(null);
+    }
   };
 
   return (
@@ -260,10 +275,16 @@ export default function StudentsList() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  aria-label="Open actions"
+                                  disabled={deletingStudent === student.admissionNumber}
+                                  aria-busy={deletingStudent === student.admissionNumber}
+                                  aria-label={deletingStudent === student.admissionNumber ? "Deleting student" : "Open actions"}
                                   className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
                                 >
-                                  <MoreHorizontal className="size-4" />
+                                  {deletingStudent === student.admissionNumber ? (
+                                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                                  ) : (
+                                    <MoreHorizontal className="size-4" />
+                                  )}
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
@@ -273,7 +294,11 @@ export default function StudentsList() {
                                 <DropdownMenuItem onClick={() => handleEdit(student.admissionNumber)}>
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDelete(student.admissionNumber)} className="text-destructive">
+                                <DropdownMenuItem
+                                  disabled={deletingStudent !== null}
+                                  onClick={() => handleDelete(student.admissionNumber)}
+                                  className="text-destructive"
+                                >
                                   <Trash2 className="mr-2 size-4" /> Delete
                                 </DropdownMenuItem>
                               </DropdownMenuContent>

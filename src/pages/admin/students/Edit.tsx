@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/shared/LoadingButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -216,7 +217,8 @@ export default function EditStudent() {
     },
     onSuccess: () => {
       toast.success("Student updated successfully");
-      navigate("/admin/students");
+      // Refetch student data to show updated parent information
+      window.location.reload();
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to update student");
@@ -224,6 +226,7 @@ export default function EditStudent() {
   });
 
   const onSubmit = (data: StudentFormData) => {
+    if (updateStudentMutation.isPending) return;
     updateStudentMutation.mutate(data);
   };
 
@@ -715,16 +718,13 @@ export default function EditStudent() {
                 <Button type="button" variant="outline" onClick={() => navigate("/admin/students")}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Student"
-                  )}
-                </Button>
+                <LoadingButton
+                  type="submit"
+                  loading={isSubmitting || updateStudentMutation.isPending}
+                  loadingText="Updating..."
+                >
+                  Update Student
+                </LoadingButton>
               </div>
             </form>
           </CardContent>

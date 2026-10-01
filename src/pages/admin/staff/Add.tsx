@@ -8,6 +8,7 @@ import { staffApi } from '@/lib/api/staff';
 import { adminApi } from '@/lib/api/admin';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
+import { LoadingButton } from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,7 +26,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { ArrowLeft, Loader2, Plus, Trash2, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ChevronDown } from 'lucide-react';
 import { StaffRole, Gender, MaritalStatus, Term } from '@/lib/types/common';
 import { Qualification, PreviousEmployment } from '@/lib/types/staff';
 import { NIGERIAN_STATES, getLGAsByState } from '@/lib/data/nigeria-states';
@@ -278,6 +279,7 @@ export default function AddStaff() {
   });
 
   const onSubmit = (data: StaffFormData) => {
+    if (createStaffMutation.isPending) return;
     createStaffMutation.mutate(data);
   };
 
@@ -990,16 +992,13 @@ export default function AddStaff() {
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    'Create Staff Account'
-                  )}
-                </Button>
+                <LoadingButton
+                  type="submit"
+                  loading={isSubmitting || createStaffMutation.isPending}
+                  loadingText="Creating..."
+                >
+                  Create Staff Account
+                </LoadingButton>
               </div>
             </form>
           </CardContent>
