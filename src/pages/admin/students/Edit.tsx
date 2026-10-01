@@ -20,7 +20,7 @@ import {
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Gender, StudentStatus } from "@/lib/types/common";
+import { Gender } from "@/lib/types/common";
 import { NIGERIAN_STATES, getLGAsByState } from "@/lib/data/nigeria-states";
 
 const guardianSchema = z.object({
@@ -50,7 +50,6 @@ const studentSchema = z.object({
   sportHouse: z.string().min(1, "Sport house is required"),
   studentType: z.string().min(1, "Student type is required"),
   address: z.string().min(1, "Address is required"),
-  status: z.nativeEnum(StudentStatus),
   accountEmail: z.string().email("Invalid email address"),
   accountPhone: z.string().min(1, "Phone number is required"),
   primaryGuardian: guardianSchema,
@@ -150,7 +149,6 @@ export default function EditStudent() {
       setValue("sportHouse", student.data.sportHouse || "");
       setValue("studentType", student.data.studentType || "");
       setValue("address", student.data.address || "");
-      setValue("status", student.data.status);
       
       // Account credentials
       if (student.data.parent) {
@@ -196,7 +194,7 @@ export default function EditStudent() {
       formData.append("sportHouse", data.sportHouse);
       formData.append("studentType", data.studentType);
       formData.append("address", data.address);
-      formData.append("status", data.status);
+      formData.append("status", "ACTIVE");
 
       // Account credentials
       formData.append("accountEmail", data.accountEmail);
@@ -371,26 +369,6 @@ export default function EditStudent() {
                       <Label htmlFor="admissionDate">Admission Date *</Label>
                       <Input id="admissionDate" type="date" {...register("admissionDate")} />
                       {errors.admissionDate && <p className="text-sm text-destructive">{errors.admissionDate.message}</p>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Status *</Label>
-                      <Controller
-                        name="status"
-                        control={control}
-                        render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={StudentStatus.ACTIVE}>Active</SelectItem>
-                              <SelectItem value={StudentStatus.GRADUATED}>Graduated</SelectItem>
-                              <SelectItem value={StudentStatus.WITHDRAWN}>Withdrawn</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
                     </div>
                   </div>
                 )}
