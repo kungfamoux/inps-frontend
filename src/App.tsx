@@ -18,6 +18,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 import { StaffRole } from '@/lib/types/common';
 import { AdminLayout } from '@/components/layout/AdminLayout';
+import { TeacherLayout } from '@/components/layout/TeacherLayout';
 import Dashboard from './pages/admin/Dashboard';
 import StudentsList from './pages/admin/students/List';
 import AddStudent from './pages/admin/students/Add';
@@ -82,6 +83,12 @@ import {
   PaymentReconciliation,
   PaymentReports,
 } from './pages/bursary';
+import TeacherDashboard from './pages/teacher/Dashboard';
+import TeacherStudents from './pages/teacher/Students';
+import TeacherResults from './pages/teacher/Results';
+import TeacherAttendance from './pages/teacher/Attendance';
+import TeacherSchedule from './pages/teacher/Schedule';
+import TeacherSettings from './pages/teacher/Settings';
 
 function AppContent() {
   useGlobalErrorHandler();
@@ -205,6 +212,68 @@ function AppContent() {
               />
               <Route path="/admin/results/analytics" element={<Analytics />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
+
+              {/* Teacher Routes */}
+              <Route
+                path="/teacher/dashboard"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherDashboard />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/students"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherStudents />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/results"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherResults />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/attendance"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherAttendance />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/schedule"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherSchedule />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/settings"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherSettings />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Parent Routes */}
               <Route path="/parent/dashboard" element={<ParentDashboard />} />

@@ -159,6 +159,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const role = response.user.role;
             if (role === StaffRole.BURSARY) {
               window.location.assign('/bursary/dashboard');
+            } else if (role === StaffRole.TEACHER) {
+              window.location.assign('/teacher/dashboard');
             } else {
               window.location.assign('/admin/dashboard');
             }
