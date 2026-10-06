@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiClient } from '@/lib/api/client';
 import { StaffRole } from '@/lib/types/common';
 import type { Parent } from '@/lib/types/student';
@@ -55,6 +56,7 @@ const SESSION_TIMEOUTS = {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUser(session.user);
         setUserType(session.userType);
+        console.log('AuthContext loaded from localStorage:', { user: session.user, userType: session.userType });
       } catch {
         clearSession();
       }
@@ -135,6 +138,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (email: string, password: string, type: UserType) => {
       setIsLoading(true);
       try {
+        // Clear any existing session before login
+        clearSession();
+        setUser(null);
+        setUserType(null);
+
         const endpoint =
           type === 'staff' ? '/api/staff/login' : '/api/parent/login';
         const response = await apiClient.post<LoginResponse>(endpoint, {
@@ -157,13 +165,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Redirect based on role
           if (type === 'staff' && 'role' in response.user) {
             const role = response.user.role;
-            if (role === StaffRole.BURSARY) {
-              window.location.assign('/bursary/dashboard');
-            } else if (role === StaffRole.TEACHER) {
-              window.location.assign('/teacher/dashboard');
-            } else {
-              window.location.assign('/admin/dashboard');
-            }
+            console.log('Staff login with role:', role);
+            // Use React Router's navigate to avoid full page reload
+            setTimeout(() => {
+              if (role === StaffRole.BURSARY) {
+                navigate('/bursary/dashboard');
+              } else if (role === StaffRole.TEACHER) {
+                navigate('/teacher/dashboard');
+              } else {
+                navigate('/admin/dashboard');
+              }
+            }, 100);
           }
         } else {
           throw new Error('Login failed');
@@ -172,7 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearSession();
 
         // Log authentication error
-        logError(error instanceof Error ? error : new Error(String(error)), {
+        logError(error instanceof Error ? error : new Error(String(error)), {}, {
           type: 'auth_error',
           endpoint: type === 'staff' ? '/api/staff/login' : '/api/parent/login',
           email: email.substring(0, 3) + '***', // Partial email for privacy
@@ -216,7 +228,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('refresh_token', response.refreshToken);
         }
       } catch (error) {
-        logError(error instanceof Error ? error : new Error(String(error)), {
+        logError(error instanceof Error ? error : new Error(String(error)), {}, {
           type: 'token_refresh_error',
           endpoint:
             currentType === 'parent'
