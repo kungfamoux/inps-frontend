@@ -86,6 +86,7 @@ import {
 import TeacherDashboard from './pages/teacher/Dashboard';
 import TeacherStudents from './pages/teacher/Students';
 import TeacherResults from './pages/teacher/Results';
+import TeacherSubjects from './pages/teacher/Subjects';
 import TeacherAttendance from './pages/teacher/Attendance';
 import TeacherSchedule from './pages/teacher/Schedule';
 import TeacherSettings from './pages/teacher/Settings';
@@ -240,6 +241,16 @@ function AppContent() {
                   <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
                     <TeacherLayout>
                       <TeacherResults />
+                    </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/subjects"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.TEACHER]}>
+                    <TeacherLayout>
+                      <TeacherSubjects />
                     </TeacherLayout>
                   </ProtectedRoute>
                 }

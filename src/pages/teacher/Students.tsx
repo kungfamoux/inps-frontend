@@ -68,12 +68,16 @@ export default function TeacherStudents() {
   const students = response?.data || [];
   const meta = response?.meta;
 
+  const className = response?.class?.name || response?.section?.name || 'Not assigned';
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">My Students</h1>
-          <p className="text-muted-foreground mt-2">View and manage students in your assigned class.</p>
+          <p className="text-muted-foreground mt-2">
+            View and manage students in <span className="font-semibold text-foreground">{className}</span>.
+          </p>
         </div>
       </div>
 

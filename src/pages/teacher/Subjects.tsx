@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSession } from '@/contexts/session-context';
 import { apiClient } from '@/lib/api/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { BookOpen, Upload, Eye, Loader2 } from 'lucide-react';
+import { BookOpen, Loader2 } from 'lucide-react';
 
 interface SubjectAssignment {
   id: string;
@@ -37,7 +35,7 @@ interface SubjectsResponse {
   data: SubjectAssignment[];
 }
 
-export default function TeacherResults() {
+export default function TeacherSubjects() {
   const { currentTerm } = useSession();
   
   // Get teacher's class from pending tasks
@@ -103,58 +101,54 @@ export default function TeacherResults() {
   });
 
   const className = pendingTasks?.data?.class || pendingTasks?.data?.section || 'Not assigned';
-  const subjects = classSubjects?.data || [];
   const isLoading = classLoading || subjectsLoading;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Results Management</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Class Subjects</h1>
         <p className="text-muted-foreground mt-2">
-          Upload and manage student assessment results for <span className="font-semibold text-foreground">{className}</span>.
+          View subjects assigned to <span className="font-semibold text-foreground">{className}</span>.
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Class Subjects</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : subjects.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No subjects assigned to this class yet. Contact the administrator.
-            </div>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {subjects.map((assignment) => (
-                <Card key={assignment.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BookOpen className="h-5 w-5" />
-                      {assignment.subject?.subjectName || 'Unknown Subject'}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">{assignment.subject?.subjectCode || 'N/A'}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <Button className="w-full" variant="default">
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Results
-                    </Button>
-                    <Button className="w-full" variant="outline">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Results
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5" />
+              Subjects for {className}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {classSubjects?.data?.length === 0 ? (
+              <div className="text-center py-12">
+                <BookOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No subjects assigned to this class yet.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {classSubjects?.data?.map((assignment: SubjectAssignment) => (
+                  <Card key={assignment.id}>
+                    <CardContent className="pt-6">
+                      <div className="space-y-2">
+                        <div className="font-semibold text-lg">{assignment.subject?.subjectName || 'Unknown Subject'}</div>
+                        <div className="text-sm text-muted-foreground font-mono">
+                          {assignment.subject?.subjectCode || 'N/A'}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

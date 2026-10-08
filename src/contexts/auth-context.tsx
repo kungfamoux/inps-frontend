@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '@/lib/api/client';
 import { StaffRole } from '@/lib/types/common';
 import type { Parent } from '@/lib/types/student';
@@ -57,6 +57,7 @@ const SESSION_TIMEOUTS = {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,12 +97,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session.user);
         setUserType(session.userType);
         console.log('AuthContext loaded from localStorage:', { user: session.user, userType: session.userType });
+        
+        // Check if user is on the wrong dashboard and redirect
+        if (session.userType === 'staff' && 'role' in session.user) {
+          const role = session.user.role;
+          const pathname = location.pathname;
+          
+          // If teacher is on admin dashboard, redirect to teacher dashboard
+          if (role === StaffRole.TEACHER && pathname.startsWith('/admin/dashboard')) {
+            navigate('/teacher/dashboard', { replace: true });
+          }
+          // If admin is on teacher dashboard, redirect to admin dashboard
+          else if ((role === StaffRole.ADMIN || role === StaffRole.HEAD_TEACHER) && pathname.startsWith('/teacher/dashboard')) {
+            navigate('/admin/dashboard', { replace: true });
+          }
+          // If bursary is on wrong dashboard, redirect to bursary dashboard
+          else if (role === StaffRole.BURSARY && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard'))) {
+            navigate('/bursary/dashboard', { replace: true });
+          }
+        }
       } catch {
         clearSession();
       }
     }
     setIsLoading(false);
-  }, []);
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     const handleExpired = () => void logout();

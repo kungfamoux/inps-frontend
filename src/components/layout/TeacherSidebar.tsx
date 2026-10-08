@@ -18,6 +18,7 @@ const navigation = [
   { label: 'Dashboard', href: '/teacher/dashboard', icon: LayoutDashboard },
   { label: 'My Students', href: '/teacher/students', icon: GraduationCap },
   { label: 'Results', href: '/teacher/results', icon: FileText },
+  { label: 'Subjects', href: '/teacher/subjects', icon: BookOpenCheck },
   { label: 'Attendance', href: '/teacher/attendance', icon: Users },
   { label: 'Schedule', href: '/teacher/schedule', icon: CalendarDays },
   { label: 'Settings', href: '/teacher/settings', icon: Settings },

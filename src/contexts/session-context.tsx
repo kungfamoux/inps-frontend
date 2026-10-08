@@ -46,7 +46,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Load current session/term from backend on mount and when auth state changes
   useEffect(() => {
-    if (isAuthenticated && !isParent && !isBursary && !isTeacher) {
+    if (isAuthenticated && !isParent && !isBursary) {
       loadCurrentSessionAndTerm();
       loadAllSessions();
     } else if (isAuthenticated && isParent) {
@@ -57,10 +57,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // For bursary users, don't load admin session data to avoid 403 errors
       // Backend doesn't provide session endpoints for bursary role
       setIsLoading(false);
-    } else if (isAuthenticated && isTeacher) {
-      // For teachers, don't load admin session data to avoid 403 errors
-      // Teachers don't have access to admin config endpoints
-      setIsLoading(false);
     } else {
       // Clear session data when not authenticated
       setCurrentSession(null);
@@ -68,7 +64,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setAllSessions([]);
       setIsLoading(false);
     }
-  }, [isAuthenticated, isParent, isBursary, isTeacher]);
+  }, [isAuthenticated, isParent, isBursary]);
 
   // Check URL parameters for historical view
   useEffect(() => {
