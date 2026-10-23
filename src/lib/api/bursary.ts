@@ -135,6 +135,17 @@ export const bursaryApi = {
     return apiClient.get<PaginatedResponse<any>>("/api/finance/payments", params);
   },
 
+  async recordManualPayment(data: {
+    studentId: string;
+    invoiceIds: string[];
+    amount: number;
+    paymentChannel: string;
+    referenceNumber?: string;
+    notes?: string;
+  }): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>("/api/finance/payments/manual", data);
+  },
+
   async reconcilePayment(paymentId: string, feeCollectionId: string): Promise<ApiResponse<any>> {
     return apiClient.post<ApiResponse<any>>(`/api/finance/payments/${paymentId}/reconcile`, { feeCollectionId });
   },
