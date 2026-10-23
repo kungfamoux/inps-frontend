@@ -202,21 +202,19 @@ export default function FeeCollections() {
                         const paidAmount = collection.amountPaid || 0;
                         const balance = collection.balance || 0;
                         const isFullyPaid = balance <= 0;
-                        const className = collection.student?.enrollments?.[0]?.class?.name || 'N/A';
 
                         return (
-                          <TableRow key={collection.id}>
+                          <TableRow key={collection.invoiceId || collection.id}>
                             <TableCell className="font-medium">
-                              {collection.student?.firstName}{' '}
-                              {collection.student?.lastName}
+                              {collection.studentName}
                             </TableCell>
                             <TableCell>
-                              {collection.student?.admissionNumber}
+                              {collection.admissionNumber}
                             </TableCell>
                             <TableCell>
-                              {className}
+                              {collection.class || 'N/A'}
                             </TableCell>
-                            <TableCell>{collection.bill?.name}</TableCell>
+                            <TableCell>{collection.feeType || 'N/A'}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
                                 <span className="font-semibold">₦</span>
