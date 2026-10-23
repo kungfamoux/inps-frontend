@@ -22,7 +22,6 @@ import {
   FileText,
   Loader2,
   CreditCard,
-  IndianRupee,
   ArrowRight,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -241,7 +240,7 @@ export default function FeeCollections() {
                             <TableCell>{collection.bill?.name}</TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1">
-                                <IndianRupee className="h-4 w-4" />
+                                <span className="font-semibold">₦</span>
                                 <span className="font-semibold">
                                   {collection.amount.toLocaleString()}
                                 </span>
@@ -249,7 +248,7 @@ export default function FeeCollections() {
                             </TableCell>
                             <TableCell className="text-green-600 font-semibold">
                               <div className="flex items-center gap-1">
-                                <IndianRupee className="h-4 w-4" />
+                                <span>₦</span>
                                 <span>{paidAmount.toLocaleString()}</span>
                               </div>
                             </TableCell>
@@ -261,7 +260,7 @@ export default function FeeCollections() {
                               }
                             >
                               <div className="flex items-center gap-1">
-                                <IndianRupee className="h-4 w-4" />
+                                <span>₦</span>
                                 <span>{balance.toLocaleString()}</span>
                               </div>
                             </TableCell>
