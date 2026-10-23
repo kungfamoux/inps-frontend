@@ -21,7 +21,6 @@ import {
   Download,
   FileText,
   Loader2,
-  CreditCard,
   ArrowRight,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,7 +41,6 @@ export default function FeeCollections() {
   const [selectedTermId, setSelectedTermId] = useState('');
   const [selectedTerm, setSelectedTerm] = useState('');
   const [classFilter, setClassFilter] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('');
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -58,7 +56,6 @@ export default function FeeCollections() {
       selectedSessionName,
       selectedTerm,
       classFilter,
-      paymentMethod,
       status,
       page,
       limit,
@@ -68,7 +65,6 @@ export default function FeeCollections() {
         academicYear: selectedSessionName || undefined,
         term: selectedTerm || undefined,
         classFilter: classFilter || undefined,
-        paymentMethod: paymentMethod || undefined,
         status: status || undefined,
         search: search || undefined,
         page,
@@ -77,7 +73,7 @@ export default function FeeCollections() {
   });
 
   const collections = collectionsData?.data || [];
-  const total = collectionsData?.pagination?.total || 0;
+  const total = collectionsData?.pagination?.totalItems || 0;
   const totalPages = collectionsData?.pagination?.totalPages || 1;
 
   const handleSearch = () => {
@@ -116,7 +112,7 @@ export default function FeeCollections() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-5">
+            <div className="grid gap-4 md:grid-cols-4">
               <SessionTermSelector
                 sessionId={selectedSessionId}
                 termId={selectedTermId}
@@ -137,20 +133,6 @@ export default function FeeCollections() {
                   value={classFilter}
                   onChange={(e) => setClassFilter(e.target.value)}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Payment Method</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All methods" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="CASH">Cash</SelectItem>
-                    <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-                    <SelectItem value="POS">POS</SelectItem>
-                    <SelectItem value="CHEQUE">Cheque</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div className="space-y-2">
                 <Label>Status</Label>
@@ -210,20 +192,17 @@ export default function FeeCollections() {
                         <TableHead>Total Amount</TableHead>
                         <TableHead>Paid</TableHead>
                         <TableHead>Balance</TableHead>
-                        <TableHead>Payment Method</TableHead>
-                        <TableHead>Date</TableHead>
+                        <TableHead>Due Date</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {collections.map((collection: any) => {
-                        const paidAmount = collection.paidAmount || 0;
-                        const balance =
-                          collection.balance || collection.amount - paidAmount;
+                        const paidAmount = collection.amountPaid || 0;
+                        const balance = collection.balance || 0;
                         const isFullyPaid = balance <= 0;
-                        const hasPayments =
-                          collection.payments && collection.payments.length > 0;
+                        const className = collection.student?.enrollments?.[0]?.class?.name || 'N/A';
 
                         return (
                           <TableRow key={collection.id}>
@@ -235,7 +214,7 @@ export default function FeeCollections() {
                               {collection.student?.admissionNumber}
                             </TableCell>
                             <TableCell>
-                              {collection.student?.class?.name}
+                              {className}
                             </TableCell>
                             <TableCell>{collection.bill?.name}</TableCell>
                             <TableCell>
@@ -265,14 +244,9 @@ export default function FeeCollections() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline">
-                                {collection.paymentMethod}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              {new Date(
-                                collection.paymentDate,
-                              ).toLocaleDateString()}
+                              {collection.dueDate
+                                ? new Date(collection.dueDate).toLocaleDateString()
+                                : 'N/A'}
                             </TableCell>
                             <TableCell>
                               <Badge
@@ -289,15 +263,6 @@ export default function FeeCollections() {
                             </TableCell>
                             <TableCell>
                               <div className="flex gap-1">
-                                {hasPayments && (
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    title="View Payments"
-                                  >
-                                    <CreditCard className="h-4 w-4" />
-                                  </Button>
-                                )}
                                 <Button
                                   variant="ghost"
                                   size="icon"
