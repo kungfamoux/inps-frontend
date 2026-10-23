@@ -139,6 +139,7 @@ export const bursaryApi = {
     studentId: string;
     invoiceIds: string[];
     amount: number;
+    paymentDate: string;
     paymentChannel: string;
     referenceNumber?: string;
     notes?: string;
