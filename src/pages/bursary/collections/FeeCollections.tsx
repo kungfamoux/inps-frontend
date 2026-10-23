@@ -166,35 +166,48 @@ export default function FeeCollections() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Collections ({total})</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>Collections ({total})</span>
+              {total > 0 && (
+                <div className="flex gap-4 text-sm text-muted-foreground">
+                  <span>Total Due: ₦{collections.reduce((sum, c) => sum + (c.balance || 0), 0).toLocaleString()}</span>
+                </div>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="space-y-4">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-16 w-full" />
+                  <Skeleton key={i} className="h-20 w-full" />
                 ))}
               </div>
             ) : collections.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                No fee collections found.
+              <div className="text-center py-16">
+                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No fee collections found</h3>
+                <p className="text-muted-foreground">
+                  {selectedSessionName || selectedTerm
+                    ? 'Try adjusting your filters or generate invoices for the current term.'
+                    : 'Select an academic session and term to view fee collections.'}
+                </p>
               </div>
             ) : (
               <>
-                <div className="rounded-md border">
+                <div className="rounded-lg border overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow>
-                        <TableHead>Student</TableHead>
-                        <TableHead>Admission No</TableHead>
-                        <TableHead>Class</TableHead>
-                        <TableHead>Bill</TableHead>
-                        <TableHead>Total Amount</TableHead>
-                        <TableHead>Paid</TableHead>
-                        <TableHead>Balance</TableHead>
-                        <TableHead>Due Date</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
+                      <TableRow className="bg-muted/50">
+                        <TableHead className="font-semibold">Student</TableHead>
+                        <TableHead className="font-semibold">Admission No</TableHead>
+                        <TableHead className="font-semibold">Class</TableHead>
+                        <TableHead className="font-semibold">Bill</TableHead>
+                        <TableHead className="font-semibold text-right">Total</TableHead>
+                        <TableHead className="font-semibold text-right">Paid</TableHead>
+                        <TableHead className="font-semibold text-right">Balance</TableHead>
+                        <TableHead className="font-semibold">Due Date</TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="font-semibold text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -202,69 +215,92 @@ export default function FeeCollections() {
                         const paidAmount = collection.amountPaid || 0;
                         const balance = collection.balance || 0;
                         const isFullyPaid = balance <= 0;
+                        const isOverdue = collection.dueDate && new Date(collection.dueDate) < new Date() && !isFullyPaid;
 
                         return (
-                          <TableRow key={collection.invoiceId || collection.id}>
+                          <TableRow
+                            key={collection.invoiceId || collection.id}
+                            className="hover:bg-muted/50 transition-colors"
+                          >
                             <TableCell className="font-medium">
-                              {collection.studentName}
+                              <div className="flex items-center gap-2">
+                                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                                  {collection.studentName?.charAt(0) || '?'}
+                                </div>
+                                <span>{collection.studentName}</span>
+                              </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="font-mono text-sm">
                               {collection.admissionNumber}
                             </TableCell>
                             <TableCell>
-                              {collection.class || 'N/A'}
-                            </TableCell>
-                            <TableCell>{collection.feeType || 'N/A'}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <span className="font-semibold">₦</span>
-                                <span className="font-semibold">
-                                  {collection.amount.toLocaleString()}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-green-600 font-semibold">
-                              <div className="flex items-center gap-1">
-                                <span>₦</span>
-                                <span>{paidAmount.toLocaleString()}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell
-                              className={
-                                balance > 0
-                                  ? 'text-red-600 font-semibold'
-                                  : 'text-green-600 font-semibold'
-                              }
-                            >
-                              <div className="flex items-center gap-1">
-                                <span>₦</span>
-                                <span>{balance.toLocaleString()}</span>
-                              </div>
+                              <Badge variant="outline" className="font-normal">
+                                {collection.class || 'N/A'}
+                              </Badge>
                             </TableCell>
                             <TableCell>
-                              {collection.dueDate
-                                ? new Date(collection.dueDate).toLocaleDateString()
-                                : 'N/A'}
+                              <div className="font-medium">{collection.feeType || 'N/A'}</div>
+                            </TableCell>
+                            <TableCell className="text-right font-semibold">
+                              ₦{collection.amount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right text-green-600 font-semibold">
+                              ₦{paidAmount.toLocaleString()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span
+                                className={`font-semibold ${
+                                  balance > 0
+                                    ? isOverdue
+                                      ? 'text-red-600'
+                                      : 'text-orange-600'
+                                    : 'text-green-600'
+                                }`}
+                              >
+                                ₦{balance.toLocaleString()}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {collection.dueDate ? (
+                                  <>
+                                    <span className="text-sm">
+                                      {new Date(collection.dueDate).toLocaleDateString()}
+                                    </span>
+                                    {isOverdue && (
+                                      <Badge variant="destructive" className="text-xs">
+                                        Overdue
+                                      </Badge>
+                                    )}
+                                  </>
+                                ) : (
+                                  <span className="text-muted-foreground text-sm">N/A</span>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell>
                               <Badge
                                 variant={
                                   isFullyPaid
                                     ? 'default'
-                                    : collection.status === 'PENDING'
-                                      ? 'secondary'
-                                      : 'destructive'
+                                    : isOverdue
+                                      ? 'destructive'
+                                      : collection.status === 'PENDING'
+                                        ? 'secondary'
+                                        : 'outline'
                                 }
+                                className="font-medium"
                               >
                                 {isFullyPaid ? 'PAID' : collection.status}
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <div className="flex gap-1">
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   title="View Details"
+                                  className="h-8 w-8"
                                 >
                                   <FileText className="h-4 w-4" />
                                 </Button>
@@ -273,6 +309,7 @@ export default function FeeCollections() {
                                     variant="ghost"
                                     size="icon"
                                     title="Record Payment"
+                                    className="h-8 w-8 text-primary hover:text-primary"
                                   >
                                     <ArrowRight className="h-4 w-4" />
                                   </Button>
@@ -287,7 +324,7 @@ export default function FeeCollections() {
                 </div>
 
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-4">
+                  <div className="flex items-center justify-between pt-4 border-t">
                     <div className="text-sm text-muted-foreground">
                       Showing {(page - 1) * limit + 1} to{' '}
                       {Math.min(page * limit, total)} of {total} entries
@@ -295,37 +332,51 @@ export default function FeeCollections() {
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
                         onClick={() => setPage((p) => Math.max(1, p - 1))}
                         disabled={page === 1}
                       >
-                        <ChevronLeft className="h-4 w-4" />
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
                       </Button>
                       <div className="flex items-center gap-1">
                         {Array.from(
-                          { length: totalPages },
-                          (_, i) => i + 1,
-                        ).map((pageNum) => (
-                          <Button
-                            key={pageNum}
-                            variant={page === pageNum ? 'default' : 'outline'}
-                            size="icon"
-                            className="w-8 h-8"
-                            onClick={() => setPage(pageNum)}
-                          >
-                            {pageNum}
-                          </Button>
-                        ))}
+                          { length: Math.min(5, totalPages) },
+                          (_, i) => {
+                            let pageNum;
+                            if (totalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (page <= 3) {
+                              pageNum = i + 1;
+                            } else if (page >= totalPages - 2) {
+                              pageNum = totalPages - 4 + i;
+                            } else {
+                              pageNum = page - 2 + i;
+                            }
+                            return (
+                              <Button
+                                key={pageNum}
+                                variant={page === pageNum ? 'default' : 'outline'}
+                                size="sm"
+                                className="w-8 h-8"
+                                onClick={() => setPage(pageNum)}
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          }
+                        )}
                       </div>
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
                         onClick={() =>
                           setPage((p) => Math.min(totalPages, p + 1))
                         }
                         disabled={page === totalPages}
                       >
-                        <ChevronRight className="h-4 w-4" />
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
                       </Button>
                     </div>
                   </div>
