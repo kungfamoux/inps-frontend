@@ -48,7 +48,6 @@ export default function FeesOverview() {
               <ChildFeeCard 
                 key={child.id} 
                 child={child} 
-                onPayNow={() => navigate(`/parent/fees/${child.id}`)}
               />
             ))}
           </div>
@@ -58,7 +57,7 @@ export default function FeesOverview() {
   );
 }
 
-function ChildFeeCard({ child, onPayNow }: { child: any; onPayNow: () => void }) {
+function ChildFeeCard({ child }: { child: any }) {
   const { data: feeData, isLoading } = useQuery({
     queryKey: ["child-fee-overview", child.id],
     queryFn: () => parentApi.getFeeOverview(child.id),
@@ -146,7 +145,7 @@ function ChildFeeCard({ child, onPayNow }: { child: any; onPayNow: () => void })
 
             <Button 
               className="w-full" 
-              onClick={onPayNow}
+              onClick={handlePayNow}
               disabled={!hasOutstanding}
             >
               {hasOutstanding ? (
