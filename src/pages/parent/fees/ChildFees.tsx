@@ -142,28 +142,19 @@ export default function ChildFees() {
             {outstandingInvoices.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Payment</CardTitle>
+                  <CardTitle>Payment Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <Alert>
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Online payments are currently unavailable. Please contact the school bursary to make manual payments or pay directly at the school office.
+                    </AlertDescription>
+                  </Alert>
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-muted-foreground">Selected Invoices</p>
-                      <p className="text-2xl font-bold">₦{selectedTotal.toLocaleString()}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() => handlePayAll()}
-                        disabled={outstandingInvoices.length === 0}
-                      >
-                        Pay All Outstanding (₦{totalOutstanding.toLocaleString()})
-                      </Button>
-                      <Button
-                        onClick={handlePaySelected}
-                        disabled={selectedInvoices.length === 0}
-                      >
-                        Pay Selected ({selectedInvoices.length})
-                      </Button>
+                      <p className="text-sm text-muted-foreground">Total Outstanding</p>
+                      <p className="text-2xl font-bold">₦{totalOutstanding.toLocaleString()}</p>
                     </div>
                   </div>
                 </CardContent>

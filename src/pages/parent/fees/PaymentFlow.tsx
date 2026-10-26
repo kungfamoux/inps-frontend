@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { parentApi } from "@/lib/api/parent";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { ArrowLeft, WalletCards, AlertCircle, CheckCircle, Loader2, Download, ExternalLink } from "lucide-react";
+import { ArrowLeft, WalletCards, AlertCircle, CheckCircle, Loader2, Download } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -156,33 +156,15 @@ export default function PaymentFlow() {
                 </div>
 
                 <Alert>
-                  <ExternalLink className="h-4 w-4" />
+                  <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    You will be redirected to Paystack's secure payment gateway to complete this transaction.
-                    Paystack accepts card payments, bank transfers, and other payment methods.
+                    Online payments are currently unavailable. Please contact the school bursary to make manual payments or pay directly at the school office.
                   </AlertDescription>
                 </Alert>
 
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={handleGoBack}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleInitializePayment}
-                    disabled={initializeMutation.isPending}
-                    className="flex-1"
-                  >
-                    {initializeMutation.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <WalletCards className="mr-2 h-4 w-4" />
-                        Proceed to Payment
-                      </>
-                    )}
+                    Back to Fees
                   </Button>
                 </div>
               </CardContent>

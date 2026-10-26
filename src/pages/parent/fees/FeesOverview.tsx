@@ -136,19 +136,9 @@ function ChildFeeCard({ child, onPayNow }: { child: any; onPayNow: () => void })
             <Button 
               className="w-full" 
               onClick={onPayNow}
-              disabled={!hasOutstanding}
             >
-              {hasOutstanding ? (
-                <>
-                  <WalletCards className="mr-2 h-4 w-4" />
-                  Pay Now
-                </>
-              ) : (
-                <>
-                  <UsersRound className="mr-2 h-4 w-4" />
-                  View Details
-                </>
-              )}
+              <UsersRound className="mr-2 h-4 w-4" />
+              View Details
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </>

@@ -50,9 +50,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       loadCurrentSessionAndTerm();
       loadAllSessions();
     } else if (isAuthenticated && isParent) {
-      // For parents, don't load session data to avoid 401 errors
-      // They use their own parent-specific API calls
-      setIsLoading(false);
+      // For parents, try to load session data but don't fail if it errors
+      loadCurrentSessionAndTerm().catch(() => {
+        // Parents may not have access to admin config endpoints
+        setIsLoading(false);
+      });
+      loadAllSessions().catch(() => {
+        // Parents may not have access to admin config endpoints
+      });
     } else if (isAuthenticated && isBursary) {
       // For bursary users, don't load admin session data to avoid 403 errors
       // Backend doesn't provide session endpoints for bursary role
