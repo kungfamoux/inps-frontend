@@ -82,6 +82,7 @@ import {
   BursarySettings,
   PaymentReconciliation,
   PaymentReports,
+  PendingPayments,
 } from './pages/bursary';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import TeacherStudents from './pages/teacher/Students';
@@ -382,6 +383,7 @@ function AppContent() {
                 path="/bursary/invoices/generate"
                 element={<GenerateInvoice />}
               />
+              <Route path="/bursary/pending-payments" element={<PendingPayments />} />
               <Route path="/bursary/expenses" element={<Expenses />} />
               <Route path="/bursary/income" element={<IncomeRecords />} />
               <Route

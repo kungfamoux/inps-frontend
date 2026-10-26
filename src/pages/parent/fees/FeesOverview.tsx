@@ -69,9 +69,20 @@ function ChildFeeCard({ child, onPayNow }: { child: any; onPayNow: () => void })
   const totalOutstanding = feeOverview?.totalOutstanding || 0;
   const totalPaid = feeOverview?.totalPaid || 0;
   const totalFees = feeOverview?.totalFees || 0;
+  const navigate = useNavigate();
 
   const hasOutstanding = totalOutstanding > 0;
   const isFullyPaid = totalOutstanding === 0 && totalFees > 0;
+
+  const handlePayNow = () => {
+    if (hasOutstanding) {
+      const outstandingInvoices = feeOverview?.breakdown?.filter((inv: any) => inv.balance > 0) || [];
+      const invoiceIds = outstandingInvoices.map((inv: any) => inv.id);
+      navigate(`/parent/fees/${child.id}/pay`, { state: { invoiceIds } });
+    } else {
+      navigate(`/parent/fees/${child.id}`);
+    }
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -136,9 +147,19 @@ function ChildFeeCard({ child, onPayNow }: { child: any; onPayNow: () => void })
             <Button 
               className="w-full" 
               onClick={onPayNow}
+              disabled={!hasOutstanding}
             >
-              <UsersRound className="mr-2 h-4 w-4" />
-              View Details
+              {hasOutstanding ? (
+                <>
+                  <WalletCards className="mr-2 h-4 w-4" />
+                  Pay Now
+                </>
+              ) : (
+                <>
+                  <UsersRound className="mr-2 h-4 w-4" />
+                  View Details
+                </>
+              )}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </>

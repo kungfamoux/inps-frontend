@@ -5,18 +5,31 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { parentApi } from "@/lib/api/parent";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
-import { ArrowLeft, WalletCards, AlertCircle, CheckCircle, Loader2, Download } from "lucide-react";
+import { ArrowLeft, WalletCards, AlertCircle, CheckCircle, Loader2, Download, Copy, Check, Upload } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function PaymentFlow() {
   const navigate = useNavigate();
   const { studentId } = useParams<{ studentId: string }>();
   const location = useLocation();
   const invoiceIds = location.state?.invoiceIds || [];
-  const [paymentStep, setPaymentStep] = useState<'review' | 'processing' | 'success' | 'failed'>('review');
+  const [paymentStep, setPaymentStep] = useState<'review' | 'upload' | 'processing' | 'success' | 'failed'>('review');
   const [paymentReference, setPaymentReference] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [proofFile, setProofFile] = useState<File | null>(null);
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+
+  const BANK_DETAILS = {
+    accountNumber: '1011077261',
+    bank: 'Zenith Bank',
+    accountName: 'INTERNATIONAL NUR/PRIMARY SCHOOL'
+  };
 
   const { data: feeData, isLoading } = useQuery({
     queryKey: ["child-fee-overview", studentId],
@@ -30,6 +43,23 @@ export default function PaymentFlow() {
       setPaymentReference(data.data.reference);
       // Redirect to Paystack
       window.location.href = data.data.authorizationUrl;
+    },
+    onError: (error) => {
+      setPaymentStep('failed');
+    },
+  });
+
+  const uploadProofMutation = useMutation({
+    mutationFn: async (data: { proof: File; referenceNumber: string; paymentDate: string }) => {
+      return parentApi.uploadPaymentProof(studentId, {
+        proof: data.proof,
+        referenceNumber: data.referenceNumber,
+        paymentDate: data.paymentDate,
+        invoiceIds,
+      });
+    },
+    onSuccess: () => {
+      setPaymentStep('success');
     },
     onError: (error) => {
       setPaymentStep('failed');
@@ -63,9 +93,29 @@ export default function PaymentFlow() {
   }, []);
 
   const handleInitializePayment = () => {
-    if (invoiceIds.length > 0) {
+    setPaymentStep('upload');
+  };
+
+  const handleCopyAccountNumber = () => {
+    navigator.clipboard.writeText(BANK_DETAILS.accountNumber);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setProofFile(e.target.files[0]);
+    }
+  };
+
+  const handleUploadProof = () => {
+    if (proofFile) {
       setPaymentStep('processing');
-      initializeMutation.mutate(invoiceIds);
+      uploadProofMutation.mutate({
+        proof: proofFile,
+        referenceNumber: referenceNumber || undefined,
+        paymentDate
+      });
     }
   };
 
@@ -124,7 +174,7 @@ export default function PaymentFlow() {
             {/* Review Section */}
             <Card>
               <CardHeader>
-                <CardTitle>Review Payment</CardTitle>
+                <CardTitle>Payment Instructions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -155,16 +205,129 @@ export default function PaymentFlow() {
                   </div>
                 </div>
 
+                <Card className="bg-green-50 border-green-200">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Bank Transfer Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Bank Name</Label>
+                      <p className="font-semibold">{BANK_DETAILS.bank}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Account Number</Label>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-lg">{BANK_DETAILS.accountNumber}</p>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={handleCopyAccountNumber}
+                          className="h-8 w-8"
+                        >
+                          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">Account Name</Label>
+                      <p className="font-semibold">{BANK_DETAILS.accountName}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Online payments are currently unavailable. Please contact the school bursary to make manual payments or pay directly at the school office.
+                    Please transfer the total amount to the bank account above. After making the transfer, click "Upload Payment Proof" to upload your receipt/reference number for verification.
                   </AlertDescription>
                 </Alert>
 
                 <div className="flex gap-3">
                   <Button variant="outline" onClick={handleGoBack}>
-                    Back to Fees
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleInitializePayment}
+                    className="flex-1"
+                  >
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Payment Proof
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {paymentStep === 'upload' && (
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Upload Payment Proof</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Please upload your payment receipt or transfer confirmation. The school bursary will verify your payment and update your account.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="proof">Payment Receipt/Proof *</Label>
+                    <Input
+                      id="proof"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={handleFileChange}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-xs text-muted-foreground">Accepted formats: JPG, PNG, PDF</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="reference">Reference/Transaction Number *</Label>
+                    <Input
+                      id="reference"
+                      placeholder="e.g., UTR123456789"
+                      value={referenceNumber}
+                      onChange={(e) => setReferenceNumber(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="paymentDate">Payment Date</Label>
+                    <Input
+                      id="paymentDate"
+                      type="date"
+                      value={paymentDate}
+                      onChange={(e) => setPaymentDate(e.target.value)}
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setPaymentStep('review')}>
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleUploadProof}
+                    disabled={!proofFile || uploadProofMutation.isPending}
+                    className="flex-1"
+                  >
+                    {uploadProofMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Submit Payment Proof
+                      </>
+                    )}
                   </Button>
                 </div>
               </CardContent>

@@ -78,6 +78,21 @@ export const parentApi = {
     return apiClient.post<ApiResponse<any>>('/api/parent/fees/pay/verify', { reference });
   },
 
+  async uploadPaymentProof(studentId: string, data: { proof: File; referenceNumber?: string; paymentDate: string; invoiceIds: string[] }): Promise<ApiResponse<any>> {
+    const formData = new FormData();
+    formData.append('proof', data.proof);
+    formData.append('paymentDate', data.paymentDate);
+    formData.append('invoiceIds', JSON.stringify(data.invoiceIds));
+    if (data.referenceNumber) {
+      formData.append('referenceNumber', data.referenceNumber);
+    }
+    return apiClient.post<ApiResponse<any>>(`/api/parent/fees/${studentId}/upload-proof`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+
   // Config
   async getSessions(): Promise<ApiResponse<any[]>> {
     return apiClient.get<ApiResponse<any[]>>("/api/parent/config/sessions");

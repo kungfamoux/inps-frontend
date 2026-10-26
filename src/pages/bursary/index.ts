@@ -9,5 +9,6 @@ export { default as Expenses } from "./financial/Expenses";
 export { default as IncomeRecords } from "./financial/Income";
 export { default as PaymentReconciliation } from "./payments/PaymentReconciliation";
 export { default as PaymentReports } from "./payments/PaymentReports";
+export { default as PendingPayments } from "./PendingPayments";
 export { default as BookPrices } from "./books/BookPrices";
 export { default as BursarySettings } from "./Settings";

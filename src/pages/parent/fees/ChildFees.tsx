@@ -142,13 +142,13 @@ export default function ChildFees() {
             {outstandingInvoices.length > 0 && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Payment Information</CardTitle>
+                  <CardTitle>Payment Options</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      Online payments are currently unavailable. Please contact the school bursary to make manual payments or pay directly at the school office.
+                      Make payments via bank transfer to the school account. After transferring, upload your payment proof for verification.
                     </AlertDescription>
                   </Alert>
                   <div className="flex items-center justify-between">
@@ -156,6 +156,12 @@ export default function ChildFees() {
                       <p className="text-sm text-muted-foreground">Total Outstanding</p>
                       <p className="text-2xl font-bold">₦{totalOutstanding.toLocaleString()}</p>
                     </div>
+                    <Button
+                      onClick={() => handlePayAll()}
+                      disabled={outstandingInvoices.length === 0}
+                    >
+                      Pay All Outstanding
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

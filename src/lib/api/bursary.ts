@@ -147,12 +147,20 @@ export const bursaryApi = {
     return apiClient.post<ApiResponse<any>>("/api/finance/payments/manual", data);
   },
 
-  async reconcilePayment(paymentId: string, feeCollectionId: string): Promise<ApiResponse<any>> {
-    return apiClient.post<ApiResponse<any>>(`/api/finance/payments/${paymentId}/reconcile`, { feeCollectionId });
+  async getPendingPayments(params?: { page?: number; limit?: number; status?: string }): Promise<PaginatedResponse<any>> {
+    return apiClient.get<PaginatedResponse<any>>("/api/finance/payments/pending", params);
   },
 
-  async rejectPayment(paymentId: string): Promise<ApiResponse<any>> {
-    return apiClient.post<ApiResponse<any>>(`/api/finance/payments/${paymentId}/reject`, {});
+  async approvePayment(data: { paymentId: string; notes?: string }): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>(`/api/finance/payments/${data.paymentId}/approve`, data);
+  },
+
+  async rejectPayment(data: { paymentId: string; reason: string }): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>(`/api/finance/payments/${data.paymentId}/reject`, data);
+  },
+
+  async rejectPayment(data: { paymentId: string; reason: string }): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>(`/api/finance/payments/${data.paymentId}/reject`, data);
   },
 
   async getPaymentReports(params?: {
