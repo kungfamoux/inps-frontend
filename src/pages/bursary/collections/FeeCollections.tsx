@@ -92,8 +92,8 @@ export default function FeeCollections() {
   });
 
   const collections = collectionsData?.data || [];
-  const total = collectionsData?.pagination?.totalItems || 0;
-  const totalPages = collectionsData?.pagination?.totalPages || 1;
+  const total = collectionsData?.meta?.total || 0;
+  const totalPages = collectionsData?.meta?.totalPages || 1;
 
   const handleSearch = () => {
     setPage(1);
