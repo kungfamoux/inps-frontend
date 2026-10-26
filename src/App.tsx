@@ -287,27 +287,85 @@ function AppContent() {
               />
 
               {/* Parent Routes */}
-              <Route path="/parent/dashboard" element={<ParentDashboard />} />
-              <Route path="/parent/children" element={<ParentChildren />} />
+              <Route
+                path="/parent/dashboard"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ParentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/parent/children"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ParentChildren />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/parent/children/:studentId"
-                element={<ChildProfile />}
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ChildProfile />
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/parent/results" element={<ParentResults />} />
-              <Route path="/parent/settings" element={<ParentSettings />} />
-              <Route path="/parent/fees" element={<FeesOverview />} />
-              <Route path="/parent/fees/:studentId" element={<ChildFees />} />
+              <Route
+                path="/parent/results"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ParentResults />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/parent/settings"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ParentSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/parent/fees"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <FeesOverview />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/parent/fees/:studentId"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ChildFees />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/parent/fees/:studentId/pay"
-                element={<PaymentFlow />}
+                element={
+                  <ProtectedRoute userType="parent">
+                    <PaymentFlow />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/parent/fees/:studentId/history"
-                element={<PaymentHistory />}
+                element={
+                  <ProtectedRoute userType="parent">
+                    <PaymentHistory />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/parent/fees/:studentId/receipt/:paymentId"
-                element={<ReceiptDownload />}
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ReceiptDownload />
+                  </ProtectedRoute>
+                }
               />
 
               {/* Bursary Routes */}

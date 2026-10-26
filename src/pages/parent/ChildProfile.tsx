@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { parentApi } from "@/lib/api/parent";
 import { Child } from "@/lib/types/parent";
-import { GraduationCap, ArrowLeft, Eye, WalletCards, Calendar, User, MapPin, Phone, Mail, IndianRupee, AlertCircle, CheckCircle } from "lucide-react";
+import { GraduationCap, ArrowLeft, Eye, WalletCards, Calendar, User, MapPin, Phone, Mail, AlertCircle, CheckCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
@@ -157,7 +157,7 @@ export default function ChildProfile() {
                     <div className="p-4 rounded-lg border">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm text-muted-foreground">Total Fees</span>
-                        <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">₦</span>
                       </div>
                       <p className="text-2xl font-bold">₦{feeOverview.totalFees.toLocaleString()}</p>
                     </div>

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { parentApi } from "@/lib/api/parent";
 import { useNavigate, useParams } from "react-router-dom";
-import { WalletCards, ArrowLeft, ArrowRight, AlertCircle, CheckCircle, Clock, Calendar, IndianRupee } from "lucide-react";
+import { WalletCards, ArrowLeft, ArrowRight, AlertCircle, CheckCircle, Clock, Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -108,7 +108,7 @@ export default function ChildFees() {
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Fees</CardTitle>
-                  <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">₦</span>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">₦{totalFees.toLocaleString()}</div>
