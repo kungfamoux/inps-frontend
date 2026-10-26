@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
 } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '@/lib/api/client';
@@ -61,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasRedirected = useRef(false);
 
   const logout = useCallback(() => {
     clearSession();
@@ -98,30 +100,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserType(session.userType);
         console.log('AuthContext loaded from localStorage:', { user: session.user, userType: session.userType });
         
-        // Check if user is on the wrong dashboard and redirect
-        if (session.userType === 'staff' && 'role' in session.user) {
-          const role = session.user.role;
-          const pathname = location.pathname;
-          
-          // If teacher is on admin dashboard, redirect to teacher dashboard
-          if (role === StaffRole.TEACHER && pathname.startsWith('/admin/dashboard')) {
-            navigate('/teacher/dashboard', { replace: true });
+        // Only redirect once on initial load, not on every pathname change
+        if (!hasRedirected.current) {
+          // Check if user is on the wrong dashboard and redirect
+          if (session.userType === 'staff' && 'role' in session.user) {
+            const role = session.user.role;
+            const pathname = location.pathname;
+            
+            // If teacher is on admin dashboard, redirect to teacher dashboard
+            if (role === StaffRole.TEACHER && pathname.startsWith('/admin/dashboard')) {
+              navigate('/teacher/dashboard', { replace: true });
+              hasRedirected.current = true;
+            }
+            // If admin is on teacher dashboard, redirect to admin dashboard
+            else if ((role === StaffRole.ADMIN || role === StaffRole.HEAD_TEACHER) && pathname.startsWith('/teacher/dashboard')) {
+              navigate('/admin/dashboard', { replace: true });
+              hasRedirected.current = true;
+            }
+            // If bursary is on wrong dashboard, redirect to bursary dashboard
+            else if (role === StaffRole.BURSARY && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard'))) {
+              navigate('/bursary/dashboard', { replace: true });
+              hasRedirected.current = true;
+            }
           }
-          // If admin is on teacher dashboard, redirect to admin dashboard
-          else if ((role === StaffRole.ADMIN || role === StaffRole.HEAD_TEACHER) && pathname.startsWith('/teacher/dashboard')) {
-            navigate('/admin/dashboard', { replace: true });
-          }
-          // If bursary is on wrong dashboard, redirect to bursary dashboard
-          else if (role === StaffRole.BURSARY && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard'))) {
-            navigate('/bursary/dashboard', { replace: true });
-          }
+          // For parents, no redirection needed - they can stay on any parent page
         }
       } catch {
         clearSession();
       }
     }
     setIsLoading(false);
-  }, [location.pathname, navigate]);
+  }, [navigate]);
 
   useEffect(() => {
     const handleExpired = () => void logout();
