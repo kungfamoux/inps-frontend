@@ -334,8 +334,7 @@ export default function ParentDetails() {
                         </TableCell>
                         <TableCell>{student.gender}</TableCell>
                         <TableCell>
-                          {student.enrollments?.[0]?.class?.className ||
-                            'Not enrolled'}
+                          {student.class?.name || 'Not enrolled'}
                         </TableCell>
                         <TableCell>
                           <Badge
