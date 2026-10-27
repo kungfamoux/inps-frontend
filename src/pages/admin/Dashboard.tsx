@@ -1,4 +1,4 @@
-import { GraduationCap, UsersRound, BookOpenCheck, TrendingUp, RefreshCw, Cake } from "lucide-react";
+import { GraduationCap, UsersRound, BookOpenCheck, TrendingUp, RefreshCw, Cake, Calendar } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,12 @@ export default function Dashboard() {
   const { data: birthdays, isLoading: birthdaysLoading } = useQuery({
     queryKey: ["upcomingBirthdays"],
     queryFn: () => adminApi.getUpcomingBirthdays(),
+    enabled: !!user && 'role' in user && (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER),
+  });
+
+  const { data: events, isLoading: eventsLoading } = useQuery({
+    queryKey: ["upcomingEvents"],
+    queryFn: () => adminApi.getUpcomingEvents(),
     enabled: !!user && 'role' in user && (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER),
   });
 
@@ -207,6 +213,73 @@ export default function Dashboard() {
               ) : (
                 <div className="flex h-[200px] items-center justify-center text-muted-foreground">
                   No upcoming birthdays in the next 30 days
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-5 xl:grid-cols-1">
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-lg">Calendar</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">Upcoming events, holidays, and important dates</p>
+              </div>
+              <Calendar className="size-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {eventsLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-lg" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : events?.data && events.data.length > 0 ? (
+                <div className="space-y-3">
+                  {events.data.map((event) => {
+                    const startDate = new Date(event.startDate);
+                    const endDate = new Date(event.endDate);
+                    const formatDate = (date) => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    const isHoliday = event.type === 'HOLIDAY';
+                    const bgColor = isHoliday ? 'bg-gradient-to-br from-amber-100 to-orange-100 text-amber-600' : 'bg-gradient-to-br from-blue-100 to-cyan-100 text-blue-600';
+
+                    return (
+                      <div key={event.id} className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={`grid size-10 place-items-center rounded-lg ${bgColor}`}>
+                            <Calendar className="size-5" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{event.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {isHoliday ? 'Holiday' : 'Event'} • {formatDate(startDate)}
+                              {endDate > startDate && ` - ${formatDate(endDate)}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                            isHoliday 
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                              : 'bg-blue-50 text-blue-700 border border-blue-200'
+                          }`}>
+                            {isHoliday ? 'Holiday' : 'Event'}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex h-[200px] items-center justify-center text-muted-foreground">
+                  No upcoming events or holidays in the next 30 days
                 </div>
               )}
             </CardContent>
