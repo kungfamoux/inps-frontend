@@ -189,7 +189,6 @@ export default function StudentsList() {
               onClear={handleClear}
               filterConfig={filterConfig}
               initialFilters={searchFilters}
-              showHistory={true}
             />
             {sessionError && (
               <div className="mt-4 bg-destructive/10 border border-destructive/20 rounded-lg p-4">

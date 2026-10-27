@@ -29,7 +29,6 @@ interface AdvancedSearchProps {
   onClear: () => void;
   filterConfig: FilterConfig[];
   initialFilters?: SearchFilters;
-  showHistory?: boolean;
   exportable?: boolean;
   onExport?: () => void;
 }
@@ -39,7 +38,6 @@ export default function AdvancedSearch({
   onClear,
   filterConfig,
   initialFilters = {},
-  showHistory = false,
   exportable = false,
   onExport,
 }: AdvancedSearchProps) {
@@ -60,17 +58,6 @@ export default function AdvancedSearch({
   };
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
   const [showFilters, setShowFilters] = useState(false);
-  const [searchHistory, setSearchHistory] = useState<string[]>([]);
-
-  // Load search history from localStorage
-  useEffect(() => {
-    if (showHistory) {
-      const saved = localStorage.getItem('searchHistory');
-      if (saved) {
-        setSearchHistory(JSON.parse(saved));
-      }
-    }
-  }, [showHistory]);
 
   const handleFilterChange = (
     field: string,
@@ -84,17 +71,7 @@ export default function AdvancedSearch({
 
   const handleSearch = useCallback(() => {
     onSearch(filters);
-
-    // Save to history if text search exists
-    if (filters.q && showHistory) {
-      const newHistory = [
-        filters.q,
-        ...searchHistory.filter((h) => h !== filters.q),
-      ].slice(0, 10);
-      setSearchHistory(newHistory);
-      localStorage.setItem('searchHistory', JSON.stringify(newHistory));
-    }
-  }, [filters, onSearch, showHistory, searchHistory]);
+  }, [filters, onSearch]);
 
   // Debounced version of handleSearch for text input
   const debouncedSearch = useCallback(debounce(handleSearch, 500), [
@@ -104,11 +81,6 @@ export default function AdvancedSearch({
   const handleClear = () => {
     setFilters({});
     onClear();
-  };
-
-  const handleHistoryClick = (query: string) => {
-    setFilters((prev) => ({ ...prev, q: query }));
-    onSearch({ ...filters, q: query });
   };
 
   const activeFilterCount = Object.values(filters).filter(
@@ -241,24 +213,6 @@ export default function AdvancedSearch({
         </div>
       )}
 
-      {/* Search history */}
-      {showHistory && searchHistory.length > 0 && !filters.q && (
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Recent searches:</p>
-          <div className="flex flex-wrap gap-2">
-            {searchHistory.map((query, index) => (
-              <Badge
-                key={index}
-                variant="outline"
-                className="cursor-pointer"
-                onClick={() => handleHistoryClick(query)}
-              >
-                {query}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

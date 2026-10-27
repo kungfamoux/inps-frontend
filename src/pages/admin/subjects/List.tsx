@@ -125,7 +125,6 @@ export default function SubjectsList() {
               onClear={handleClear}
               filterConfig={filterConfig}
               initialFilters={searchFilters}
-              showHistory={true}
             />
           </CardHeader>
           <CardContent>

@@ -138,7 +138,6 @@ export default function StaffList() {
               onClear={handleClear}
               filterConfig={filterConfig}
               initialFilters={searchFilters}
-              showHistory={true}
             />
           </CardHeader>
           <CardContent>

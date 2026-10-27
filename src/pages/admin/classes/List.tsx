@@ -115,7 +115,6 @@ export default function ClassesList() {
               onClear={handleClear}
               filterConfig={filterConfig}
               initialFilters={searchFilters}
-              showHistory={true}
             />
           </CardHeader>
           <CardContent>

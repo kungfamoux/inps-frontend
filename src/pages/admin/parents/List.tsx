@@ -144,7 +144,6 @@ export default function ParentsList() {
               onClear={handleClear}
               filterConfig={filterConfig}
               initialFilters={searchFilters}
-              showHistory={true}
             />
           </CardHeader>
           <CardContent>
