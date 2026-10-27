@@ -1,4 +1,4 @@
-import { GraduationCap, UsersRound, BookOpenCheck, TrendingUp, RefreshCw } from "lucide-react";
+import { GraduationCap, UsersRound, BookOpenCheck, TrendingUp, RefreshCw, Cake } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +15,12 @@ export default function Dashboard() {
   const { data: stats, isLoading, error, refetch } = useQuery({
     queryKey: ["dashboardStats"],
     queryFn: () => adminApi.getDashboardStats(),
+    enabled: !!user && 'role' in user && (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER),
+  });
+
+  const { data: birthdays, isLoading: birthdaysLoading } = useQuery({
+    queryKey: ["upcomingBirthdays"],
+    queryFn: () => adminApi.getUpcomingBirthdays(),
     enabled: !!user && 'role' in user && (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER),
   });
 
@@ -142,6 +148,65 @@ export default function Dashboard() {
               ) : (
                 <div className="flex h-full items-center justify-center text-muted-foreground">
                   No enrollment data available
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-5 xl:grid-cols-1">
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle className="text-lg">Upcoming birthdays</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">Next 5 student birthdays in the next 30 days</p>
+              </div>
+              <Cake className="size-5 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {birthdaysLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-24" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : birthdays?.data && birthdays.data.length > 0 ? (
+                <div className="space-y-3">
+                  {birthdays.data.map((birthday) => (
+                    <div key={birthday.studentId} className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center gap-3">
+                        <div className="grid size-10 place-items-center rounded-full bg-gradient-to-br from-pink-100 to-purple-100 text-pink-600">
+                          <Cake className="size-5" />
+                        </div>
+                        <div>
+                          <p className="font-medium">
+                            {birthday.firstName} {birthday.middleName && `${birthday.middleName} `}{birthday.lastName}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {birthday.class || 'Not enrolled'} • {birthday.admissionNumber}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-medium text-foreground">
+                          {birthday.birthdayDate}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {birthday.daysUntilBirthday === 0 ? 'Today!' : `In ${birthday.daysUntilBirthday} days`}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex h-[200px] items-center justify-center text-muted-foreground">
+                  No upcoming birthdays in the next 30 days
                 </div>
               )}
             </CardContent>

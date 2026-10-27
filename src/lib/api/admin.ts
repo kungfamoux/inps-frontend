@@ -413,6 +413,10 @@ export const adminApi = {
     return apiClient.get<ApiResponse<DashboardStats>>("/api/admin/dashboard/stats");
   },
 
+  async getUpcomingBirthdays(): Promise<ApiResponse<any[]>> {
+    return apiClient.get<ApiResponse<any[]>>("/api/admin/dashboard/birthdays");
+  },
+
   // Results Management
   async bulkEntryScores(data: {
     classId?: string;
