@@ -25,10 +25,10 @@ import { Gender } from "@/lib/types/common";
 import { NIGERIAN_STATES, getLGAsByState } from "@/lib/data/nigeria-states";
 
 const guardianSchema = z.object({
-  relationship: z.string().min(1, "Relationship is required"),
+  relationship: z.string().optional(),
   title: z.string().optional(),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   phone: z.string().or(z.literal("")).optional(),
   email: z.string().email("Invalid email address").or(z.literal("")).optional(),
   occupation: z.string().optional(),
@@ -36,24 +36,24 @@ const guardianSchema = z.object({
 });
 
 const studentSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  middleName: z.string().min(1, "Middle name is required"),
-  gender: z.nativeEnum(Gender),
-  dateOfBirth: z.string().min(1, "Date of birth is required"),
-  admissionDate: z.string().min(1, "Admission date is required"),
-  nationality: z.string().min(1, "Nationality is required"),
-  state: z.string().min(1, "State is required"),
-  lga: z.string().min(1, "LGA is required"),
-  religion: z.string().min(1, "Religion is required"),
-  healthInfo: z.string().min(1, "Health info is required"),
-  bloodGroup: z.string().min(1, "Blood group is required"),
-  sportHouse: z.string().min(1, "Sport house is required"),
-  studentType: z.string().min(1, "Student type is required"),
-  address: z.string().min(1, "Address is required"),
-  accountEmail: z.string().email("Invalid email address"),
-  accountPhone: z.string().min(1, "Phone number is required"),
-  primaryGuardian: guardianSchema,
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  middleName: z.string().optional(),
+  gender: z.nativeEnum(Gender).optional(),
+  dateOfBirth: z.string().optional(),
+  admissionDate: z.string().optional(),
+  nationality: z.string().optional(),
+  state: z.string().optional(),
+  lga: z.string().optional(),
+  religion: z.string().optional(),
+  healthInfo: z.string().optional(),
+  bloodGroup: z.string().optional(),
+  sportHouse: z.string().optional(),
+  studentType: z.string().optional(),
+  address: z.string().optional(),
+  accountEmail: z.string().email("Invalid email address").or(z.literal("")).optional(),
+  accountPhone: z.string().optional(),
+  primaryGuardian: guardianSchema.optional(),
 });
 
 type StudentFormData = z.infer<typeof studentSchema>;
@@ -330,22 +330,22 @@ export default function EditStudent() {
                 {sections.personal && (
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name *</Label>
+                      <Label htmlFor="firstName">First Name</Label>
                       <Input id="firstName" {...register("firstName")} />
                       {errors.firstName && <p className="text-sm text-destructive">{errors.firstName.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name *</Label>
+                      <Label htmlFor="lastName">Last Name</Label>
                       <Input id="lastName" {...register("lastName")} />
                       {errors.lastName && <p className="text-sm text-destructive">{errors.lastName.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="middleName">Middle Name *</Label>
+                      <Label htmlFor="middleName">Middle Name</Label>
                       <Input id="middleName" {...register("middleName")} />
                       {errors.middleName && <p className="text-sm text-destructive">{errors.middleName.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="gender">Gender *</Label>
+                      <Label htmlFor="gender">Gender</Label>
                       <Controller
                         name="gender"
                         control={control}
@@ -364,12 +364,12 @@ export default function EditStudent() {
                       {errors.gender && <p className="text-sm text-destructive">{errors.gender.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                      <Label htmlFor="dateOfBirth">Date of Birth</Label>
                       <Input id="dateOfBirth" type="date" {...register("dateOfBirth")} />
                       {errors.dateOfBirth && <p className="text-sm text-destructive">{errors.dateOfBirth.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="admissionDate">Admission Date *</Label>
+                      <Label htmlFor="admissionDate">Admission Date</Label>
                       <Input id="admissionDate" type="date" {...register("admissionDate")} />
                       {errors.admissionDate && <p className="text-sm text-destructive">{errors.admissionDate.message}</p>}
                     </div>
@@ -383,12 +383,12 @@ export default function EditStudent() {
                 {sections.additional && (
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="nationality">Nationality *</Label>
+                      <Label htmlFor="nationality">Nationality</Label>
                       <Input id="nationality" {...register("nationality")} />
                       {errors.nationality && <p className="text-sm text-destructive">{errors.nationality.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="state">State *</Label>
+                      <Label htmlFor="state">State</Label>
                       <Controller
                         name="state"
                         control={control}
@@ -416,7 +416,7 @@ export default function EditStudent() {
                       {errors.state && <p className="text-sm text-destructive">{errors.state.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="lga">LGA *</Label>
+                      <Label htmlFor="lga">LGA</Label>
                       <Controller
                         name="lga"
                         control={control}
@@ -449,7 +449,7 @@ export default function EditStudent() {
                       {errors.lga && <p className="text-sm text-destructive">{errors.lga.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="religion">Religion *</Label>
+                      <Label htmlFor="religion">Religion</Label>
                       <Controller
                         name="religion"
                         control={control}
@@ -473,12 +473,12 @@ export default function EditStudent() {
                       {errors.religion && <p className="text-sm text-destructive">{errors.religion.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="healthInfo">Health Info *</Label>
+                      <Label htmlFor="healthInfo">Health Info</Label>
                       <Input id="healthInfo" {...register("healthInfo")} />
                       {errors.healthInfo && <p className="text-sm text-destructive">{errors.healthInfo.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="bloodGroup">Blood Group *</Label>
+                      <Label htmlFor="bloodGroup">Blood Group</Label>
                       <Controller
                         name="bloodGroup"
                         control={control}
@@ -506,7 +506,7 @@ export default function EditStudent() {
                       {errors.bloodGroup && <p className="text-sm text-destructive">{errors.bloodGroup.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="studentType">Student Type *</Label>
+                      <Label htmlFor="studentType">Student Type</Label>
                       <Controller
                         name="studentType"
                         control={control}
@@ -528,7 +528,7 @@ export default function EditStudent() {
                       {errors.studentType && <p className="text-sm text-destructive">{errors.studentType.message}</p>}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="sportHouse">Sport House *</Label>
+                      <Label htmlFor="sportHouse">Sport House</Label>
                       <Controller
                         name="sportHouse"
                         control={control}
@@ -554,7 +554,7 @@ export default function EditStudent() {
                       {errors.sportHouse && <p className="text-sm text-destructive">{errors.sportHouse.message}</p>}
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="address">Address *</Label>
+                      <Label htmlFor="address">Address</Label>
                       <Input id="address" {...register("address")} />
                       {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
                     </div>
@@ -572,12 +572,12 @@ export default function EditStudent() {
                     </p>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="accountEmail">Account Email *</Label>
+                        <Label htmlFor="accountEmail">Account Email</Label>
                         <Input id="accountEmail" type="email" {...register("accountEmail")} />
                         {errors.accountEmail && <p className="text-sm text-destructive">{errors.accountEmail.message}</p>}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="accountPhone">Account Phone *</Label>
+                        <Label htmlFor="accountPhone">Account Phone</Label>
                         <Input id="accountPhone" {...register("accountPhone")} />
                         {errors.accountPhone && <p className="text-sm text-destructive">{errors.accountPhone.message}</p>}
                       </div>
@@ -596,7 +596,7 @@ export default function EditStudent() {
                     </p>
                     <div className="grid gap-4 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="primaryGuardian.relationship">Relationship *</Label>
+                        <Label htmlFor="primaryGuardian.relationship">Relationship</Label>
                         <Controller
                           name="primaryGuardian.relationship"
                           control={control}
@@ -651,14 +651,14 @@ export default function EditStudent() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="primaryGuardian.firstName">First Name *</Label>
+                        <Label htmlFor="primaryGuardian.firstName">First Name</Label>
                         <Input id="primaryGuardian.firstName" {...register("primaryGuardian.firstName")} />
                         {errors.primaryGuardian?.firstName && (
                           <p className="text-sm text-destructive">{errors.primaryGuardian.firstName.message}</p>
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="primaryGuardian.lastName">Last Name *</Label>
+                        <Label htmlFor="primaryGuardian.lastName">Last Name</Label>
                         <Input id="primaryGuardian.lastName" {...register("primaryGuardian.lastName")} />
                         {errors.primaryGuardian?.lastName && (
                           <p className="text-sm text-destructive">{errors.primaryGuardian.lastName.message}</p>

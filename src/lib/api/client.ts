@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+const isDev = import.meta.env.DEV;
 
 interface RetryableRequest extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -24,7 +25,7 @@ export class ApiError extends Error {
 
 const client = axios.create({
   baseURL: API_URL,
-  timeout: 60_000, // Increased to 60 seconds for Firebase operations
+  timeout: 30_000, // 30 seconds timeout (reduced from 60s after query optimization)
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -32,45 +33,50 @@ client.interceptors.request.use((config) => {
   const token = localStorage.getItem('auth_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
 
-  // Debug logging for API requests
-  console.log(`🌐 [API Client] ${config.method?.toUpperCase()} Request:`, {
-    url: config.url,
-    method: config.method,
-    params: config.params,
-    data: config.data,
-    headers: config.headers,
-  });
+  // Debug logging for API requests (only in development)
+  if (isDev) {
+    console.log(`🌐 [API Client] ${config.method?.toUpperCase()} Request:`, {
+      url: config.url,
+      method: config.method,
+      params: config.params,
+      data: config.data,
+      headers: config.headers,
+    });
+  }
 
   return config;
 });
 
 client.interceptors.response.use(
   (response) => {
-    // Debug logging for successful responses
-    console.log(
-      `✅ [API Client] ${response.config.method?.toUpperCase()} Response:`,
-      {
-        url: response.config.url,
-        status: response.status,
-        data: response.data,
-      },
-    );
+    // Debug logging for successful responses (only in development)
+    if (isDev) {
+      console.log(
+        `✅ [API Client] ${response.config.method?.toUpperCase()} Response:`,
+        {
+          url: response.config.url,
+          status: response.status,
+          data: response.data,
+        },
+      );
+    }
     return response;
   },
   async (error: AxiosError<ApiErrorBody>) => {
-    // Debug logging for error responses
-    console.error(
-      `❌ [API Client] ${error.config?.method?.toUpperCase()} Error:`,
-      {
-        url: error.config?.url,
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message,
-      },
-    );
+    // Debug logging for error responses (only in development)
+    if (isDev) {
+      const errorMessage = error.response?.data?.message || error.message;
+      console.error(
+        `❌ [API Client] ${error.config?.method?.toUpperCase()} Error:`,
+        errorMessage,
+        {
+          url: error.config?.url,
+          status: error.response?.status,
+          data: error.response?.data,
+        },
+      );
 
-    // Log error context for better debugging
-    if (import.meta.env.DEV) {
+      // Log error context for better debugging
       console.group('API Error Details');
       console.error('Request:', error.config);
       console.error('Response:', error.response);
@@ -135,9 +141,9 @@ client.interceptors.response.use(
 
 export const apiClient = {
   get: <T>(url: string, params?: unknown) => {
-    console.log(`📡 [API Client] GET request initiated:`, { url, params });
+    if (isDev) console.log(`📡 [API Client] GET request initiated:`, { url, params });
     return client.get<T>(url, { params }).then((response) => {
-      console.log(`📡 [API Client] GET request completed:`, {
+      if (isDev) console.log(`📡 [API Client] GET request completed:`, {
         url,
         status: response.status,
       });
@@ -145,9 +151,9 @@ export const apiClient = {
     });
   },
   post: <T>(url: string, data?: unknown) => {
-    console.log(`📡 [API Client] POST request initiated:`, { url, data });
+    if (isDev) console.log(`📡 [API Client] POST request initiated:`, { url, data });
     return client.post<T>(url, data).then((response) => {
-      console.log(`📡 [API Client] POST request completed:`, {
+      if (isDev) console.log(`📡 [API Client] POST request completed:`, {
         url,
         status: response.status,
       });
@@ -155,9 +161,9 @@ export const apiClient = {
     });
   },
   put: <T>(url: string, data?: unknown) => {
-    console.log(`📡 [API Client] PUT request initiated:`, { url, data });
+    if (isDev) console.log(`📡 [API Client] PUT request initiated:`, { url, data });
     return client.put<T>(url, data).then((response) => {
-      console.log(`📡 [API Client] PUT request completed:`, {
+      if (isDev) console.log(`📡 [API Client] PUT request completed:`, {
         url,
         status: response.status,
       });
@@ -165,9 +171,9 @@ export const apiClient = {
     });
   },
   patch: <T>(url: string, data?: unknown) => {
-    console.log(`📡 [API Client] PATCH request initiated:`, { url, data });
+    if (isDev) console.log(`📡 [API Client] PATCH request initiated:`, { url, data });
     return client.patch<T>(url, data).then((response) => {
-      console.log(`📡 [API Client] PATCH request completed:`, {
+      if (isDev) console.log(`📡 [API Client] PATCH request completed:`, {
         url,
         status: response.status,
       });
@@ -175,9 +181,9 @@ export const apiClient = {
     });
   },
   delete: <T>(url: string, data?: unknown) => {
-    console.log(`📡 [API Client] DELETE request initiated:`, { url, data });
+    if (isDev) console.log(`📡 [API Client] DELETE request initiated:`, { url, data });
     return client.delete<T>(url, { data }).then((response) => {
-      console.log(`📡 [API Client] DELETE request completed:`, {
+      if (isDev) console.log(`📡 [API Client] DELETE request completed:`, {
         url,
         status: response.status,
       });
@@ -189,7 +195,7 @@ export const apiClient = {
     formData: FormData,
     onProgress?: (percentage: number) => void,
   ) => {
-    console.log(`📡 [API Client] UPLOAD request initiated:`, { url });
+    if (isDev) console.log(`📡 [API Client] UPLOAD request initiated:`, { url });
     return client
       .post<T>(url, formData, {
         headers: { 'Content-Type': undefined },
@@ -199,7 +205,7 @@ export const apiClient = {
         },
       })
       .then((response) => {
-        console.log(`📡 [API Client] UPLOAD request completed:`, {
+        if (isDev) console.log(`📡 [API Client] UPLOAD request completed:`, {
           url,
           status: response.status,
         });
@@ -211,7 +217,7 @@ export const apiClient = {
     formData: FormData,
     onProgress?: (percentage: number) => void,
   ) => {
-    console.log(`📡 [API Client] PATCH UPLOAD request initiated:`, { url });
+    if (isDev) console.log(`📡 [API Client] PATCH UPLOAD request initiated:`, { url });
     return client
       .patch<T>(url, formData, {
         headers: { 'Content-Type': undefined },
@@ -221,7 +227,7 @@ export const apiClient = {
         },
       })
       .then((response) => {
-        console.log(`📡 [API Client] PATCH UPLOAD request completed:`, {
+        if (isDev) console.log(`📡 [API Client] PATCH UPLOAD request completed:`, {
           url,
           status: response.status,
         });
@@ -229,9 +235,9 @@ export const apiClient = {
       });
   },
   getBlob: (url: string, params?: unknown) => {
-    console.log(`📡 [API Client] GET BLOB request initiated:`, { url, params });
+    if (isDev) console.log(`📡 [API Client] GET BLOB request initiated:`, { url, params });
     return client.get(url, { params, responseType: 'blob' }).then((response) => {
-      console.log(`📡 [API Client] GET BLOB request completed:`, {
+      if (isDev) console.log(`📡 [API Client] GET BLOB request completed:`, {
         url,
         status: response.status,
       });
@@ -239,9 +245,9 @@ export const apiClient = {
     });
   },
   postBlob: (url: string, data?: unknown) => {
-    console.log(`📡 [API Client] POST BLOB request initiated:`, { url, data });
+    if (isDev) console.log(`📡 [API Client] POST BLOB request initiated:`, { url, data });
     return client.post(url, data, { responseType: 'blob' }).then((response) => {
-      console.log(`📡 [API Client] POST BLOB request completed:`, {
+      if (isDev) console.log(`📡 [API Client] POST BLOB request completed:`, {
         url,
         status: response.status,
       });

@@ -177,8 +177,15 @@ export default function AddStudent() {
       toast.success('Student created successfully');
       navigate('/admin/students');
     },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to create student');
+    onError: (error: any) => {
+      // Extract the actual error message from the response
+      let errorMessage = 'Failed to create student';
+      
+      if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     },
   });
 

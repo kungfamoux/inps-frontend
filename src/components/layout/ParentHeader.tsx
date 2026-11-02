@@ -12,6 +12,9 @@ import {
 import { useSession } from "@/contexts/session-context";
 import { useAuth } from "@/contexts/auth-context";
 import { SchoolLogo } from "@/components/shared/SchoolLogo";
+import { useQuery } from "@tanstack/react-query";
+import { parentApi } from "@/lib/api/parent";
+import { useNavigate } from "react-router-dom";
 
 interface ParentHeaderProps {
   onOpenMenu: () => void;
@@ -20,6 +23,14 @@ interface ParentHeaderProps {
 export function ParentHeader({ onOpenMenu }: ParentHeaderProps) {
   const { currentSession, currentTerm, error } = useSession();
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const { data: unreadData } = useQuery({
+    queryKey: ["unreadAnnouncementCount"],
+    queryFn: () => parentApi.getUnreadAnnouncementCount(),
+  });
+
+  const unreadCount = unreadData?.data?.unread || 0;
 
   const handleSignOut = () => {
     logout();
@@ -71,6 +82,14 @@ export function ParentHeader({ onOpenMenu }: ParentHeaderProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-4">
+        <Button variant="ghost" size="icon" className="relative rounded-xl" aria-label="Notifications" onClick={() => navigate("/parent/announcements")}>
+          <Bell className="size-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-accent-foreground ring-2 ring-card">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+        </Button>
         <div className="hidden text-right xl:block">
           {error ? (
             <p className="text-xs text-destructive">
@@ -88,10 +107,6 @@ export function ParentHeader({ onOpenMenu }: ParentHeaderProps) {
           )}
         </div>
         <div className="hidden h-8 w-px bg-border xl:block" />
-        <Button variant="ghost" size="icon" className="relative rounded-xl" aria-label="Notifications">
-          <Bell className="size-5" />
-          <span className="absolute right-2 top-2 size-2 rounded-full bg-accent ring-2 ring-card" />
-        </Button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

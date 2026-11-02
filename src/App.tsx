@@ -56,11 +56,15 @@ import ReportCards from './pages/admin/results/ReportCards';
 import AnnualReportCards from './pages/admin/results/AnnualReportCards';
 import Analytics from './pages/admin/results/Analytics';
 import AdminSettings from './pages/admin/Settings';
+import CommunicationsList from './pages/admin/communications/List';
+import CommunicationForm from './pages/admin/communications/Form';
+import CommunicationDetails from './pages/admin/communications/Details';
 import ParentDashboard from './pages/parent/Dashboard';
 import ParentChildren from './pages/parent/Children';
 import ChildProfile from './pages/parent/ChildProfile';
 import ParentResults from './pages/parent/Results';
 import ParentSettings from './pages/parent/Settings';
+import ParentAnnouncements from './pages/parent/Announcements';
 import {
   FeesOverview,
   ChildFees,
@@ -206,14 +210,76 @@ function AppContent() {
               />
               <Route
                 path="/admin/results/report-cards"
-                element={<ReportCards />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <ReportCards />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/results/annual-report-cards"
-                element={<AnnualReportCards />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <AnnualReportCards />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/admin/results/analytics" element={<Analytics />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route
+                path="/admin/results/analytics"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <Analytics />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <AdminSettings />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/communications"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <CommunicationsList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/communications/add"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <CommunicationForm />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/communications/:id"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <CommunicationDetails />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/communications/:id/edit"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <CommunicationForm />
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Teacher Routes */}
               <Route
@@ -325,6 +391,14 @@ function AppContent() {
                 element={
                   <ProtectedRoute userType="parent">
                     <ParentSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/parent/announcements"
+                element={
+                  <ProtectedRoute userType="parent">
+                    <ParentAnnouncements />
                   </ProtectedRoute>
                 }
               />

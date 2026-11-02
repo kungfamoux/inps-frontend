@@ -5,6 +5,7 @@ import {
   UsersRound,
   WalletCards,
   BookOpen,
+  Bell,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -14,6 +15,7 @@ import { SchoolLogo } from "@/components/shared/SchoolLogo";
 const navigation = [
   { label: "Dashboard", href: "/parent/dashboard", icon: LayoutDashboard },
   { label: "Children", href: "/parent/children", icon: UsersRound },
+  { label: "Announcements", href: "/parent/announcements", icon: Bell },
   { label: "Fees", href: "/parent/fees", icon: WalletCards },
   { label: "Results", href: "/parent/results", icon: BookOpen },
   { label: "Settings", href: "/parent/settings", icon: Settings },

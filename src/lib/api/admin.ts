@@ -92,12 +92,7 @@ export const adminApi = {
 
   // Classes
   async getAllClasses(params?: { level?: string; status?: string }): Promise<ApiResponse<any[]>> {
-    // Add cache-busting timestamp to prevent 304 responses
-    const cacheBuster = Date.now();
-    console.log('[DEBUG getAllClasses] Fetching classes with params:', { ...params, _t: cacheBuster });
-    const result = await apiClient.get<ApiResponse<any[]>>("/api/admin/classes", { ...params, _t: cacheBuster });
-    console.log('[DEBUG getAllClasses] API response:', result);
-    return result;
+    return apiClient.get<ApiResponse<any[]>>("/api/admin/classes", params);
   },
 
   async getAllClassesWithSections(params?: { level?: string; status?: string }): Promise<ApiResponse<any[]>> {
@@ -118,12 +113,7 @@ export const adminApi = {
   },
 
   async getStudentsByClass(classId: string, params?: { status?: string; academicYear?: string; term?: string }): Promise<ApiResponse<any[]>> {
-    // Add cache-busting timestamp to prevent 304 responses
-    const cacheBuster = Date.now();
-    console.log('[DEBUG getStudentsByClass] Fetching students for class:', classId, 'with params:', { ...params, _t: cacheBuster });
-    const result = await apiClient.get<ApiResponse<any[]>>(`/api/admin/classes/${classId}/students`, { ...params, _t: cacheBuster });
-    console.log('[DEBUG getStudentsByClass] API response:', result);
-    return result;
+    return apiClient.get<ApiResponse<any[]>>(`/api/admin/classes/${classId}/students`, params);
   },
 
   async deleteClass(classId: string): Promise<ApiResponse<void>> {
@@ -177,7 +167,6 @@ export const adminApi = {
   },
 
   async getSubjectsByClass(classId: string, termId?: string): Promise<ApiResponse<any[]>> {
-    console.log("🔍 [API] getSubjectsByClass called with:", { classId, termId });
     return apiClient.get<ApiResponse<any[]>>(`/api/admin/subjects/classes/${classId}/subjects`, termId ? { termId } : {});
   },
 
@@ -351,9 +340,7 @@ export const adminApi = {
 
   // Academic Sessions/Terms
   async getAllSessions(): Promise<ApiResponse<AcademicSession[]>> {
-    // Add cache-busting timestamp to prevent 304 responses
-    const cacheBuster = Date.now();
-    return apiClient.get<ApiResponse<AcademicSession[]>>("/api/admin/config/sessions", { _t: cacheBuster });
+    return apiClient.get<ApiResponse<AcademicSession[]>>("/api/admin/config/sessions");
   },
 
   async createSession(data: CreateSessionRequest): Promise<ApiResponse<AcademicSession>> {
@@ -526,5 +513,34 @@ export const adminApi = {
 
   async getAnnualResultsByClass(classId: string, sessionId: string): Promise<ApiResponse<any>> {
     return apiClient.get<ApiResponse<any>>('/api/admin/results/annual-by-class', { classId, sessionId });
+  },
+
+  // Communications
+  async getAllCommunications(params?: { type?: string; status?: string; target?: string; page?: number; limit?: number }): Promise<PaginatedResponse<any>> {
+    return apiClient.get<PaginatedResponse<any>>("/api/admin/communications", params);
+  },
+
+  async getCommunicationById(id: string): Promise<ApiResponse<any>> {
+    return apiClient.get<ApiResponse<any>>(`/api/admin/communications/${id}`);
+  },
+
+  async createCommunication(data: any): Promise<ApiResponse<any>> {
+    return apiClient.post<ApiResponse<any>>("/api/admin/communications", data);
+  },
+
+  async updateCommunication(id: string, data: any): Promise<ApiResponse<any>> {
+    return apiClient.patch<ApiResponse<any>>(`/api/admin/communications/${id}`, data);
+  },
+
+  async deleteCommunication(id: string): Promise<ApiResponse<void>> {
+    return apiClient.delete<ApiResponse<void>>(`/api/admin/communications/${id}`);
+  },
+
+  async publishCommunication(id: string): Promise<ApiResponse<any>> {
+    return apiClient.patch<ApiResponse<any>>(`/api/admin/communications/${id}/publish`);
+  },
+
+  async sendCommunication(id: string): Promise<ApiResponse<any>> {
+    return apiClient.patch<ApiResponse<any>>(`/api/admin/communications/${id}/send`);
   },
 };

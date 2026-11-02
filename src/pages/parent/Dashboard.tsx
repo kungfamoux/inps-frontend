@@ -186,9 +186,9 @@ export default function ParentDashboard() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <p className="font-medium">{announcement.title}</p>
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{announcement.content}</p>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2 whitespace-pre-wrap">{announcement.content}</p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          {new Date(announcement.createdAt).toLocaleDateString()}
+                          {new Date(announcement.publishedAt).toLocaleDateString()}
                         </p>
                       </div>
                       {!announcement.isRead && (
@@ -221,7 +221,7 @@ export default function ParentDashboard() {
                 <GraduationCap className="h-6 w-6 mb-2" />
                 <span>Settings</span>
               </Button>
-              <Button variant="outline" className="h-auto flex-col py-4" onClick={() => navigate("/parent/children")}>
+              <Button variant="outline" className="h-auto flex-col py-4" onClick={() => navigate("/parent/announcements")}>
                 <Bell className="h-6 w-6 mb-2" />
                 <span>Announcements</span>
               </Button>
