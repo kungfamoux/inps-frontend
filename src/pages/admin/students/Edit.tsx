@@ -71,7 +71,8 @@ export default function EditStudent() {
   const { admissionNumber } = useParams<{ admissionNumber: string }>();
   const [passportPhoto, setPassportPhoto] = useState<File | null>(null);
   const [selectedState, setSelectedState] = useState("");
-  
+  const [originalStudent, setOriginalStudent] = useState<any>(null);
+
   // Collapsible sections state
   const [sections, setSections] = useState<CollapsibleSection>({
     personal: true,
@@ -135,6 +136,8 @@ export default function EditStudent() {
 
   useEffect(() => {
     if (student?.data) {
+      setOriginalStudent(student.data);
+      
       setValue("firstName", student.data.firstName);
       setValue("lastName", student.data.lastName);
       setValue("middleName", student.data.middleName || "");
@@ -179,39 +182,73 @@ export default function EditStudent() {
     mutationFn: async (data: StudentFormData) => {
       const formData = new FormData();
 
-      // Student data
-      formData.append("firstName", data.firstName);
-      formData.append("lastName", data.lastName);
-      formData.append("middleName", data.middleName || "");
-      formData.append("gender", data.gender);
-      formData.append("dateOfBirth", data.dateOfBirth);
-      formData.append("admissionDate", data.admissionDate);
-      formData.append("nationality", data.nationality);
-      formData.append("state", data.state);
-      formData.append("lga", data.lga);
-      formData.append("religion", data.religion);
-      formData.append("healthInfo", data.healthInfo);
-      formData.append("bloodGroup", data.bloodGroup);
-      formData.append("sportHouse", data.sportHouse);
-      formData.append("studentType", data.studentType);
-      formData.append("address", data.address);
-      formData.append("status", "ACTIVE");
+      // Only append fields that have changed compared to original
+      if (data.firstName && data.firstName !== originalStudent?.firstName) {
+        formData.append("firstName", data.firstName);
+      }
+      if (data.lastName && data.lastName !== originalStudent?.lastName) {
+        formData.append("lastName", data.lastName);
+      }
+      if (data.middleName !== undefined && data.middleName !== originalStudent?.middleName) {
+        formData.append("middleName", data.middleName);
+      }
+      if (data.gender && data.gender !== originalStudent?.gender) {
+        formData.append("gender", data.gender);
+      }
+      if (data.dateOfBirth && data.dateOfBirth !== originalStudent?.dateOfBirth?.split("T")[0]) {
+        formData.append("dateOfBirth", data.dateOfBirth);
+      }
+      if (data.admissionDate && data.admissionDate !== originalStudent?.admissionDate?.split("T")[0]) {
+        formData.append("admissionDate", data.admissionDate);
+      }
+      if (data.nationality && data.nationality !== originalStudent?.nationality) {
+        formData.append("nationality", data.nationality);
+      }
+      if (data.state && data.state !== originalStudent?.state) {
+        formData.append("state", data.state);
+      }
+      if (data.lga && data.lga !== originalStudent?.lga) {
+        formData.append("lga", data.lga);
+      }
+      if (data.religion && data.religion !== originalStudent?.religion) {
+        formData.append("religion", data.religion);
+      }
+      if (data.healthInfo && data.healthInfo !== originalStudent?.healthInfo) {
+        formData.append("healthInfo", data.healthInfo);
+      }
+      if (data.bloodGroup && data.bloodGroup !== originalStudent?.bloodGroup) {
+        formData.append("bloodGroup", data.bloodGroup);
+      }
+      if (data.sportHouse && data.sportHouse !== originalStudent?.sportHouse) {
+        formData.append("sportHouse", data.sportHouse);
+      }
+      if (data.studentType && data.studentType !== originalStudent?.studentType) {
+        formData.append("studentType", data.studentType);
+      }
+      if (data.address && data.address !== originalStudent?.address) {
+        formData.append("address", data.address);
+      }
 
-      // Account credentials
-      formData.append("accountEmail", data.accountEmail);
-      formData.append("accountPhone", data.accountPhone);
+      // Account credentials - check against parent data
+      if (data.accountEmail && data.accountEmail !== originalStudent?.parent?.accountEmail) {
+        formData.append("accountEmail", data.accountEmail);
+      }
+      if (data.accountPhone && data.accountPhone !== originalStudent?.parent?.accountPhone) {
+        formData.append("accountPhone", data.accountPhone);
+      }
 
       if (passportPhoto) {
         formData.append("passportPhoto", passportPhoto);
       }
 
-      // Parent data
-      const parentData: any = {
-        primaryGuardian: data.primaryGuardian,
-        address: data.address || null,
-      };
-
-      formData.append("parentData", JSON.stringify(parentData));
+      // Parent data - only include if guardian fields changed
+      if (data.primaryGuardian && (data.primaryGuardian.firstName || data.primaryGuardian.lastName)) {
+        const parentData: any = {
+          primaryGuardian: data.primaryGuardian,
+          address: data.address || null,
+        };
+        formData.append("parentData", JSON.stringify(parentData));
+      }
 
       return adminApi.updateStudent(admissionNumber!, formData);
     },
