@@ -12,7 +12,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useGlobalErrorHandler } from '@/hooks/useGlobalErrorHandler';
 import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
-import { Analytics } from '@vercel/analytics/react';
+import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
@@ -487,7 +487,7 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
-          <Analytics />
+          <VercelAnalytics />
           <SpeedInsights />
           <ErrorProvider>
             <AppContent />
