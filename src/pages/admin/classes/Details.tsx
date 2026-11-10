@@ -15,6 +15,7 @@ import {
   BookOpen,
   Plus,
   Eye,
+  Download,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -55,6 +56,27 @@ export default function ClassDetails() {
     queryKey: ['current-term'],
     queryFn: () => adminApi.getCurrentTerm(),
   });
+
+  const downloadClassListPDF = async () => {
+    try {
+      const pdfBlob = await adminApi.downloadClassListPDF(classId!, {
+        academicYear: sessionData?.data?.academicYear || '2026/2027',
+        term: sessionData?.data?.term || 'FIRST_TERM',
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${classData?.data?.name?.replace(/\s+/g, '_')}_Class_List.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to download class list PDF:', error);
+    }
+  };
 
   const { data: subjectsData, isLoading: subjectsLoading } = useQuery({
     queryKey: ['class-subjects', classId, sessionData?.data?.id],
@@ -323,10 +345,21 @@ export default function ClassDetails() {
         {/* Class Students */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="size-5" />
-              Class Students
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="size-5" />
+                Class Students
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={downloadClassListPDF}
+                disabled={!studentsData?.data || studentsData.data.length === 0}
+              >
+                <Download className="size-4 mr-2" />
+                Download Class List
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {studentsLoading ? (

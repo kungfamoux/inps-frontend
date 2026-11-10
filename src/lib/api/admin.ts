@@ -124,6 +124,10 @@ export const adminApi = {
     return apiClient.get<ApiResponse<any[]>>(`/api/admin/classes/${classId}/students`, params);
   },
 
+  async downloadClassListPDF(classId: string, params?: { academicYear?: string; term?: string }): Promise<Blob> {
+    return apiClient.getBlob(`/api/admin/classes/${classId}/class-list-pdf`, params);
+  },
+
   async deleteClass(classId: string): Promise<ApiResponse<void>> {
     return apiClient.delete<ApiResponse<void>>(`/api/admin/classes/${classId}`);
   },
