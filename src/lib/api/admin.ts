@@ -29,6 +29,14 @@ export const adminApi = {
     return apiClient.get<ApiResponse<{ hasOtherChildren: boolean; otherChildrenCount: number; parentEmail: string; studentName: string }>>(`/api/admin/students/${admissionNumber}?check=true`);
   },
 
+  async checkNearMatches(firstName: string, lastName: string, accountEmail: string): Promise<ApiResponse<{ count: number; data: Student[] }>> {
+    return apiClient.get<ApiResponse<{ count: number; data: Student[] }>>("/api/admin/students/check-near-matches", {
+      firstName,
+      lastName,
+      accountEmail,
+    });
+  },
+
   async createStudentWithEnrollment(
     studentData: FormData,
     enrollmentData: { classId: string; sectionId?: string; academicYear: string; term: string }

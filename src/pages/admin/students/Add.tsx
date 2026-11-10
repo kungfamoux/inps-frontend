@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { Gender } from '@/lib/types/common';
 import { NIGERIAN_STATES, getLGAsByState } from '@/lib/data/nigeria-states';
 
@@ -79,6 +79,7 @@ export default function AddStudent() {
   const [currentTerm, setCurrentTerm] = useState<any>(null);
   const [showSecondaryGuardian, setShowSecondaryGuardian] = useState(false);
   const [selectedState, setSelectedState] = useState('');
+  const [nearMatches, setNearMatches] = useState<any[]>([]);
 
   const { data: classes, isLoading: classesLoading } = useQuery({
     queryKey: ['classes'],
@@ -100,6 +101,7 @@ export default function AddStudent() {
     control,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
@@ -116,6 +118,35 @@ export default function AddStudent() {
       },
     },
   });
+
+  // Watch relevant fields for near-match checking
+  const firstName = watch('firstName');
+  const lastName = watch('lastName');
+  const accountEmail = watch('accountEmail');
+
+  // Check for near matches when relevant fields change
+  useEffect(() => {
+    const checkNearMatches = async () => {
+      if (firstName && lastName && accountEmail && firstName.length > 2 && lastName.length > 2) {
+        try {
+          const response = await adminApi.checkNearMatches(firstName, lastName, accountEmail);
+          if (response.success && response.data?.data && response.data.data.length > 0) {
+            setNearMatches(response.data.data);
+          } else {
+            setNearMatches([]);
+          }
+        } catch (error) {
+          // Silently fail - this is just a warning
+          setNearMatches([]);
+        }
+      } else {
+        setNearMatches([]);
+      }
+    };
+
+    const timer = setTimeout(checkNearMatches, 500); // Debounce
+    return () => clearTimeout(timer);
+  }, [firstName, lastName, accountEmail]);
 
   const createStudentMutation = useMutation({
     mutationFn: async (data: StudentFormData) => {
@@ -1062,6 +1093,33 @@ export default function AddStudent() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Near-match warning */}
+        {nearMatches.length > 0 && (
+          <Card className="mt-4 border-yellow-500 bg-yellow-50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-semibold text-yellow-900">Potential Duplicate Detected</h4>
+                  <p className="text-sm text-yellow-800 mt-1">
+                    Found {nearMatches.length} similar student(s) under parent {accountEmail}:
+                  </p>
+                  <ul className="mt-2 space-y-1">
+                    {nearMatches.map((student) => (
+                      <li key={student.admissionNumber} className="text-sm text-yellow-800">
+                        • {student.admissionNumber} - {student.firstName} {student.middleName || ''} {student.lastName}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-sm text-yellow-700 mt-2">
+                    Please verify this is not a duplicate before proceeding.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="flex gap-4 justify-end">
           <Button
