@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (session.userType === 'staff' && 'role' in session.user) {
             const role = session.user.role;
             const pathname = location.pathname;
-            
+
             // If teacher is on admin dashboard, redirect to teacher dashboard
             if (role === StaffRole.TEACHER && pathname.startsWith('/admin/dashboard')) {
               navigate('/teacher/dashboard', { replace: true });
@@ -120,6 +120,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // If bursary is on wrong dashboard, redirect to bursary dashboard
             else if (role === StaffRole.BURSARY && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard'))) {
               navigate('/bursary/dashboard', { replace: true });
+              hasRedirected.current = true;
+            }
+            // If nurse is on wrong dashboard, redirect to health dashboard
+            else if (role === StaffRole.NURSE && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/bursary/dashboard'))) {
+              navigate('/health/dashboard', { replace: true });
               hasRedirected.current = true;
             }
           }
@@ -199,6 +204,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setTimeout(() => {
               if (role === StaffRole.BURSARY) {
                 navigate('/bursary/dashboard');
+              } else if (role === StaffRole.NURSE) {
+                navigate('/health/dashboard');
               } else if (role === StaffRole.TEACHER) {
                 navigate('/teacher/dashboard');
               } else {
