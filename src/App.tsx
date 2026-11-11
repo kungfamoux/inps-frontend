@@ -97,6 +97,16 @@ import TeacherSubjects from './pages/teacher/Subjects';
 import TeacherAttendance from './pages/teacher/Attendance';
 import TeacherSchedule from './pages/teacher/Schedule';
 import TeacherSettings from './pages/teacher/Settings';
+import { HealthLayout } from '@/components/layout/HealthLayout';
+import HealthDashboard from './pages/health/Dashboard';
+import HealthDrugRequests from './pages/health/DrugRequests';
+import HealthDrugRequestForm from './pages/health/DrugRequestForm';
+import HealthDrugRequestDetails from './pages/health/DrugRequestDetails';
+import HealthSickbayVisits from './pages/health/SickbayVisits';
+import HealthSickbayVisitForm from './pages/health/SickbayVisitForm';
+import HealthSickbayVisitDetails from './pages/health/SickbayVisitDetails';
+import HealthDailyVisitorLog from './pages/health/DailyVisitorLog';
+import HealthSettings from './pages/health/Settings';
 
 function AppContent() {
   useGlobalErrorHandler();
@@ -351,6 +361,98 @@ function AppContent() {
                     <TeacherLayout>
                       <TeacherSettings />
                     </TeacherLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Health Routes */}
+              <Route
+                path="/health/dashboard"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthDashboard />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/drug-requests"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthDrugRequests />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/drug-requests/new"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthDrugRequestForm />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/drug-requests/:id"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthDrugRequestDetails />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/sickbay-visits"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthSickbayVisits />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/sickbay-visits/new"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthSickbayVisitForm />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/sickbay-visits/:id"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthSickbayVisitDetails />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/daily-log"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthDailyVisitorLog />
+                    </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/health/settings"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.NURSE]}>
+                    <HealthLayout>
+                      <HealthSettings />
+                    </HealthLayout>
                   </ProtectedRoute>
                 }
               />

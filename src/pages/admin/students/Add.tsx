@@ -102,7 +102,7 @@ export default function AddStudent() {
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
@@ -1131,7 +1131,7 @@ export default function AddStudent() {
           </Button>
           <LoadingButton
             type="button"
-            loading={isSubmitting || createStudentMutation.isPending}
+            loading={createStudentMutation.isPending}
             loadingText="Creating..."
             onClick={handleSubmit(onSubmit)}
           >
