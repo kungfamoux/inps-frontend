@@ -86,6 +86,10 @@ export default function Login() {
             const role = userData.user.role;
             if (role === StaffRole.BURSARY) {
               navigate("/bursary/dashboard", { replace: true });
+            } else if (role === StaffRole.NURSE) {
+              navigate("/health/dashboard", { replace: true });
+            } else if (role === StaffRole.TEACHER) {
+              navigate("/teacher/dashboard", { replace: true });
             } else {
               navigate("/admin/dashboard", { replace: true });
             }
