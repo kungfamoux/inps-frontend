@@ -113,6 +113,8 @@ import ProprietorFinancialAnalytics from './pages/proprietor/FinancialAnalytics'
 import ProprietorStaffOverview from './pages/proprietor/StaffOverview';
 import ProprietorStaffStatistics from './pages/proprietor/StaffStatistics';
 import ProprietorStudentsOverview from './pages/proprietor/StudentsOverview';
+import ProprietorStudentsList from './pages/proprietor/StudentsList';
+import ProprietorParentsList from './pages/proprietor/ParentsList';
 import ProprietorAcademicPerformance from './pages/proprietor/AcademicPerformance';
 import ProprietorSettings from './pages/proprietor/Settings';
 
@@ -512,6 +514,26 @@ function AppContent() {
                   <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
                     <ProprietorLayout>
                       <ProprietorStudentsOverview />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/students/list"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorStudentsList />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/parents/list"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorParentsList />
                     </ProprietorLayout>
                   </ProtectedRoute>
                 }

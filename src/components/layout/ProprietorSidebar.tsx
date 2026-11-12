@@ -17,6 +17,8 @@ const navigation = [
   { label: 'Staff Overview', href: '/proprietor/staff', icon: UsersRound },
   { label: 'Staff Statistics', href: '/proprietor/staff/statistics', icon: UsersRound },
   { label: 'Students Overview', href: '/proprietor/students/enrollment', icon: GraduationCap },
+  { label: 'Students List', href: '/proprietor/students/list', icon: GraduationCap },
+  { label: 'Parents List', href: '/proprietor/parents/list', icon: UsersRound },
   { label: 'Academic Performance', href: '/proprietor/academic-performance', icon: TrendingUp },
   { label: 'Settings', href: '/proprietor/settings', icon: Settings },
 ];
