@@ -48,6 +48,7 @@ export enum StaffRole {
   CLEANERS = "CLEANERS",
   SECURITY = "SECURITY",
   OTHERS = "OTHERS",
+  PROPRIETOR = "PROPRIETOR",
 }
 
 export enum StaffType {

@@ -96,6 +96,8 @@ export default function Login() {
               navigate("/health/dashboard", { replace: true });
             } else if (role === StaffRole.TEACHER) {
               navigate("/teacher/dashboard", { replace: true });
+            } else if (role === StaffRole.PROPRIETOR) {
+              navigate("/proprietor/dashboard", { replace: true });
             } else {
               console.log("Login.tsx redirect - defaulting to admin dashboard, role:", role);
               navigate("/admin/dashboard", { replace: true });

@@ -127,6 +127,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               navigate('/health/dashboard', { replace: true });
               hasRedirected.current = true;
             }
+            // If proprietor is on wrong dashboard, redirect to proprietor dashboard
+            else if (role === StaffRole.PROPRIETOR && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/bursary/dashboard') || pathname.startsWith('/health/dashboard'))) {
+              navigate('/proprietor/dashboard', { replace: true });
+              hasRedirected.current = true;
+            }
           }
           // For parents, no redirection needed - they can stay on any parent page
         }
@@ -211,6 +216,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else if (role === StaffRole.TEACHER) {
               console.log('AuthContext login - Redirecting to /teacher/dashboard');
               navigate('/teacher/dashboard');
+            } else if (role === StaffRole.PROPRIETOR) {
+              console.log('AuthContext login - Redirecting to /proprietor/dashboard');
+              navigate('/proprietor/dashboard');
             } else {
               console.log('AuthContext login - Redirecting to /admin/dashboard (default)');
               navigate('/admin/dashboard');

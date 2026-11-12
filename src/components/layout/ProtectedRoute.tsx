@@ -27,6 +27,8 @@ export function ProtectedRoute({ children, allowedRoles, userType }: ProtectedRo
       return <Navigate to="/health/dashboard" replace />;
     } else if (user.role === StaffRole.TEACHER) {
       return <Navigate to="/teacher/dashboard" replace />;
+    } else if (user.role === StaffRole.PROPRIETOR) {
+      return <Navigate to="/proprietor/dashboard" replace />;
     } else if (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER) {
       return <Navigate to="/admin/dashboard" replace />;
     }

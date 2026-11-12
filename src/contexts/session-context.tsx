@@ -35,6 +35,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const isBursary = userType === "staff" && user && "role" in user && user.role === "BURSARY";
   const isTeacher = userType === "staff" && user && "role" in user && user.role === StaffRole.TEACHER;
   const isNurse = userType === "staff" && user && "role" in user && user.role === StaffRole.NURSE;
+  const isProprietor = userType === "staff" && user && "role" in user && user.role === StaffRole.PROPRIETOR;
 
   const [currentSession, setCurrentSession] = useState<AcademicSession | null>(null);
   const [currentTerm, setCurrentTerm] = useState<AcademicTerm | null>(null);
@@ -47,7 +48,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Load current session/term from backend on mount and when auth state changes
   useEffect(() => {
-    if (isAuthenticated && !isParent && !isBursary && !isNurse) {
+    if (isAuthenticated && !isParent && !isBursary && !isNurse && !isProprietor) {
       loadCurrentSessionAndTerm();
       loadAllSessions();
     } else if (isAuthenticated && isParent) {
@@ -66,6 +67,9 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } else if (isAuthenticated && isNurse) {
       // For nurse users, don't load admin session data - health portal doesn't need it
       setIsLoading(false);
+    } else if (isAuthenticated && isProprietor) {
+      // For proprietor users, don't load admin session data - proprietor portal doesn't need it
+      setIsLoading(false);
     } else {
       // Clear session data when not authenticated
       setCurrentSession(null);
@@ -73,7 +77,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setAllSessions([]);
       setIsLoading(false);
     }
-  }, [isAuthenticated, isParent, isBursary, isNurse]);
+  }, [isAuthenticated, isParent, isBursary, isNurse, isProprietor]);
 
   // Check URL parameters for historical view
   useEffect(() => {

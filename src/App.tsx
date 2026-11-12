@@ -107,6 +107,14 @@ import HealthSickbayVisitForm from './pages/health/SickbayVisitForm';
 import HealthSickbayVisitDetails from './pages/health/SickbayVisitDetails';
 import HealthDailyVisitorLog from './pages/health/DailyVisitorLog';
 import HealthSettings from './pages/health/Settings';
+import { ProprietorLayout } from '@/components/layout/ProprietorLayout';
+import ProprietorDashboard from './pages/proprietor/Dashboard';
+import ProprietorFinancialAnalytics from './pages/proprietor/FinancialAnalytics';
+import ProprietorStaffOverview from './pages/proprietor/StaffOverview';
+import ProprietorStaffStatistics from './pages/proprietor/StaffStatistics';
+import ProprietorStudentsOverview from './pages/proprietor/StudentsOverview';
+import ProprietorAcademicPerformance from './pages/proprietor/AcademicPerformance';
+import ProprietorSettings from './pages/proprietor/Settings';
 
 function AppContent() {
   useGlobalErrorHandler();
@@ -453,6 +461,78 @@ function AppContent() {
                     <HealthLayout>
                       <HealthSettings />
                     </HealthLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Proprietor Routes */}
+              <Route
+                path="/proprietor/dashboard"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorDashboard />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/financial-analytics"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorFinancialAnalytics />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/staff"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorStaffOverview />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/staff/statistics"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorStaffStatistics />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/students/enrollment"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorStudentsOverview />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/academic-performance"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorAcademicPerformance />
+                    </ProprietorLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/proprietor/settings"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.PROPRIETOR]}>
+                    <ProprietorLayout>
+                      <ProprietorSettings />
+                    </ProprietorLayout>
                   </ProtectedRoute>
                 }
               />
