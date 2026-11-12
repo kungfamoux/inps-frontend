@@ -61,6 +61,7 @@ export default function Login() {
   const [submitError, setSubmitError] = useState("");
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
   const [animationDirection, setAnimationDirection] = useState(1);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   const {
     register,
@@ -75,7 +76,9 @@ export default function Login() {
   });
 
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only redirect if already authenticated and NOT currently logging in
+    // This prevents race condition with authContext redirect
+    if (isAuthenticated && !isLoggingIn) {
       if (accountType === "parent") {
         navigate("/parent/dashboard", { replace: true });
       } else {
@@ -107,15 +110,17 @@ export default function Login() {
         }
       }
     }
-  }, [isAuthenticated, accountType, navigate]);
+  }, [isAuthenticated, accountType, navigate, isLoggingIn]);
 
   const onSubmit = async (values: LoginValues) => {
     if (isSubmitting) return;
     setSubmitError("");
+    setIsLoggingIn(true);
     try {
       await login(values.email, values.password, accountType);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "We could not sign you in. Please try again.");
+      setIsLoggingIn(false);
     }
   };
 
