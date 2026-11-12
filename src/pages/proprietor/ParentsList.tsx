@@ -18,9 +18,10 @@ export default function ProprietorParentsList() {
 
   const loadParents = async () => {
     try {
-      const res = await adminApi.getAllParents();
+      const res = await adminApi.getAllParents({ _t: Date.now() });
+      console.log("Parents response:", res);
       if (res.success && res.data) {
-        setParents(res.data.data || []);
+        setParents(res.data.data || res.data || []);
       }
     } catch (error) {
       console.error("Failed to load parents:", error);

@@ -18,9 +18,10 @@ export default function ProprietorStudentsList() {
 
   const loadStudents = async () => {
     try {
-      const res = await adminApi.getAllStudents({ status: "ACTIVE" });
+      const res = await adminApi.getAllStudents({ status: "ACTIVE", _t: Date.now() });
+      console.log("Students response:", res);
       if (res.success && res.data) {
-        setStudents(res.data.data || []);
+        setStudents(res.data.data || res.data || []);
       }
     } catch (error) {
       console.error("Failed to load students:", error);
