@@ -20,8 +20,20 @@ export default function ProprietorStudentsList() {
     try {
       const res = await adminApi.getAllStudents({ status: "ACTIVE", _t: Date.now() });
       console.log("Students response:", res);
-      if (res.success && res.data) {
-        setStudents(res.data.data || res.data || []);
+      console.log("Students response type:", typeof res);
+      console.log("Has success:", 'success' in res);
+      console.log("Has data:", 'data' in res);
+      
+      if (res && typeof res === 'object') {
+        if ('success' in res && res.success && 'data' in res) {
+          const data = res.data as any;
+          setStudents(data.data || data || []);
+        } else if (Array.isArray(res)) {
+          setStudents(res);
+        } else if ('data' in res) {
+          const data = res.data as any;
+          setStudents(data.data || data || []);
+        }
       }
     } catch (error) {
       console.error("Failed to load students:", error);

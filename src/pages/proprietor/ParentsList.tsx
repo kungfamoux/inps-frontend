@@ -20,8 +20,20 @@ export default function ProprietorParentsList() {
     try {
       const res = await adminApi.getAllParents({ _t: Date.now() });
       console.log("Parents response:", res);
-      if (res.success && res.data) {
-        setParents(res.data.data || res.data || []);
+      console.log("Parents response type:", typeof res);
+      console.log("Has success:", 'success' in res);
+      console.log("Has data:", 'data' in res);
+      
+      if (res && typeof res === 'object') {
+        if ('success' in res && res.success && 'data' in res) {
+          const data = res.data as any;
+          setParents(data.data || data || []);
+        } else if (Array.isArray(res)) {
+          setParents(res);
+        } else if ('data' in res) {
+          const data = res.data as any;
+          setParents(data.data || data || []);
+        }
       }
     } catch (error) {
       console.error("Failed to load parents:", error);
