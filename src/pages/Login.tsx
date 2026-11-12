@@ -80,10 +80,13 @@ export default function Login() {
         navigate("/parent/dashboard", { replace: true });
       } else {
         const user = localStorage.getItem("user_data");
+        console.log("Login.tsx redirect - user_data:", user);
         if (user) {
           const userData = JSON.parse(user);
+          console.log("Login.tsx redirect - parsed userData:", userData);
           if (userData.user && "role" in userData.user) {
             const role = userData.user.role;
+            console.log("Login.tsx redirect - role:", role);
             if (role === StaffRole.BURSARY) {
               navigate("/bursary/dashboard", { replace: true });
             } else if (role === StaffRole.NURSE) {
@@ -91,12 +94,15 @@ export default function Login() {
             } else if (role === StaffRole.TEACHER) {
               navigate("/teacher/dashboard", { replace: true });
             } else {
+              console.log("Login.tsx redirect - defaulting to admin dashboard, role:", role);
               navigate("/admin/dashboard", { replace: true });
             }
           } else {
+            console.log("Login.tsx redirect - no role in user, defaulting to admin");
             navigate("/admin/dashboard", { replace: true });
           }
         } else {
+          console.log("Login.tsx redirect - no user_data, defaulting to admin");
           navigate("/admin/dashboard", { replace: true });
         }
       }

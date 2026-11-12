@@ -199,16 +199,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Redirect based on role
           if (type === 'staff' && 'role' in response.user) {
             const role = response.user.role;
-            console.log('Staff login with role:', role);
+            console.log('AuthContext login - Staff login with role:', role);
+            console.log('AuthContext login - About to redirect to:', role === StaffRole.NURSE ? '/health/dashboard' : '/admin/dashboard');
             // Use React Router's navigate to avoid full page reload
             setTimeout(() => {
               if (role === StaffRole.BURSARY) {
+                console.log('AuthContext login - Redirecting to /bursary/dashboard');
                 navigate('/bursary/dashboard');
               } else if (role === StaffRole.NURSE) {
+                console.log('AuthContext login - Redirecting to /health/dashboard');
                 navigate('/health/dashboard');
               } else if (role === StaffRole.TEACHER) {
+                console.log('AuthContext login - Redirecting to /teacher/dashboard');
                 navigate('/teacher/dashboard');
               } else {
+                console.log('AuthContext login - Redirecting to /admin/dashboard (default)');
                 navigate('/admin/dashboard');
               }
             }, 100);
