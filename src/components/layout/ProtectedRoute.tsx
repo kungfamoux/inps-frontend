@@ -23,6 +23,8 @@ export function ProtectedRoute({ children, allowedRoles, userType }: ProtectedRo
     // Redirect to appropriate dashboard based on role instead of home
     if (user.role === StaffRole.BURSARY) {
       return <Navigate to="/bursary/dashboard" replace />;
+    } else if (user.role === StaffRole.NURSE) {
+      return <Navigate to="/health/dashboard" replace />;
     } else if (user.role === StaffRole.TEACHER) {
       return <Navigate to="/teacher/dashboard" replace />;
     } else if (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER) {
