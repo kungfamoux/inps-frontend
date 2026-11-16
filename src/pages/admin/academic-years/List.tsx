@@ -251,7 +251,6 @@ export default function AcademicYearsList() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    </div>
     </>
   );
 }
