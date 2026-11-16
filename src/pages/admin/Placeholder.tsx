@@ -1,4 +1,3 @@
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +6,8 @@ export default function PlaceholderPage({ title, description }: { title: string;
   const navigate = useNavigate();
 
   return (
-    <AdminLayout>
+    
+
       <div className="mx-auto max-w-4xl">
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -21,6 +21,6 @@ export default function PlaceholderPage({ title, description }: { title: string;
           </div>
         </div>
       </div>
-    </AdminLayout>
+    
   );
 }

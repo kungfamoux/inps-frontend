@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, MoreHorizontal, Eye, Pencil, Trash2, Users, SearchX, Loader2 } from "lucide-react";
@@ -167,12 +166,11 @@ export default function StudentsList() {
   };
 
   return (
-    <AdminLayout>
-      <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Students</h1>
-            <p className="text-sm text-muted-foreground">Manage student registrations and enrollments</p>
+    <div className="mx-auto max-w-[1500px] space-y-6">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Students</h1>
+          <p className="text-sm text-muted-foreground">Manage student registrations and enrollments</p>
           </div>
           <Button className="gap-2" onClick={() => navigate("/admin/students/add")}>
             <Plus className="size-4" /> Add Student
@@ -324,6 +322,5 @@ export default function StudentsList() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   );
 }

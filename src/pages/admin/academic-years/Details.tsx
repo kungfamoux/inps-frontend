@@ -1,18 +1,17 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { 
-  Plus, 
-  ChevronRight, 
-  Trash2, 
-  Edit, 
+import {
+  Plus,
+  ChevronRight,
+  Trash2,
+  Edit,
   CheckCircle,
   AlertCircle,
   Clock,
@@ -186,226 +185,220 @@ export default function SessionDetails() {
 
   if (sessionLoading) {
     return (
-      <AdminLayout>
-        <div className="mx-auto max-w-[1500px] space-y-6">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-40 w-full" />
-        </div>
-      </AdminLayout>
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-40 w-full" />
+      </div>
     );
   }
 
   if (sessionError || !session?.data) {
     return (
-      <AdminLayout>
-        <div className="mx-auto max-w-[1500px] space-y-6">
-          <div className="text-center py-8 text-destructive">
-            Failed to load session. Please try again.
-          </div>
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <div className="text-center py-8 text-destructive">
+          Failed to load session. Please try again.
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/academic-years")}>
-            <ArrowLeft className="size-4" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold tracking-tight">{session.data.session}</h1>
-            <p className="text-sm text-muted-foreground">Session details and term management</p>
-          </div>
-          <div className="flex gap-2">
-            {!isCurrentSession && (
-              <Button 
-                variant="outline" 
-                onClick={() => navigate(`/admin/academic-years/${id}/edit`)}
-              >
-                <Edit className="size-4 mr-2" />
-                Edit Session
-              </Button>
-            )}
-            <Button 
-              variant="destructive"
-              onClick={handleDeleteSession}
-              disabled={isCurrentSession || deleteSessionMutation.isPending}
-            >
-              <Trash2 className="size-4 mr-2" />
-              Delete Session
-            </Button>
-          </div>
+    <div className="mx-auto max-w-[1500px] space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/academic-years")}>
+          <ArrowLeft className="size-4" />
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold tracking-tight">{session.data.session}</h1>
+          <p className="text-sm text-muted-foreground">Session details and term management</p>
         </div>
-
-        {/* Session Information Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="size-5" />
-              Session Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <p className="text-sm text-muted-foreground">Session Name</p>
-                <p className="text-lg font-semibold">{session.data.session}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <div className="flex items-center gap-2">
-                  {getStatusBadge(session.data.status)}
-                  {isCurrentSession && (
-                    <Badge variant="default" className="gap-1 bg-green-600">
-                      <CheckCircle className="size-3" />
-                      Active
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Terms</p>
-                <p className="text-lg font-semibold">{terms?.data?.length || 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Terms Section */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Terms</CardTitle>
-              <Button 
-                className="gap-2" 
-                onClick={() => navigate(`/admin/academic-years/${id}/add-term`)}
-              >
-                <Plus className="size-4" /> Add Term
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {termsLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-32 w-full" />
-                ))}
-              </div>
-            ) : !terms?.data || terms.data.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No terms added to this session yet. Click "Add Term" to get started.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {terms.data.map((term) => (
-                  <Card key={term.id} className="hover:border-primary/50 transition-all">
-                    <CardContent className="pt-6">
-                      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold">
-                              {term.term.replace("_", " ")}
-                            </h3>
-                            {getStatusBadge(term.status)}
-                            {isCurrentTerm(term.id) && (
-                              <Badge variant="default" className="gap-1 bg-green-600">
-                                <CheckCircle className="size-3" />
-                                Active
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex gap-6 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="size-4" />
-                              <span>Start: {formatDate(term.startDate)}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="size-4" />
-                              <span>End: {formatDate(term.endDate)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          {term.status !== "CURRENT" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleSetTermAsCurrent(term.id)}
-                              disabled={updateTermStatusMutation.isPending}
-                            >
-                              <Play className="size-4 mr-1" />
-                              Set Current
-                            </Button>
-                          )}
-                          {term.status === "CURRENT" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCompleteTerm(term.id)}
-                              disabled={updateTermStatusMutation.isPending}
-                            >
-                              <Pause className="size-4 mr-1" />
-                              Complete
-                            </Button>
-                          )}
-                          {term.status === "COMPLETED" && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleResetTerm(term.id)}
-                              disabled={updateTermStatusMutation.isPending}
-                            >
-                              Reset
-                            </Button>
-                          )}
-                          {!isCurrentTerm(term.id) && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteTerm(term.id)}
-                              disabled={deleteTermMutation.isPending}
-                            >
-                              <Trash2 className="size-4 text-destructive" />
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <div className="flex gap-2">
+          {!isCurrentSession && (
+            <Button
+              variant="outline"
+              onClick={() => navigate(`/admin/academic-years/${id}/edit`)}
+            >
+              <Edit className="size-4 mr-2" />
+              Edit Session
+            </Button>
+          )}
+          <Button
+            variant="destructive"
+            onClick={handleDeleteSession}
+            disabled={isCurrentSession || deleteSessionMutation.isPending}
+          >
+            <Trash2 className="size-4 mr-2" />
+            Delete Session
+          </Button>
+        </div>
       </div>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {sessionToDelete ? "Delete Session" : "Delete Term"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {sessionToDelete 
-                ? "Are you sure you want to delete this session? This action cannot be undone and may affect related data like enrollments, results, and financial records."
-                : "Are you sure you want to delete this term? This action cannot be undone and may affect related data like enrollments, results, and financial records."
-              }
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteSessionMutation.isPending || deleteTermMutation.isPending}
+      {/* Session Information Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="size-5" />
+            Session Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-3">
+            <div>
+              <p className="text-sm text-muted-foreground">Session Name</p>
+              <p className="text-lg font-semibold">{session.data.session}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <div className="flex items-center gap-2">
+                {getStatusBadge(session.data.status)}
+                {isCurrentSession && (
+                  <Badge variant="default" className="gap-1 bg-green-600">
+                    <CheckCircle className="size-3" />
+                    Active
+                  </Badge>
+                )}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Terms</p>
+              <p className="text-lg font-semibold">{terms?.data?.length || 0}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Terms Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Terms</CardTitle>
+            <Button
+              className="gap-2"
+              onClick={() => navigate(`/admin/academic-years/${id}/add-term`)}
             >
-              {(deleteSessionMutation.isPending || deleteTermMutation.isPending) ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </AdminLayout>
+              <Plus className="size-4" /> Add Term
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {termsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-32 w-full" />
+              ))}
+            </div>
+          ) : !terms?.data || terms.data.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No terms added to this session yet. Click "Add Term" to get started.
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {terms.data.map((term) => (
+                <Card key={term.id} className="hover:border-primary/50 transition-all">
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold">
+                            {term.term.replace("_", " ")}
+                          </h3>
+                          {getStatusBadge(term.status)}
+                          {isCurrentTerm(term.id) && (
+                            <Badge variant="default" className="gap-1 bg-green-600">
+                              <CheckCircle className="size-3" />
+                              Active
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex gap-6 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="size-4" />
+                            <span>Start: {formatDate(term.startDate)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="size-4" />
+                            <span>End: {formatDate(term.endDate)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {term.status !== "CURRENT" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSetTermAsCurrent(term.id)}
+                            disabled={updateTermStatusMutation.isPending}
+                          >
+                            <Play className="size-4 mr-1" />
+                            Set Current
+                          </Button>
+                        )}
+                        {term.status === "CURRENT" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCompleteTerm(term.id)}
+                            disabled={updateTermStatusMutation.isPending}
+                          >
+                            <Pause className="size-4 mr-1" />
+                            Complete
+                          </Button>
+                        )}
+                        {term.status === "COMPLETED" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleResetTerm(term.id)}
+                            disabled={updateTermStatusMutation.isPending}
+                          >
+                            Reset
+                          </Button>
+                        )}
+                        {!isCurrentTerm(term.id) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteTerm(term.id)}
+                            disabled={deleteTermMutation.isPending}
+                          >
+                            <Trash2 className="size-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+
+    <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {sessionToDelete ? "Delete Session" : "Delete Term"}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {sessionToDelete
+              ? "Are you sure you want to delete this session? This action cannot be undone and may affect related data like enrollments, results, and financial records."
+              : "Are you sure you want to delete this term? This action cannot be undone and may affect related data like enrollments, results, and financial records."
+            }
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={confirmDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            disabled={deleteSessionMutation.isPending || deleteTermMutation.isPending}
+          >
+            {(deleteSessionMutation.isPending || deleteTermMutation.isPending) ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

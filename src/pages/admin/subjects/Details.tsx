@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api/admin';
-import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -56,7 +55,8 @@ export default function SubjectDetails() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button
@@ -81,13 +81,14 @@ export default function SubjectDetails() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   if (!subjectData?.data) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button
@@ -112,7 +113,7 @@ export default function SubjectDetails() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
@@ -122,7 +123,8 @@ export default function SubjectDetails() {
     [];
 
   return (
-    <AdminLayout>
+    
+
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -287,6 +289,6 @@ export default function SubjectDetails() {
           </Card>
         </div>
       </div>
-    </AdminLayout>
+    
   );
 }

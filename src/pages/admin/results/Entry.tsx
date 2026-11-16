@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -652,7 +651,8 @@ export default function ResultsEntry() {
   );
 
   return (
-    <AdminLayout>
+    
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -808,6 +808,6 @@ export default function ResultsEntry() {
           </>
         )}
       </div>
-    </AdminLayout>
+    
   );
 }

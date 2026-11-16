@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -265,7 +264,8 @@ export default function ReportCards() {
   };
 
   return (
-    <AdminLayout>
+    
+
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -535,6 +535,6 @@ export default function ReportCards() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    
   );
 }

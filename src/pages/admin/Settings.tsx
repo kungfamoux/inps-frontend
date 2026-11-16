@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -98,7 +97,8 @@ export default function AdminSettings() {
   };
 
   return (
-    <AdminLayout>
+    
+
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
@@ -279,6 +279,6 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    
   );
 }

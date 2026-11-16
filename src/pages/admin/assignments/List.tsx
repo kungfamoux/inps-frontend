@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -137,8 +136,7 @@ export default function AssignmentsList() {
   const hasActiveFilters = Object.values(filters).some(Boolean);
 
   return (
-    <AdminLayout>
-      <div className="mx-auto max-w-[1500px] space-y-6">
+    <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Subject Assignments</h1>
@@ -564,6 +562,5 @@ export default function AssignmentsList() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
   );
 }

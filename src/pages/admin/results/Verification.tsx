@@ -1,4 +1,3 @@
-import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -194,7 +193,8 @@ export default function ResultsVerification() {
   };
 
   return (
-    <AdminLayout>
+    
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -425,6 +425,6 @@ export default function ResultsVerification() {
           </div>
         )}
       </div>
-    </AdminLayout>
+    
   );
 }

@@ -4,7 +4,6 @@ import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -103,122 +102,118 @@ export default function AddTerm() {
 
   if (!session?.data) {
     return (
-      <AdminLayout>
-        <div className="mx-auto max-w-[1500px] space-y-6">
-          <div className="text-center py-8 text-destructive">
-            Session not found. Please try again.
-          </div>
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <div className="text-center py-8 text-destructive">
+          Session not found. Please try again.
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/academic-years/${sessionId}`)}>
-            <ArrowLeft className="size-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Add Term to {session.data.session}</h1>
-            <p className="text-sm text-muted-foreground">Create a new term for this academic session</p>
-          </div>
+    <div className="mx-auto max-w-[1500px] space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/academic-years/${sessionId}`)}>
+          <ArrowLeft className="size-4" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Add Term to {session.data.session}</h1>
+          <p className="text-sm text-muted-foreground">Create a new term for this academic session</p>
         </div>
-
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Term Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="term">Term *</Label>
-                <Controller
-                  name="term"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a term" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableTerms.length > 0 ? (
-                          availableTerms.map((term) => (
-                            <SelectItem key={term} value={term}>
-                              {term.replace("_", " ")}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="" disabled>
-                            All terms already added
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {errors.term && (
-                  <p className="text-sm text-destructive">{errors.term.message}</p>
-                )}
-                {availableTerms.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    All three terms (First, Second, Third) have already been added to this session.
-                  </p>
-                )}
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="startDate">Start Date *</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    {...register("startDate")}
-                  />
-                  {errors.startDate && (
-                    <p className="text-sm text-destructive">{errors.startDate.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="endDate">End Date *</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    {...register("endDate")}
-                  />
-                  {errors.endDate && (
-                    <p className="text-sm text-destructive">{errors.endDate.message}</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar className="size-4" />
-                <p>Enter the start and end dates for this term period.</p>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isSubmitting || createTermMutation.isPending || availableTerms.length === 0}
-              >
-                {isSubmitting || createTermMutation.isPending ? (
-                  <>
-                    <Loader2 className="size-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  "Add Term"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
       </div>
-    </AdminLayout>
+
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>Term Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="term">Term *</Label>
+              <Controller
+                name="term"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a term" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTerms.length > 0 ? (
+                        availableTerms.map((term) => (
+                          <SelectItem key={term} value={term}>
+                            {term.replace("_", " ")}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          All terms already added
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.term && (
+                <p className="text-sm text-destructive">{errors.term.message}</p>
+              )}
+              {availableTerms.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  All three terms (First, Second, Third) have already been added to this session.
+                </p>
+              )}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start Date *</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  {...register("startDate")}
+                />
+                {errors.startDate && (
+                  <p className="text-sm text-destructive">{errors.startDate.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End Date *</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  {...register("endDate")}
+                />
+                {errors.endDate && (
+                  <p className="text-sm text-destructive">{errors.endDate.message}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="size-4" />
+              <p>Enter the start and end dates for this term period.</p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting || createTermMutation.isPending || availableTerms.length === 0}
+            >
+              {isSubmitting || createTermMutation.isPending ? (
+                <>
+                  <Loader2 className="size-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Add Term"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

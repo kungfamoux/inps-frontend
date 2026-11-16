@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -214,56 +213,51 @@ export default function BulkTransfer() {
 
   if (classLoading || studentsLoading) {
     return (
-      <AdminLayout>
-        <div className="mx-auto max-w-[1500px] space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/classes/${classId}`)}>
-              <ArrowLeft className="size-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Bulk Transfer</h1>
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            </div>
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/classes/${classId}`)}>
+            <ArrowLeft className="size-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Bulk Transfer</h1>
+            <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
-          <Card>
-            <CardContent className="p-6">
-              <Skeleton className="h-8 w-1/3 mb-4" />
-              <Skeleton className="h-12 w-full mb-4" />
-              <Skeleton className="h-12 w-full mb-4" />
-              <Skeleton className="h-12 w-full" />
-            </CardContent>
-          </Card>
         </div>
-      </AdminLayout>
+        <Card>
+          <CardContent className="p-6">
+            <Skeleton className="h-8 w-1/3 mb-4" />
+            <Skeleton className="h-12 w-full mb-4" />
+            <Skeleton className="h-12 w-full mb-4" />
+            <Skeleton className="h-12 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   if (!currentClass) {
     return (
-      <AdminLayout>
-        <div className="mx-auto max-w-[1500px] space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/admin/classes")}>
-              <ArrowLeft className="size-4" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Bulk Transfer</h1>
-              <p className="text-sm text-muted-foreground">Class not found</p>
-            </div>
+      <div className="mx-auto max-w-[1500px] space-y-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/admin/classes")}>
+            <ArrowLeft className="size-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Bulk Transfer</h1>
+            <p className="text-sm text-muted-foreground">Class not found</p>
           </div>
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-center text-muted-foreground">Class not found</p>
-            </CardContent>
-          </Card>
         </div>
-      </AdminLayout>
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-center text-muted-foreground">Class not found</p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="mx-auto max-w-[1500px] space-y-6">
+    <div className="mx-auto max-w-[1500px] space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(`/admin/classes/${classId}`)}>
@@ -591,6 +585,5 @@ export default function BulkTransfer() {
           </Card>
         )}
       </div>
-    </AdminLayout>
   );
 }

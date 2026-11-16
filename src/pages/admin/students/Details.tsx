@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +27,8 @@ export default function StudentDetails() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/admin/students")}>
@@ -48,13 +48,14 @@ export default function StudentDetails() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   if (!student?.data) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/admin/students")}>
@@ -71,14 +72,15 @@ export default function StudentDetails() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   const studentData = student.data;
 
   return (
-    <AdminLayout>
+    
+
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -357,6 +359,6 @@ export default function StudentDetails() {
           </Card>
         )}
       </div>
-    </AdminLayout>
+    
   );
 }

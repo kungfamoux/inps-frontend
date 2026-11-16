@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -116,40 +115,37 @@ export default function Promotion() {
 
   if (sessionsLoading) {
     return (
-      <AdminLayout>
-        <div className="mx-auto max-w-[1500px] space-y-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/admin/dashboard")}>
-              <ArrowRight className="size-4 rotate-180" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Student Promotion</h1>
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            </div>
-          </div>
-          <Card>
-            <CardContent className="p-6">
-              <Loader2 className="size-8 animate-spin mx-auto" />
-            </CardContent>
-          </Card>
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  return (
-    <AdminLayout>
       <div className="mx-auto max-w-[1500px] space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/admin/dashboard")}>
             <ArrowRight className="size-4 rotate-180" />
           </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Student Promotion</h1>
-            <p className="text-sm text-muted-foreground">Automatic student promotion at end of academic year</p>
+            <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
         </div>
+        <Card>
+          <CardContent className="p-6">
+            <Loader2 className="size-8 animate-spin mx-auto" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-[1500px] space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate("/admin/dashboard")}>
+          <ArrowRight className="size-4 rotate-180" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Student Promotion</h1>
+          <p className="text-sm text-muted-foreground">Automatic student promotion at end of academic year</p>
+        </div>
+      </div>
 
         {/* Session Selection */}
         <Card>
@@ -356,6 +352,5 @@ export default function Promotion() {
           </Card>
         )}
       </div>
-    </AdminLayout>
   );
 }

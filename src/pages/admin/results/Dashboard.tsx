@@ -1,4 +1,3 @@
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, FileText, CheckCircle, FileText as FileTextIcon, Award } from "lucide-react";
@@ -83,16 +82,18 @@ export default function ResultsDashboard() {
 
   if (loading) {
     return (
-      <AdminLayout>
+      
+
         <div className="flex items-center justify-center h-64">
           <div className="text-muted-foreground">Loading dashboard...</div>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   return (
-    <AdminLayout>
+    
+
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -188,6 +189,6 @@ export default function ResultsDashboard() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    
   );
 }

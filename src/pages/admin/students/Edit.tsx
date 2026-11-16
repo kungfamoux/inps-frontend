@@ -5,7 +5,6 @@ import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/shared/LoadingButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -283,7 +282,8 @@ export default function EditStudent() {
 
   if (studentLoading) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/admin/students")}>
@@ -303,13 +303,14 @@ export default function EditStudent() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   if (!student?.data) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/admin/students")}>
@@ -326,12 +327,13 @@ export default function EditStudent() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   return (
-    <AdminLayout>
+    
+
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -767,6 +769,6 @@ export default function EditStudent() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    
   );
 }

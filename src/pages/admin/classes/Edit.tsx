@@ -5,7 +5,6 @@ import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -71,7 +70,8 @@ export default function EditClass() {
 
   if (isLoading) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/admin/classes")}>
@@ -88,13 +88,14 @@ export default function EditClass() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   if (!classData?.data) {
     return (
-      <AdminLayout>
+      
+
         <div className="mx-auto max-w-[1500px] space-y-6">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/admin/classes")}>
@@ -111,12 +112,13 @@ export default function EditClass() {
             </CardContent>
           </Card>
         </div>
-      </AdminLayout>
+      
     );
   }
 
   return (
-    <AdminLayout>
+    
+
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/admin/classes")}>
@@ -209,6 +211,6 @@ export default function EditClass() {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    
   );
 }

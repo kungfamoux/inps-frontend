@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api/admin';
-import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { LoadingButton } from '@/components/shared/LoadingButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -243,7 +242,8 @@ export default function AddStudent() {
   };
 
   return (
-    <AdminLayout>
+    
+
       <div className="mx-auto max-w-[1500px] space-y-6">
         <div className="flex items-center gap-4">
           <Button
@@ -1139,6 +1139,6 @@ export default function AddStudent() {
           </LoadingButton>
         </div>
       </div>
-    </AdminLayout>
+    
   );
 }
