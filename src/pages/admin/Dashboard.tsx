@@ -1,6 +1,5 @@
 import { GraduationCap, UsersRound, BookOpenCheck, TrendingUp, RefreshCw, Cake, Calendar } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
@@ -68,15 +67,14 @@ export default function Dashboard() {
   })) || [];
 
   return (
-    <AdminLayout>
-      <div className="mx-auto max-w-[1500px] space-y-7">
-        <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-          <div>
-            <p className="mb-1 text-sm font-semibold text-accent">{currentDate}</p>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-              Good morning, {userGreeting}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">Here is today's overview of the INPS school community.</p>
+    <div className="mx-auto max-w-[1500px] space-y-7">
+      <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <p className="mb-1 text-sm font-semibold text-accent">{currentDate}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            Good morning, {userGreeting}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">Here is today's overview of the INPS school community.</p>
           </div>
           <Button 
             variant="outline" 
@@ -286,6 +284,5 @@ export default function Dashboard() {
           </Card>
         </section>
       </div>
-    </AdminLayout>
   );
 }
