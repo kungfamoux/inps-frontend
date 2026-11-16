@@ -342,12 +342,12 @@ export const adminApi = {
   },
 
   // Promotion
-  async verifyResultsForPromotion(sessionId: string): Promise<ApiResponse<any>> {
-    return apiClient.post<ApiResponse<any>>("/api/admin/promotion/verify", { sessionId });
+  async verifyPromotion(sessionId: string): Promise<ApiResponse<{ sessionId: string; totalStudents: number; canPromote: boolean; readyToPromote: number }>> {
+    return apiClient.get<ApiResponse<{ sessionId: string; totalStudents: number; canPromote: boolean; readyToPromote: number }>>(`/api/admin/enrollment/promotion/${sessionId}/verify`);
   },
 
-  async runPromotion(sessionId: string): Promise<ApiResponse<any>> {
-    return apiClient.post<ApiResponse<any>>("/api/admin/promotion/run", { sessionId });
+  async runPromotion(sessionId: string): Promise<ApiResponse<{ sessionId: string; promoted: number; graduated: number; skipped: number; total: number; completedAt: string }>> {
+    return apiClient.post<ApiResponse<{ sessionId: string; promoted: number; graduated: number; skipped: number; total: number; completedAt: string }>>(`/api/admin/enrollment/promotion/${sessionId}/run`, {});
   },
 
   // Academic Sessions/Terms

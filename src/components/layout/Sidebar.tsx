@@ -12,6 +12,7 @@ import {
   Layers,
   GraduationCap,
   Megaphone,
+  ArrowUpCircle,
 } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -40,6 +41,7 @@ const navigation = [
     href: '/admin/academic-years',
     icon: CalendarDays,
   },
+  { label: 'Promotion', href: '/admin/promotion', icon: ArrowUpCircle },
   { label: 'Communications', href: '/admin/communications', icon: Megaphone },
   { label: 'Results', href: '/admin/results', icon: WalletCards },
   { label: 'Settings', href: '/admin/settings', icon: Settings },

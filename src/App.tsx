@@ -51,6 +51,7 @@ import AcademicYearsList from './pages/admin/academic-years/List';
 import AddSession from './pages/admin/academic-years/Add';
 import SessionDetails from './pages/admin/academic-years/Details';
 import AddTerm from './pages/admin/academic-years/AddTerm';
+import Promotion from './pages/admin/promotion/Promotion';
 import ResultsDashboard from './pages/admin/results/Dashboard';
 import ResultsEntry from './pages/admin/results/Entry';
 import ResultsVerification from './pages/admin/results/Verification';
@@ -134,97 +135,336 @@ function AppContent() {
               <Route path="/auth/login" element={<Login />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-of-service" element={<TermsOfService />} />
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/students" element={<StudentsList />} />
-              <Route path="/admin/students/add" element={<AddStudent />} />
+              <Route
+                path="/admin/dashboard"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <Dashboard />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/students"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <StudentsList />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/students/add"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddStudent />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/students/:admissionNumber"
-                element={<StudentDetails />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <StudentDetails />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/students/:admissionNumber/edit"
-                element={<EditStudent />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <EditStudent />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/admin/staff" element={<StaffList />} />
-              <Route path="/admin/staff/add" element={<AddStaff />} />
-              <Route path="/admin/staff/:staffId" element={<StaffDetails />} />
+              <Route
+                path="/admin/staff"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <StaffList />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/staff/add"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddStaff />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/staff/:staffId"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <StaffDetails />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/staff/:staffId/edit"
-                element={<EditStaff />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <EditStaff />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/admin/parents" element={<ParentsList />} />
-              <Route path="/admin/parents/:id" element={<ParentDetails />} />
-              <Route path="/admin/parents/:id/edit" element={<EditParent />} />
-              <Route path="/admin/classes" element={<ClassesList />} />
-              <Route path="/admin/classes/add" element={<AddClass />} />
+              <Route
+                path="/admin/parents"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <ParentsList />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/parents/:id"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <ParentDetails />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/parents/:id/edit"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <EditParent />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/classes"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <ClassesList />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/classes/add"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddClass />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/classes/:classId/edit"
-                element={<EditClass />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <EditClass />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/classes/:classId"
-                element={<ClassDetails />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <ClassDetails />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/classes/:classId/subjects"
-                element={<ClassSubjects />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <ClassSubjects />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/classes/:classId/bulk-transfer"
-                element={<BulkTransfer />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <BulkTransfer />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/admin/subjects" element={<SubjectsList />} />
+              <Route
+                path="/admin/subjects"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <SubjectsList />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/subjects/:subjectId"
-                element={<SubjectDetails />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <SubjectDetails />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/subjects/:subjectId/edit"
-                element={<EditSubject />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <EditSubject />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/assignments"
                 element={
-                  <Navigate to="/admin/assignments/subject-teachers" replace />
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <Navigate to="/admin/assignments/subject-teachers" replace />
+                    </AdminLayout>
+                  </ProtectedRoute>
                 }
               />
               <Route
                 path="/admin/assignments/class-teachers"
-                element={<ClassTeachers />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <ClassTeachers />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/assignments/subject-teachers"
-                element={<SubjectTeachers />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <SubjectTeachers />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/assignments/add"
-                element={<AddAssignment />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddAssignment />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/assignments/:assignmentId/edit"
-                element={<EditAssignment />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <EditAssignment />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/academic-years"
-                element={<AcademicYearsList />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <AcademicYearsList />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/academic-years/add"
-                element={<AddSession />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddSession />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/academic-years/:id"
-                element={<SessionDetails />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
+                    <AdminLayout>
+                      <SessionDetails />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/academic-years/:id/edit"
-                element={<AddSession />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddSession />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/academic-years/:id/add-term"
-                element={<AddTerm />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <AddTerm />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/admin/results" element={<ResultsDashboard />} />
+              <Route
+                path="/admin/promotion"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN]}>
+                    <AdminLayout>
+                      <Promotion />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/results"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER, StaffRole.TEACHER]}>
+                    <AdminLayout>
+                      <ResultsDashboard />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/admin/results/entry" element={<ResultsEntry />} />
               <Route
                 path="/admin/results/verification"
