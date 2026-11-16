@@ -514,7 +514,9 @@ function AppContent() {
                 path="/admin/communications"
                 element={
                   <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
-                    <CommunicationsList />
+                    <AdminLayout>
+                      <CommunicationsList />
+                    </AdminLayout>
                   </ProtectedRoute>
                 }
               />
@@ -522,7 +524,9 @@ function AppContent() {
                 path="/admin/communications/add"
                 element={
                   <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
-                    <CommunicationForm />
+                    <AdminLayout>
+                      <CommunicationForm />
+                    </AdminLayout>
                   </ProtectedRoute>
                 }
               />
@@ -530,7 +534,9 @@ function AppContent() {
                 path="/admin/communications/:id"
                 element={
                   <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
-                    <CommunicationDetails />
+                    <AdminLayout>
+                      <CommunicationDetails />
+                    </AdminLayout>
                   </ProtectedRoute>
                 }
               />
@@ -538,7 +544,9 @@ function AppContent() {
                 path="/admin/communications/:id/edit"
                 element={
                   <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER]}>
-                    <CommunicationForm />
+                    <AdminLayout>
+                      <CommunicationForm />
+                    </AdminLayout>
                   </ProtectedRoute>
                 }
               />
