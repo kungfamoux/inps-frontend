@@ -79,7 +79,8 @@ export default function AcademicYearsList() {
   };
 
   return (
-    <div className="mx-auto max-w-[1500px] space-y-6">
+    <>
+      <div className="mx-auto max-w-[1500px] space-y-6">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Academic Years</h1>
@@ -250,5 +251,7 @@ export default function AcademicYearsList() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </div>
+    </>
   );
 }

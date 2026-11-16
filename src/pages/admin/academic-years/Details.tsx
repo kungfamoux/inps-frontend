@@ -185,25 +185,30 @@ export default function SessionDetails() {
 
   if (sessionLoading) {
     return (
-      <div className="mx-auto max-w-[1500px] space-y-6">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-40 w-full" />
-      </div>
+      <>
+        <div className="mx-auto max-w-[1500px] space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </>
     );
   }
 
   if (sessionError || !session?.data) {
     return (
-      <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="text-center py-8 text-destructive">
-          Failed to load session. Please try again.
+      <>
+        <div className="mx-auto max-w-[1500px] space-y-6">
+          <div className="text-center py-8 text-destructive">
+            Failed to load session. Please try again.
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto max-w-[1500px] space-y-6">
+    <>
+      <div className="mx-auto max-w-[1500px] space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" onClick={() => navigate("/admin/academic-years")}>
           <ArrowLeft className="size-4" />
@@ -400,5 +405,7 @@ export default function SessionDetails() {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    </div>
+    </>
   );
 }
