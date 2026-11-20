@@ -273,36 +273,36 @@ export default function Dashboard() {
                     return (
                       <div
                         key={birthday.studentId}
-                        className="group flex items-center justify-between gap-4 rounded-xl border border-border/50 bg-gradient-to-r from-pink-50/50 to-purple-50/50 p-4 transition-all hover:shadow-md hover:border-pink-200"
+                        className="group flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-border/50 bg-gradient-to-r from-pink-50/50 to-purple-50/50 p-4 transition-all hover:shadow-md hover:border-pink-200"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="relative">
-                            <div className="grid size-12 place-items-center rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 text-white shadow-lg shadow-pink-500/20">
-                              <Cake className="size-6" />
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <div className="relative flex-shrink-0">
+                            <div className="grid size-10 sm:size-12 place-items-center rounded-xl bg-gradient-to-br from-pink-400 to-purple-500 text-white shadow-lg shadow-pink-500/20">
+                              <Cake className="size-5 sm:size-6" />
                             </div>
                             {isToday && (
-                              <div className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-red-500 ring-2 ring-white">
-                                <div className="size-2 rounded-full bg-white animate-pulse" />
+                              <div className="absolute -top-1 -right-1 flex size-3 sm:size-4 items-center justify-center rounded-full bg-red-500 ring-2 ring-white">
+                                <div className="size-1.5 sm:size-2 rounded-full bg-white animate-pulse" />
                               </div>
                             )}
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-foreground group-hover:text-pink-600 transition-colors">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-foreground group-hover:text-pink-600 transition-colors text-sm sm:text-base">
                               {birthday.firstName} {birthday.middleName && `${birthday.middleName} `}{birthday.lastName}
                             </p>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="text-xs font-medium text-muted-foreground">
                                 {birthday.class || 'Not enrolled'}
                               </span>
-                              <span className="text-xs text-muted-foreground/50">•</span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="hidden sm:inline text-xs text-muted-foreground/50">•</span>
+                              <span className="hidden sm:inline text-xs text-muted-foreground">
                                 {birthday.admissionNumber}
                               </span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${badgeGradient}`}>
+                        <div className="flex items-center justify-between sm:flex-col sm:items-end gap-1 sm:gap-1">
+                          <span className={`inline-flex items-center rounded-full px-2.5 sm:px-3 py-1 text-xs font-semibold ${badgeGradient}`}>
                             {isToday ? '🎉 Today!' : isSoon ? `In ${birthday.daysUntilBirthday} days` : `${birthday.daysUntilBirthday} days`}
                           </span>
                           <span className="text-xs text-muted-foreground font-medium">
