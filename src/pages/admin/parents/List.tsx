@@ -122,10 +122,8 @@ export default function ParentsList() {
   };
 
   return (
-    
-
       <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Parents</h1>
             <p className="text-sm text-muted-foreground">
@@ -138,6 +136,11 @@ export default function ParentsList() {
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle>All Parents</CardTitle>
+              {parents.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  {pagination?.total || parents.length} total parents
+                </span>
+              )}
             </div>
             <AdvancedSearch
               onSearch={handleSearch}
@@ -150,8 +153,11 @@ export default function ParentsList() {
             {isLoading ? (
               <ListTableSkeleton rows={6} />
             ) : error ? (
-              <div className="text-center py-8 text-destructive">
-                Failed to load parents. Please try again.
+              <div className="flex h-[200px] flex-col items-center justify-center gap-3 text-destructive">
+                <div className="grid size-16 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+                  <SearchX className="size-8" />
+                </div>
+                <p className="text-sm font-medium">Failed to load parents. Please try again.</p>
               </div>
             ) : parents.length === 0 ? (
               <ListEmptyState
@@ -172,22 +178,22 @@ export default function ParentsList() {
               />
             ) : (
               <>
-                <div className="overflow-hidden rounded-xl border shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border/50 shadow-sm">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/50 hover:bg-muted/50">
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Parent</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Phone</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Children</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
-                        <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Parent</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Phone</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Children</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Status</TableHead>
+                        <TableHead className="h-12 text-right text-xs font-semibold uppercase tracking-wider text-foreground">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {parents.map((parent) => (
                         <TableRow
                           key={parent.id}
-                          className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                          className="cursor-pointer hover:bg-primary/5 transition-colors"
                           onClick={() => handleView(parent.id)}
                         >
                           <TableCell>
@@ -196,7 +202,7 @@ export default function ParentsList() {
                                 name={`${parent.primaryGuardian?.firstName || ''} ${parent.primaryGuardian?.lastName || ''}`}
                               />
                               <div className="min-w-0">
-                                <p className="truncate font-medium">
+                                <p className="truncate font-semibold text-foreground">
                                   {parent.primaryGuardian?.firstName}{' '}
                                   {parent.primaryGuardian?.lastName}
                                 </p>
@@ -206,11 +212,11 @@ export default function ParentsList() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{parent.accountPhone}</TableCell>
+                          <TableCell className="text-muted-foreground font-medium">{parent.accountPhone}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5 text-muted-foreground">
                               <Users className="size-4" />
-                              <span className="font-medium text-foreground">
+                              <span className="font-semibold text-foreground">
                                 {parent.students?.length || 0}
                               </span>
                             </div>
@@ -225,19 +231,21 @@ export default function ParentsList() {
                                   variant="ghost"
                                   size="icon"
                                   aria-label="Open actions"
-                                  className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                  className="size-8 rounded-xl border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
                                 >
                                   <MoreHorizontal className="size-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
+                              <DropdownMenuContent align="end" className="rounded-xl">
                                 <DropdownMenuItem
                                   onClick={() => handleView(parent.id)}
+                                  className="rounded-lg"
                                 >
                                   <Eye className="mr-2 size-4" /> View
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleEdit(parent.id)}
+                                  className="rounded-lg"
                                 >
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
@@ -247,7 +255,7 @@ export default function ParentsList() {
                                     `${parent.primaryGuardian?.firstName} ${parent.primaryGuardian?.lastName}`,
                                     parent.students?.length || 0
                                   )}
-                                  className="text-destructive"
+                                  className="text-destructive rounded-lg"
                                 >
                                   <Trash2 className="mr-2 size-4" /> Delete
                                 </DropdownMenuItem>

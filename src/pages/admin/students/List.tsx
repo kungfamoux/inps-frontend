@@ -167,20 +167,25 @@ export default function StudentsList() {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-6">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Students</h1>
           <p className="text-sm text-muted-foreground">Manage student registrations and enrollments</p>
-          </div>
-          <Button className="gap-2" onClick={() => navigate("/admin/students/add")}>
-            <Plus className="size-4" /> Add Student
-          </Button>
         </div>
+        <Button className="gap-2" onClick={() => navigate("/admin/students/add")}>
+          <Plus className="size-4" /> Add Student
+        </Button>
+      </div>
 
         <Card>
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle>All Students</CardTitle>
+              {students.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  {pagination?.total || students.length} total students
+                </span>
+              )}
             </div>
             <AdvancedSearch
               onSearch={handleSearch}
@@ -189,7 +194,7 @@ export default function StudentsList() {
               initialFilters={searchFilters}
             />
             {sessionError && (
-              <div className="mt-4 bg-destructive/10 border border-destructive/20 rounded-lg p-4">
+              <div className="mt-4 bg-destructive/10 border border-destructive/20 rounded-xl p-4">
                 <p className="text-sm text-destructive">{sessionError}</p>
               </div>
             )}
@@ -202,8 +207,11 @@ export default function StudentsList() {
             ) : isLoading ? (
               <ListTableSkeleton rows={6} />
             ) : error ? (
-              <div className="text-center py-8 text-destructive">
-                Failed to load students. Please try again.
+              <div className="flex h-[200px] flex-col items-center justify-center gap-3 text-destructive">
+                <div className="grid size-16 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+                  <SearchX className="size-8" />
+                </div>
+                <p className="text-sm font-medium">Failed to load students. Please try again.</p>
               </div>
             ) : students.length === 0 ? (
               <ListEmptyState
@@ -228,29 +236,29 @@ export default function StudentsList() {
               />
             ) : (
               <>
-                <div className="overflow-hidden rounded-xl border shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border/50 shadow-sm">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/50 hover:bg-muted/50">
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Student</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Gender</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Class</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
-                        <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Student</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Gender</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Class</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Status</TableHead>
+                        <TableHead className="h-12 text-right text-xs font-semibold uppercase tracking-wider text-foreground">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {students.map((student) => (
                         <TableRow
                           key={student.admissionNumber}
-                          className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                          className="cursor-pointer hover:bg-primary/5 transition-colors"
                           onClick={() => handleView(student.admissionNumber)}
                         >
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <EntityAvatar name={`${student.firstName} ${student.lastName}`} />
                               <div className="min-w-0">
-                                <p className="truncate font-medium">
+                                <p className="truncate font-semibold text-foreground">
                                   {student.firstName} {student.lastName}
                                 </p>
                                 <p className="truncate text-xs text-muted-foreground">
@@ -259,8 +267,8 @@ export default function StudentsList() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{student.gender}</TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground font-medium">{student.gender}</TableCell>
+                          <TableCell className="text-muted-foreground font-medium">
                             {student.class?.name || "Not enrolled"}
                           </TableCell>
                           <TableCell>
@@ -275,7 +283,7 @@ export default function StudentsList() {
                                   disabled={deletingStudent === student.admissionNumber}
                                   aria-busy={deletingStudent === student.admissionNumber}
                                   aria-label={deletingStudent === student.admissionNumber ? "Deleting student" : "Open actions"}
-                                  className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                  className="size-8 rounded-xl border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
                                 >
                                   {deletingStudent === student.admissionNumber ? (
                                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
@@ -284,17 +292,17 @@ export default function StudentsList() {
                                   )}
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleView(student.admissionNumber)}>
+                              <DropdownMenuContent align="end" className="rounded-xl">
+                                <DropdownMenuItem onClick={() => handleView(student.admissionNumber)} className="rounded-lg">
                                   <Eye className="mr-2 size-4" /> View
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEdit(student.admissionNumber)}>
+                                <DropdownMenuItem onClick={() => handleEdit(student.admissionNumber)} className="rounded-lg">
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   disabled={deletingStudent !== null}
                                   onClick={() => handleDelete(student.admissionNumber)}
-                                  className="text-destructive"
+                                  className="text-destructive rounded-lg"
                                 >
                                   <Trash2 className="mr-2 size-4" /> Delete
                                 </DropdownMenuItem>

@@ -4,7 +4,7 @@ import { adminApi } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { Plus, Users, ChevronRight, School, SearchX } from "lucide-react";
+import { Users, ChevronRight, School, SearchX } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNavigate } from "react-router-dom";
 import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
@@ -95,14 +95,11 @@ export default function ClassesList() {
     
 
       <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Classes</h1>
             <p className="text-sm text-muted-foreground">Manage class sections and student assignments</p>
           </div>
-          <Button className="gap-2" onClick={() => navigate("/admin/classes/add")}>
-            <Plus className="size-4" /> Add Class
-          </Button>
         </div>
 
         <Card>
@@ -135,18 +132,14 @@ export default function ClassesList() {
                 message={
                   isSearching || searchFilters.q
                     ? "No classes match your current search. Try adjusting or clearing the filters."
-                    : "Get started by creating your first class."
+                    : "No classes have been created yet."
                 }
                 action={
                   isSearching || searchFilters.q ? (
                     <Button variant="outline" onClick={handleClear}>
                       <SearchX className="size-4" /> Clear Filters
                     </Button>
-                  ) : (
-                    <Button onClick={() => navigate("/admin/classes/add")}>
-                      <Plus className="size-4" /> Add Class
-                    </Button>
-                  )
+                  ) : null
                 }
               />
             ) : (

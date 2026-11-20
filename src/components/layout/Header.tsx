@@ -40,9 +40,9 @@ export function Header({ onOpenMenu }: HeaderProps) {
     }
     
     // Check if user is Parent
-    if ("fatherFirstName" in user) {
-      const firstName = user.fatherFirstName || "";
-      const lastName = user.fatherLastName || "";
+    if ("primaryGuardian" in user) {
+      const firstName = user.primaryGuardian?.firstName || "";
+      const lastName = user.primaryGuardian?.lastName || "";
       if (firstName && lastName) {
         return `${firstName[0]}${lastName[0]}`.toUpperCase();
       }
@@ -66,9 +66,9 @@ export function Header({ onOpenMenu }: HeaderProps) {
     }
     
     // Check if user is Parent
-    if ("fatherFirstName" in user) {
-      const firstName = user.fatherFirstName || "";
-      const lastName = user.fatherLastName || "";
+    if ("primaryGuardian" in user) {
+      const firstName = user.primaryGuardian?.firstName || "";
+      const lastName = user.primaryGuardian?.lastName || "";
       if (firstName && lastName) {
         return `${firstName} ${lastName}`;
       }
@@ -113,7 +113,7 @@ export function Header({ onOpenMenu }: HeaderProps) {
       </div>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-4">
-        <div className="hidden text-right xl:block">
+        <div className="hidden text-right md:block">
           {error ? (
             <p className="text-xs text-destructive">
               {error}
@@ -129,7 +129,7 @@ export function Header({ onOpenMenu }: HeaderProps) {
             </>
           )}
         </div>
-        <div className="hidden h-8 w-px bg-border xl:block" />
+        <div className="hidden h-8 w-px bg-border md:block" />
         <Button variant="ghost" size="icon" className="relative rounded-xl" aria-label="Notifications">
           <Bell className="size-5" />
           <span className="absolute right-2 top-2 size-2 rounded-full bg-accent ring-2 ring-card" />

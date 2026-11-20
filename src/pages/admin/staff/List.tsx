@@ -4,6 +4,7 @@ import { staffApi } from "@/lib/api/staff";
 import { adminApi } from "@/lib/api/admin";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Plus, MoreHorizontal, Eye, Pencil, ShieldCheck, ShieldX, Users, SearchX } from "lucide-react";
 import {
   Table,
@@ -19,7 +20,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import AdvancedSearch, { FilterConfig, SearchFilters } from "@/components/admin/AdvancedSearch";
 import { EntityAvatar } from "@/components/admin/lists/EntityAvatar";
@@ -115,10 +115,8 @@ export default function StaffList() {
   };
 
   return (
-    
-
       <div className="mx-auto max-w-[1500px] space-y-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Staff</h1>
             <p className="text-sm text-muted-foreground">Manage staff accounts and permissions</p>
@@ -132,6 +130,11 @@ export default function StaffList() {
           <CardHeader>
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <CardTitle>All Staff</CardTitle>
+              {staff.length > 0 && (
+                <span className="text-sm text-muted-foreground">
+                  {pagination?.total || staff.length} total staff
+                </span>
+              )}
             </div>
             <AdvancedSearch
               onSearch={handleSearch}
@@ -144,8 +147,11 @@ export default function StaffList() {
             {isLoading ? (
               <ListTableSkeleton rows={6} />
             ) : error ? (
-              <div className="text-center py-8 text-destructive">
-                Failed to load staff. Please try again.
+              <div className="flex h-[200px] flex-col items-center justify-center gap-3 text-destructive">
+                <div className="grid size-16 place-items-center rounded-2xl bg-destructive/10 text-destructive">
+                  <SearchX className="size-8" />
+                </div>
+                <p className="text-sm font-medium">Failed to load staff. Please try again.</p>
               </div>
             ) : staff.length === 0 ? (
               <ListEmptyState
@@ -170,23 +176,23 @@ export default function StaffList() {
               />
             ) : (
               <>
-                <div className="overflow-hidden rounded-xl border shadow-sm">
+                <div className="overflow-hidden rounded-xl border border-border/50 shadow-sm">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/50 hover:bg-muted/50">
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Staff</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Phone</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Role</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Type</TableHead>
-                        <TableHead className="h-11 text-xs uppercase tracking-wider">Status</TableHead>
-                        <TableHead className="h-11 text-right text-xs uppercase tracking-wider">Actions</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Staff</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Phone</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Role</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Type</TableHead>
+                        <TableHead className="h-12 text-xs font-semibold uppercase tracking-wider text-foreground">Status</TableHead>
+                        <TableHead className="h-12 text-right text-xs font-semibold uppercase tracking-wider text-foreground">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {staff.map((member) => (
                         <TableRow
                           key={member.id}
-                          className="cursor-pointer even:bg-muted/30 hover:bg-primary/5"
+                          className="cursor-pointer hover:bg-primary/5 transition-colors"
                           onClick={() => handleView(member.id)}
                         >
                           <TableCell>
@@ -195,18 +201,18 @@ export default function StaffList() {
                                 name={`${member.firstName} ${member.middleName || ""} ${member.lastName}`}
                               />
                               <div className="min-w-0">
-                                <p className="truncate font-medium">
+                                <p className="truncate font-semibold text-foreground">
                                   {member.firstName} {member.middleName && member.middleName + " "}{member.lastName}
                                 </p>
                                 <p className="truncate text-xs text-muted-foreground">{member.email}</p>
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{member.phone}</TableCell>
+                          <TableCell className="text-muted-foreground font-medium">{member.phone}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-xs">{member.role}</Badge>
+                            <Badge variant="outline" className="text-xs rounded-lg">{member.role}</Badge>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{member.type}</TableCell>
+                          <TableCell className="text-muted-foreground font-medium">{member.type}</TableCell>
                           <TableCell>
                             <StatusDotBadge status={member.status} />
                           </TableCell>
@@ -217,21 +223,21 @@ export default function StaffList() {
                                   variant="ghost"
                                   size="icon"
                                   aria-label="Open actions"
-                                  className="size-8 rounded-lg border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
+                                  className="size-8 rounded-xl border border-transparent text-muted-foreground hover:border-border hover:bg-background hover:text-foreground"
                                 >
                                   <MoreHorizontal className="size-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleView(member.id)}>
+                              <DropdownMenuContent align="end" className="rounded-xl">
+                                <DropdownMenuItem onClick={() => handleView(member.id)} className="rounded-lg">
                                   <Eye className="mr-2 size-4" /> View
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEdit(member.id)}>
+                                <DropdownMenuItem onClick={() => handleEdit(member.id)} className="rounded-lg">
                                   <Pencil className="mr-2 size-4" /> Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleToggleStatus(member.id, member.status)}
-                                  className={member.status === "ACTIVE" ? "text-destructive" : "text-green-600"}
+                                  className="rounded-lg"
                                 >
                                   {member.status === "ACTIVE" ? (
                                     <>
@@ -239,7 +245,7 @@ export default function StaffList() {
                                     </>
                                   ) : (
                                     <>
-                                      <ShieldCheck className="mr-2 size-4" /> Activate
+                                      <ShieldCheck className="mr-2 size-4" /> Reactivate
                                     </>
                                   )}
                                 </DropdownMenuItem>
@@ -267,6 +273,5 @@ export default function StaffList() {
           </CardContent>
         </Card>
       </div>
-    
   );
 }
