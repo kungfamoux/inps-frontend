@@ -63,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userType, setUserType] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const hasRedirected = useRef(false);
+  const isLoggingInRef = useRef(false);
 
   const logout = useCallback(() => {
     clearSession();
@@ -98,7 +99,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         setUser(session.user);
         setUserType(session.userType);
-        console.log('AuthContext loaded from localStorage:', { user: session.user, userType: session.userType });
         
         // Only redirect once on initial load, not on every pathname change
         if (!hasRedirected.current) {
@@ -175,6 +175,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string, type: UserType) => {
+      if (isLoggingInRef.current) return;
+      isLoggingInRef.current = true;
       setIsLoading(true);
       try {
         // Clear any existing session before login
@@ -204,23 +206,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Redirect based on role - immediate redirect without delay
           if (type === 'staff' && 'role' in response.user) {
             const role = response.user.role;
-            console.log('AuthContext login - Staff login with role:', role);
-            console.log('AuthContext login - About to redirect to:', role === StaffRole.NURSE ? '/health/dashboard' : '/admin/dashboard');
             // Immediate redirect
             if (role === StaffRole.BURSARY) {
-              console.log('AuthContext login - Redirecting to /bursary/dashboard');
               navigate('/bursary/dashboard');
             } else if (role === StaffRole.NURSE) {
-              console.log('AuthContext login - Redirecting to /health/dashboard');
               navigate('/health/dashboard');
             } else if (role === StaffRole.TEACHER) {
-              console.log('AuthContext login - Redirecting to /teacher/dashboard');
               navigate('/teacher/dashboard');
             } else if (role === StaffRole.PROPRIETOR) {
-              console.log('AuthContext login - Redirecting to /proprietor/dashboard');
               navigate('/proprietor/dashboard');
             } else {
-              console.log('AuthContext login - Redirecting to /admin/dashboard (default)');
               navigate('/admin/dashboard');
             }
           }
@@ -247,6 +242,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } finally {
         setIsLoading(false);
+        isLoggingInRef.current = false;
       }
     },
     [],

@@ -35,12 +35,12 @@ const staffSchema = z
   .object({
     firstName: z.string().min(1, 'First name is required'),
     lastName: z.string().min(1, 'Last name is required'),
-    middleName: z.string().min(1, 'Middle name is required'),
+    middleName: z.string().optional(),
     email: z.string().email('Invalid email address'),
     phone: z.string().min(1, 'Phone number is required'),
     role: z.nativeEnum(StaffRole),
     gender: z.nativeEnum(Gender).optional(),
-    dateOfBirth: z.string().min(1, 'Date of birth is required'),
+    dateOfBirth: z.string().optional(),
     address: z.string().optional(),
     maritalStatus: z.nativeEnum(MaritalStatus).optional(),
     nationality: z.string().optional(),
@@ -67,7 +67,7 @@ const staffSchema = z
         }),
       )
       .optional(),
-    dateOfEmployment: z.string().min(1, 'Date of employment is required'),
+    dateOfEmployment: z.string().optional(),
     nextOfKinName: z.string().optional(),
     nextOfKinPhone: z.string().optional(),
     nextOfKinRelationship: z.string().optional(),
@@ -162,6 +162,7 @@ export default function AddStaff() {
     defaultValues: {
       role: StaffRole.TEACHER,
       gender: Gender.MALE,
+      middleName: '',
       qualifications: [{ degree: '', institution: '', year: '' }],
       previousEmployment: [],
     },
@@ -203,9 +204,9 @@ export default function AddStaff() {
       // First create the staff
       const staff = await staffApi.createStaff({
         ...data,
-        qualifications: qualifications.length > 0 ? qualifications : undefined,
+        qualifications: data.qualifications && data.qualifications.length > 0 ? data.qualifications : undefined,
         previousEmployment:
-          previousEmployment.length > 0 ? previousEmployment : undefined,
+          data.previousEmployment && data.previousEmployment.length > 0 ? data.previousEmployment : undefined,
       });
 
       // If assignment is enabled and role is TEACHER, create assignment
@@ -279,7 +280,18 @@ export default function AddStaff() {
 
   const onSubmit = (data: StaffFormData) => {
     if (createStaffMutation.isPending) return;
-    createStaffMutation.mutate(data);
+    
+    // Convert Date objects to strings if present
+    const submissionData = {
+      ...data,
+      dateOfBirth: data.dateOfBirth || undefined,
+      dateOfEmployment: data.dateOfEmployment || undefined,
+      // Filter out empty qualifications and previous employment
+      qualifications: qualifications.filter(q => q.degree || q.institution || q.year),
+      previousEmployment: previousEmployment.filter(e => e.company || e.position || e.period),
+    };
+    
+    createStaffMutation.mutate(submissionData);
   };
 
   const addQualification = () => {
@@ -373,7 +385,7 @@ export default function AddStaff() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="middleName">Middle Name *</Label>
+                    <Label htmlFor="middleName">Middle Name</Label>
                     <Input id="middleName" {...register('middleName')} />
                     {errors.middleName && (
                       <p className="text-sm text-destructive">
@@ -400,7 +412,7 @@ export default function AddStaff() {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                    <Label htmlFor="dateOfBirth">Date of Birth</Label>
                     <Input
                       id="dateOfBirth"
                       type="date"
@@ -586,7 +598,7 @@ export default function AddStaff() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="dateOfEmployment">
-                      Date of Employment *
+                      Date of Employment
                     </Label>
                     <Input
                       id="dateOfEmployment"

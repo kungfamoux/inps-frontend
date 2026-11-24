@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Eye, EyeOff, LockKeyhole, Mail, HelpCircle,
@@ -62,6 +62,7 @@ export default function Login() {
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
   const [animationDirection, setAnimationDirection] = useState(1);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   const {
     register,
@@ -115,7 +116,8 @@ export default function Login() {
   }, [isAuthenticated, accountType, navigate, isLoggingIn]);
 
   const onSubmit = async (values: LoginValues) => {
-    if (isSubmitting) return;
+    if (isSubmitting || isLoggingIn || isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setSubmitError("");
     setIsLoggingIn(true);
     try {
@@ -123,6 +125,7 @@ export default function Login() {
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "We could not sign you in. Please try again.");
       setIsLoggingIn(false);
+      isSubmittingRef.current = false;
     }
   };
 
