@@ -55,7 +55,7 @@ const heroVariants = {
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [accountType, setAccountType] = useState<UserType>("staff");
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -63,6 +63,7 @@ export default function Login() {
   const [animationDirection, setAnimationDirection] = useState(1);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const isSubmittingRef = useRef(false);
+  const hasRedirectedOnMount = useRef(false);
 
   const {
     register,
@@ -77,20 +78,25 @@ export default function Login() {
   });
 
   useEffect(() => {
-    // Only redirect if already authenticated and NOT currently logging in
-    // This prevents race condition with authContext redirect
-    if (isAuthenticated && !isLoggingIn) {
-      if (accountType === "parent") {
-        navigate("/parent/dashboard", { replace: true });
-      } else {
-        const user = localStorage.getItem("user_data");
-        console.log("Login.tsx redirect - user_data:", user);
-        if (user) {
-          const userData = JSON.parse(user);
-          console.log("Login.tsx redirect - parsed userData:", userData);
-          if (userData.user && "role" in userData.user) {
-            const role = userData.user.role;
-            console.log("Login.tsx redirect - role:", role);
+    // Only redirect if:
+    // 1. Auth loading is complete (!isLoading)
+    // 2. User is authenticated (isAuthenticated)
+    // 3. Not currently logging in (!isLoggingIn)
+    // 4. Haven't already redirected on mount (!hasRedirectedOnMount.current)
+    // This prevents race conditions and infinite loops
+    if (!isLoading && isAuthenticated && !isLoggingIn && !hasRedirectedOnMount.current) {
+      const storedSession = localStorage.getItem("user_data");
+      if (storedSession) {
+        const session = JSON.parse(storedSession);
+        const sessionUserType = session.userType;
+
+        // Only redirect if the stored user type matches the current account type tab
+        if (sessionUserType === accountType) {
+          hasRedirectedOnMount.current = true;
+          if (accountType === "parent") {
+            navigate("/parent/dashboard", { replace: true });
+          } else if (session.user && "role" in session.user) {
+            const role = session.user.role;
             if (role === StaffRole.BURSARY) {
               navigate("/bursary/dashboard", { replace: true });
             } else if (role === StaffRole.NURSE) {
@@ -100,20 +106,13 @@ export default function Login() {
             } else if (role === StaffRole.PROPRIETOR) {
               navigate("/proprietor/dashboard", { replace: true });
             } else {
-              console.log("Login.tsx redirect - defaulting to admin dashboard, role:", role);
               navigate("/admin/dashboard", { replace: true });
             }
-          } else {
-            console.log("Login.tsx redirect - no role in user, defaulting to admin");
-            navigate("/admin/dashboard", { replace: true });
           }
-        } else {
-          console.log("Login.tsx redirect - no user_data, defaulting to admin");
-          navigate("/admin/dashboard", { replace: true });
         }
       }
     }
-  }, [isAuthenticated, accountType, navigate, isLoggingIn]);
+  }, [isAuthenticated, isLoading, navigate, isLoggingIn]);
 
   const onSubmit = async (values: LoginValues) => {
     if (isSubmitting || isLoggingIn || isSubmittingRef.current) return;
@@ -122,6 +121,7 @@ export default function Login() {
     setIsLoggingIn(true);
     try {
       await login(values.email, values.password, accountType);
+      // Note: Navigation is handled by auth context after successful login
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "We could not sign you in. Please try again.");
       setIsLoggingIn(false);
@@ -265,7 +265,7 @@ export default function Login() {
 
                   <LoadingButton
                     type="submit"
-                    loading={isSubmitting}
+                    loading={isSubmitting || isLoggingIn}
                     loadingText="Signing in..."
                     className="h-12 w-full rounded-xl font-semibold shadow-sm"
                   >

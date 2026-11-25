@@ -30,7 +30,7 @@ export const useSession = () => {
 };
 
 export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, userType, user } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, userType, user } = useAuth();
   const isParent = userType === "parent";
   const isBursary = userType === "staff" && user && "role" in user && user.role === "BURSARY";
   const isTeacher = userType === "staff" && user && "role" in user && user.role === StaffRole.TEACHER;
@@ -48,10 +48,16 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Load current session/term from backend on mount and when auth state changes
   useEffect(() => {
-    if (isAuthenticated && !isParent && !isBursary && !isNurse && !isProprietor) {
+    // Don't fetch sessions if auth is still loading or user is not authenticated
+    if (authLoading || !isAuthenticated) {
+      setIsLoading(false);
+      return;
+    }
+
+    if (!isParent && !isBursary && !isNurse && !isProprietor) {
       loadCurrentSessionAndTerm();
       loadAllSessions();
-    } else if (isAuthenticated && isParent) {
+    } else if (isParent) {
       // For parents, try to load session data but don't fail if it errors
       loadCurrentSessionAndTerm().catch(() => {
         // Parents may not have access to admin config endpoints
@@ -60,14 +66,14 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       loadAllSessions().catch(() => {
         // Parents may not have access to admin config endpoints
       });
-    } else if (isAuthenticated && isBursary) {
+    } else if (isBursary) {
       // For bursary users, don't load admin session data to avoid 403 errors
       // Backend doesn't provide session endpoints for bursary role
       setIsLoading(false);
-    } else if (isAuthenticated && isNurse) {
+    } else if (isNurse) {
       // For nurse users, don't load admin session data - health portal doesn't need it
       setIsLoading(false);
-    } else if (isAuthenticated && isProprietor) {
+    } else if (isProprietor) {
       // For proprietor users, don't load admin session data - proprietor portal doesn't need it
       setIsLoading(false);
     } else {
@@ -77,7 +83,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setAllSessions([]);
       setIsLoading(false);
     }
-  }, [isAuthenticated, isParent, isBursary, isNurse, isProprietor]);
+  }, [isAuthenticated, isParent, isBursary, isNurse, isProprietor, authLoading]);
 
   // Check URL parameters for historical view
   useEffect(() => {

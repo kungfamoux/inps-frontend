@@ -69,25 +69,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSession();
     setUser(null);
     setUserType(null);
-    window.location.assign('/');
-  }, []);
+    // Use React Router navigation instead of full page reload
+    // Only redirect if not already on login page
+    if (location.pathname !== '/' && location.pathname !== '/auth/login') {
+      navigate('/auth/login', { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('auth_token');
     const storedSession = localStorage.getItem('user_data');
     const loginTimestamp = localStorage.getItem('login_timestamp');
-    
+
+    // If user is on login page, don't redirect - just check session validity
+    const isOnLoginPage = location.pathname === '/' || location.pathname === '/auth/login';
+
     if (storedToken && storedSession) {
       try {
         const session = JSON.parse(storedSession) as StoredSession;
-        
+
         // Check session timeout
-        const timeout = session.userType === 'staff' 
-          ? SESSION_TIMEOUTS.staff 
+        const timeout = session.userType === 'staff'
+          ? SESSION_TIMEOUTS.staff
           : SESSION_TIMEOUTS.parent;
-        
+
         const elapsed = loginTimestamp ? Date.now() - parseInt(loginTimestamp) : 0;
-        
+
         if (elapsed > timeout) {
           // Session expired, logout
           clearSession();
@@ -96,12 +103,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsLoading(false);
           return;
         }
-        
+
         setUser(session.user);
         setUserType(session.userType);
-        
-        // Only redirect once on initial load, not on every pathname change
-        if (!hasRedirected.current) {
+
+        // Only redirect if NOT on login page
+        if (!isOnLoginPage && !hasRedirected.current) {
           // Check if user is on the wrong dashboard and redirect
           if (session.userType === 'staff' && 'role' in session.user) {
             const role = session.user.role;
@@ -140,7 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     setIsLoading(false);
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   useEffect(() => {
     const handleExpired = () => void logout();
@@ -218,6 +225,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } else {
               navigate('/admin/dashboard');
             }
+          } else if (type === 'parent') {
+            // Redirect parent to parent dashboard
+            navigate('/parent/dashboard');
           }
         } else {
           throw new Error('Login failed');
