@@ -13,6 +13,7 @@ import { StaffRole } from '@/lib/types/common';
 import type { Parent } from '@/lib/types/student';
 import type { Staff } from '@/lib/types/staff';
 import { logError } from '@/lib/error-logger';
+import { getDashboardPath } from '@/lib/utils/auth';
 
 export type AuthUser = Staff | Parent;
 export type UserType = 'staff' | 'parent';
@@ -113,30 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (session.userType === 'staff' && 'role' in session.user) {
             const role = session.user.role;
             const pathname = location.pathname;
+            const expectedDashboard = getDashboardPath(session.user, session.userType);
 
-            // If teacher is on admin dashboard, redirect to teacher dashboard
-            if (role === StaffRole.TEACHER && pathname.startsWith('/admin/dashboard')) {
-              navigate('/teacher/dashboard', { replace: true });
-              hasRedirected.current = true;
-            }
-            // If admin is on teacher dashboard, redirect to admin dashboard
-            else if ((role === StaffRole.ADMIN || role === StaffRole.HEAD_TEACHER) && pathname.startsWith('/teacher/dashboard')) {
-              navigate('/admin/dashboard', { replace: true });
-              hasRedirected.current = true;
-            }
-            // If bursary is on wrong dashboard, redirect to bursary dashboard
-            else if (role === StaffRole.BURSARY && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard'))) {
-              navigate('/bursary/dashboard', { replace: true });
-              hasRedirected.current = true;
-            }
-            // If nurse is on wrong dashboard, redirect to health dashboard
-            else if (role === StaffRole.NURSE && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/bursary/dashboard'))) {
-              navigate('/health/dashboard', { replace: true });
-              hasRedirected.current = true;
-            }
-            // If proprietor is on wrong dashboard, redirect to proprietor dashboard
-            else if (role === StaffRole.PROPRIETOR && (pathname.startsWith('/admin/dashboard') || pathname.startsWith('/teacher/dashboard') || pathname.startsWith('/bursary/dashboard') || pathname.startsWith('/health/dashboard'))) {
-              navigate('/proprietor/dashboard', { replace: true });
+            // If current path doesn't match expected dashboard, redirect
+            if (!pathname.startsWith(expectedDashboard)) {
+              navigate(expectedDashboard, { replace: true });
               hasRedirected.current = true;
             }
           }
@@ -210,25 +192,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(response.user);
           setUserType(type);
 
-          // Redirect based on role - immediate redirect without delay
-          if (type === 'staff' && 'role' in response.user) {
-            const role = response.user.role;
-            // Immediate redirect
-            if (role === StaffRole.BURSARY) {
-              navigate('/bursary/dashboard');
-            } else if (role === StaffRole.NURSE) {
-              navigate('/health/dashboard');
-            } else if (role === StaffRole.TEACHER) {
-              navigate('/teacher/dashboard');
-            } else if (role === StaffRole.PROPRIETOR) {
-              navigate('/proprietor/dashboard');
-            } else {
-              navigate('/admin/dashboard');
-            }
-          } else if (type === 'parent') {
-            // Redirect parent to parent dashboard
-            navigate('/parent/dashboard');
-          }
+          // Redirect to appropriate dashboard
+          const dashboardPath = getDashboardPath(response.user, type);
+          navigate(dashboardPath);
         } else {
           throw new Error('Login failed');
         }
@@ -255,7 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoggingInRef.current = false;
       }
     },
-    [],
+    [navigate],
   );
 
   const refreshToken = useCallback(async () => {

@@ -19,6 +19,7 @@ import { useAuth, type UserType } from "@/contexts/auth-context";
 import { SchoolLogo } from "@/components/shared/SchoolLogo";
 import { SupportDialog } from "@/components/ui/SupportDialog";
 import { StaffRole } from "@/lib/types/common";
+import { getDashboardPath } from "@/lib/utils/auth";
 
 const loginSchema = z.object({
   email: z.string().trim().min(1, "Email is required.").email("Enter a valid email address."),
@@ -93,22 +94,8 @@ export default function Login() {
         // Only redirect if the stored user type matches the current account type tab
         if (sessionUserType === accountType) {
           hasRedirectedOnMount.current = true;
-          if (accountType === "parent") {
-            navigate("/parent/dashboard", { replace: true });
-          } else if (session.user && "role" in session.user) {
-            const role = session.user.role;
-            if (role === StaffRole.BURSARY) {
-              navigate("/bursary/dashboard", { replace: true });
-            } else if (role === StaffRole.NURSE) {
-              navigate("/health/dashboard", { replace: true });
-            } else if (role === StaffRole.TEACHER) {
-              navigate("/teacher/dashboard", { replace: true });
-            } else if (role === StaffRole.PROPRIETOR) {
-              navigate("/proprietor/dashboard", { replace: true });
-            } else {
-              navigate("/admin/dashboard", { replace: true });
-            }
-          }
+          const dashboardPath = getDashboardPath(session.user, accountType);
+          navigate(dashboardPath, { replace: true });
         }
       }
     }
@@ -124,6 +111,7 @@ export default function Login() {
       // Note: Navigation is handled by auth context after successful login
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "We could not sign you in. Please try again.");
+    } finally {
       setIsLoggingIn(false);
       isSubmittingRef.current = false;
     }

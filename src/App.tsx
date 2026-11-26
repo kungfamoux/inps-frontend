@@ -21,6 +21,7 @@ import TermsOfService from './pages/TermsOfService';
 import { StaffRole } from '@/lib/types/common';
 import { AdminLayout } from '@/components/layout/AdminLayout';
 import { TeacherLayout } from '@/components/layout/TeacherLayout';
+import { BursaryLayout } from '@/components/layout/BursaryLayout';
 import Dashboard from './pages/admin/Dashboard';
 import StudentsList from './pages/admin/students/List';
 import AddStudent from './pages/admin/students/Add';
@@ -465,10 +466,25 @@ function AppContent() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/admin/results/entry" element={<ResultsEntry />} />
+              <Route
+                path="/admin/results/entry"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER, StaffRole.TEACHER]}>
+                    <AdminLayout>
+                      <ResultsEntry />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/admin/results/verification"
-                element={<ResultsVerification />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.ADMIN, StaffRole.HEAD_TEACHER, StaffRole.TEACHER]}>
+                    <AdminLayout>
+                      <ResultsVerification />
+                    </AdminLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/results/report-cards"
@@ -898,32 +914,146 @@ function AppContent() {
               />
 
               {/* Bursary Routes */}
-              <Route path="/bursary/dashboard" element={<BursaryDashboard />} />
-              <Route path="/bursary/bills" element={<BillsList />} />
-              <Route path="/bursary/bills/add" element={<AddBill />} />
-              <Route path="/bursary/bills/edit/:id" element={<EditBill />} />
+              <Route
+                path="/bursary/dashboard"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <BursaryDashboard />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bursary/bills"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <BillsList />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bursary/bills/add"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <AddBill />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bursary/bills/edit/:id"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <EditBill />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/bursary/fee-collections"
-                element={<FeeCollections />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <FeeCollections />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/bursary/invoices" element={<InvoiceList />} />
+              <Route
+                path="/bursary/invoices"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <InvoiceList />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/bursary/invoices/generate"
-                element={<GenerateInvoice />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <GenerateInvoice />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/bursary/pending-payments" element={<PendingPayments />} />
-              <Route path="/bursary/expenses" element={<Expenses />} />
-              <Route path="/bursary/income" element={<IncomeRecords />} />
+              <Route
+                path="/bursary/pending-payments"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <PendingPayments />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bursary/expenses"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <Expenses />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bursary/income"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <IncomeRecords />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/bursary/payments/reconciliation"
-                element={<PaymentReconciliation />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <PaymentReconciliation />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/bursary/payments/reports"
-                element={<PaymentReports />}
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <PaymentReports />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
               />
-              <Route path="/bursary/book-prices" element={<BookPrices />} />
-              <Route path="/bursary/settings" element={<BursarySettings />} />
+              <Route
+                path="/bursary/book-prices"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <BookPrices />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bursary/settings"
+                element={
+                  <ProtectedRoute userType="staff" allowedRoles={[StaffRole.BURSARY]}>
+                    <BursaryLayout>
+                      <BursarySettings />
+                    </BursaryLayout>
+                  </ProtectedRoute>
+                }
+              />
 
               <Route path="*" element={<NotFound />} />
             </Routes>

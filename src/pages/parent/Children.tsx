@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ParentLayout } from "@/components/layout/ParentLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { parentApi } from "@/lib/api/parent";
 import { Child } from "@/lib/types/parent";
 import { GraduationCap, Eye, WalletCards, Calendar, User } from "lucide-react";
@@ -75,27 +74,22 @@ export default function ParentChildren() {
             {children.map((child: Child) => (
               <Card key={child.id} className="hover:shadow-lg transition-shadow">
                 <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="h-16 w-16 border-2 border-primary/20">
-                        {child.passportPhoto ? (
-                          <img src={child.passportPhoto} alt={child.firstName} className="h-full w-full object-cover" />
-                        ) : (
-                          <AvatarFallback className="bg-primary text-lg font-bold text-primary-foreground">
-                            {getChildInitials(child)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div>
-                        <CardTitle className="text-lg">
-                          {child.firstName} {child.lastName}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">{child.admissionNumber}</p>
-                      </div>
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-16 w-16 border-2 border-primary/20">
+                      {child.passportPhoto ? (
+                        <img src={child.passportPhoto} alt={child.firstName} className="h-full w-full object-cover" />
+                      ) : (
+                        <AvatarFallback className="bg-primary text-lg font-bold text-primary-foreground">
+                          {getChildInitials(child)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div>
+                      <CardTitle className="text-lg">
+                        {child.firstName} {child.lastName}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">{child.admissionNumber}</p>
                     </div>
-                    <Badge variant={child.status === "ACTIVE" ? "default" : "secondary"}>
-                      {child.status}
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">

@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth-context';
 import { StaffRole } from '@/lib/types/common';
+import { getDashboardPath } from '@/lib/utils/auth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -25,18 +26,8 @@ export function ProtectedRoute({ children, allowedRoles, userType }: ProtectedRo
 
   if (allowedRoles && user && 'role' in user && !allowedRoles.includes(user.role)) {
     // Redirect to appropriate dashboard based on role instead of home
-    if (user.role === StaffRole.BURSARY) {
-      return <Navigate to="/bursary/dashboard" replace />;
-    } else if (user.role === StaffRole.NURSE) {
-      return <Navigate to="/health/dashboard" replace />;
-    } else if (user.role === StaffRole.TEACHER) {
-      return <Navigate to="/teacher/dashboard" replace />;
-    } else if (user.role === StaffRole.PROPRIETOR) {
-      return <Navigate to="/proprietor/dashboard" replace />;
-    } else if (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER) {
-      return <Navigate to="/admin/dashboard" replace />;
-    }
-    return <Navigate to="/" replace />;
+    const dashboardPath = getDashboardPath(user, currentUserType || 'staff');
+    return <Navigate to={dashboardPath} replace />;
   }
 
   return <>{children}</>;

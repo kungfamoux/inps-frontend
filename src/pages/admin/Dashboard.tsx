@@ -1,16 +1,15 @@
-import { GraduationCap, UsersRound, BookOpenCheck, RefreshCw, Cake, Calendar, BarChart3 } from "lucide-react";
+import { GraduationCap, UsersRound, BookOpenCheck, Cake, Calendar, BarChart3 } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { adminApi } from "@/lib/api/admin";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StaffRole } from "@/lib/types/common";
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ["dashboardStats"],
@@ -29,12 +28,6 @@ export default function Dashboard() {
     queryFn: () => adminApi.getUpcomingEvents(),
     enabled: !!user && 'role' in user && (user.role === StaffRole.ADMIN || user.role === StaffRole.HEAD_TEACHER),
   });
-
-  const handleRefresh = () => {
-    queryClient.invalidateQueries({ queryKey: ["dashboardStats"] });
-    queryClient.invalidateQueries({ queryKey: ["upcomingBirthdays"] });
-    queryClient.invalidateQueries({ queryKey: ["upcomingEvents"] });
-  };
 
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -84,25 +77,15 @@ export default function Dashboard() {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-7">
-      <section className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <section className="flex flex-col gap-4 md:flex-row md:items-end">
         <div>
           <p className="mb-1 text-sm font-semibold text-accent">{currentDate}</p>
           <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
             Good morning, {userGreeting}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">Here is today's overview of the INPS school community.</p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoading || birthdaysLoading || eventsLoading}
-            className="gap-2"
-          >
-            <RefreshCw className={`size-4 ${isLoading || birthdaysLoading || eventsLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </section>
+        </div>
+      </section>
 
         {isLoading ? (
           <section aria-label="School overview" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
